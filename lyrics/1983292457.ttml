@@ -1,0 +1,538 @@
+<tt xmlns="http://www.w3.org/ns/ttml"
+    xmlns:itunes="http://music.apple.com/lyric-ttml-internal"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata" itunes:timing="Word" xml:lang="ja">
+    <head>
+        <metadata>
+            <ttm:agent type="person" xml:id="v1"/>
+            <iTunesMetadata xmlns="http://music.apple.com/lyric-ttml-internal" leadingSilence="0">
+                <songwriters>
+                    <songwriter>Ayase</songwriter>
+                </songwriters>
+            </iTunesMetadata>
+        </metadata>
+    </head>
+    <body dur="3:16.235">
+        <div begin="0.858" end="12.997">
+            <p begin="0.858" end="3.556" itunes:key="L1" ttm:agent="v1">
+                <span begin="0.858" end="1.421">遥か</span>
+                <span begin="1.421" end="1.800">遠く</span>
+                <span begin="1.800" end="2.035">に</span>
+                <span begin="2.264" end="2.525">浮か</span>
+                <span begin="2.525" end="2.806">ぶ</span>
+                <span begin="2.939" end="3.196">星</span>
+                <span begin="3.196" end="3.556">を</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">将那浮在银河中的遥远星球</span>
+                <span ttm:role="x-roman">ha ru ka to o ku ni u ka bu ho shi wo</span>
+            </p>
+            <p begin="3.657" end="6.408" itunes:key="L2" ttm:agent="v1">
+                <span begin="3.657" end="4.180">想い</span>
+                <span begin="4.394" end="4.842">眠り</span>
+                <span begin="5.005" end="5.194">に</span>
+                <span begin="5.194" end="5.601">つく</span>
+                <span begin="5.739" end="5.988">君</span>
+                <span begin="5.988" end="6.408">の</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">思念于心 渐入梦境</span>
+                <span ttm:role="x-roman">o mo i ne mu ri ni tsu ku ki mi no</span>
+            </p>
+            <p begin="6.484" end="9.296" itunes:key="L3" ttm:agent="v1">
+                <span begin="6.484" end="6.953">選ぶ</span>
+                <span begin="6.953" end="7.562">未来</span>
+                <span begin="7.562" end="7.730">が</span>
+                <span begin="7.904" end="8.398">望む</span>
+                <span begin="8.592" end="8.915">道</span>
+                <span begin="8.915" end="9.296">が</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">你所选择的未来 与你所期望的前路</span>
+                <span ttm:role="x-roman">e ra bu mi ra i ga no zo mu mi chi ga</span>
+            </p>
+            <p begin="9.306" end="11.367" itunes:key="L4" ttm:agent="v1">
+                <span begin="9.306" end="9.725">何処へ</span>
+                <span begin="9.757" end="10.116">続</span>
+                <span begin="10.116" end="10.505">いて</span>
+                <span begin="10.583" end="11.005">いて</span>
+                <span begin="11.005" end="11.367">も</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">无论将至何处</span>
+                <span ttm:role="x-roman">do ko e tsu zu i te i te mo</span>
+            </p>
+            <p begin="11.468" end="12.997" itunes:key="L5" ttm:agent="v1">
+                <span begin="11.468" end="11.744">共</span>
+                <span begin="11.744" end="11.967">に</span>
+                <span begin="11.967" end="12.448">生きる</span>
+                <span begin="12.448" end="12.609">か</span>
+                <span begin="12.609" end="12.997">ら</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">我也会与你共存</span>
+                <span ttm:role="x-roman">to mo ni i ki ru ka ra</span>
+            </p>
+        </div>
+        <div begin="23.900" end="45.259">
+            <p begin="23.900" end="28.219" itunes:key="L6" ttm:agent="v1">
+                <span begin="23.900" end="24.498">ずっ</span>
+                <span begin="24.498" end="24.936">と</span>
+                <span begin="25.294" end="25.925">昔</span>
+                <span begin="26.042" end="26.292">の</span>
+                <span begin="26.405" end="26.800">記</span>
+                <span begin="26.800" end="28.219">憶</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">那是无比久远的回忆</span>
+                <span ttm:role="x-roman">zu tto mu ka shi no ki o ku</span>
+            </p>
+            <p begin="28.624" end="33.486" itunes:key="L7" ttm:agent="v1">
+                <span begin="28.624" end="28.979">連れ</span>
+                <span begin="28.979" end="29.729">られて</span>
+                <span begin="29.953" end="30.466">来た</span>
+                <span begin="30.466" end="31.209">この</span>
+                <span begin="31.209" end="31.916">星</span>
+                <span begin="31.916" end="32.188">で</span>
+                <span begin="32.188" end="33.076">君</span>
+                <span begin="33.076" end="33.486">は</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">在这被带来的星球上</span>
+                <span ttm:role="x-roman">tsu re ra re te ki ta ko no ho shi de ki mi wa</span>
+            </p>
+            <p begin="33.496" end="35.231" itunes:key="L8" ttm:agent="v1">
+                <span begin="33.496" end="34.043">願い</span>
+                <span begin="34.043" end="34.638">続け</span>
+                <span begin="34.638" end="34.878">て</span>
+                <span begin="34.878" end="35.231">た</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">只见你不停祈愿</span>
+                <span ttm:role="x-roman">ne ga i tsu zu ke te ta</span>
+            </p>
+            <p begin="35.241" end="39.547" itunes:key="L9" ttm:agent="v1">
+                <span begin="35.241" end="35.608">遠</span>
+                <span begin="35.608" end="36.070">くで</span>
+                <span begin="36.495" end="36.883">煌</span>
+                <span begin="36.883" end="37.474">めく</span>
+                <span begin="37.647" end="37.905">景</span>
+                <span begin="37.905" end="38.695">色</span>
+                <span begin="38.695" end="39.547">に</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">那遥远且耀眼的景色</span>
+                <span ttm:role="x-roman">to o ku de ki ra me ku ke shi ki ni</span>
+            </p>
+            <p begin="40.072" end="45.259" itunes:key="L10" ttm:agent="v1">
+                <span begin="40.072" end="40.730">飛び</span>
+                <span begin="40.730" end="41.330">込む</span>
+                <span begin="41.330" end="42.087">こと</span>
+                <span begin="42.087" end="42.643">が</span>
+                <span begin="42.643" end="43.283">出来</span>
+                <span begin="43.483" end="43.702">た</span>
+                <span begin="43.702" end="44.188">の</span>
+                <span begin="44.188" end="44.411">な</span>
+                <span begin="44.411" end="45.259">ら</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">只愿能跃入其中</span>
+                <span ttm:role="x-roman">to bi ko mu ko to ga de ki ta no na ra</span>
+            </p>
+        </div>
+        <div begin="45.310" end="56.606">
+            <p begin="45.310" end="47.334" itunes:key="L11" ttm:agent="v1">
+                <span begin="45.310" end="45.701">一人</span>
+                <span begin="45.701" end="46.285">孤独</span>
+                <span begin="46.285" end="46.469">な</span>
+                <span begin="46.469" end="46.986">世界</span>
+                <span begin="46.986" end="47.334">で</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">你独自在这孤独的世界</span>
+                <span ttm:role="x-roman">hi to ri ko do ku na se ka i de</span>
+            </p>
+            <p begin="47.473" end="48.698" itunes:key="L12" ttm:agent="v1">
+                <span begin="47.473" end="48.040">祈り</span>
+                <span begin="48.221" end="48.698">願う</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">祈求所愿</span>
+                <span ttm:role="x-roman">i no ri ne ga u</span>
+            </p>
+            <p begin="48.866" end="50.115" itunes:key="L13" ttm:agent="v1">
+                <span begin="48.866" end="49.158">夢</span>
+                <span begin="49.158" end="49.372">を</span>
+                <span begin="49.521" end="49.874">描</span>
+                <span begin="49.874" end="50.115">き</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">描绘梦想</span>
+                <span ttm:role="x-roman">yu me wo e ga ki</span>
+            </p>
+            <p begin="50.274" end="51.548" itunes:key="L14" ttm:agent="v1">
+                <span begin="50.274" end="50.723">未来</span>
+                <span begin="50.915" end="51.056">を</span>
+                <span begin="51.056" end="51.175">見</span>
+                <span begin="51.175" end="51.548">る</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">畅想未来</span>
+                <span ttm:role="x-roman">mi ra i wo mi ru</span>
+            </p>
+            <p begin="51.558" end="54.380" itunes:key="L15" ttm:agent="v1">
+                <span begin="51.558" end="51.978">逃げ</span>
+                <span begin="51.978" end="52.302">出す</span>
+                <span begin="52.302" end="52.925">よりも</span>
+                <span begin="53.013" end="53.611">進む</span>
+                <span begin="53.719" end="54.071">こと</span>
+                <span begin="54.071" end="54.380">を</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">若是逃避与前进两者之中</span>
+                <span ttm:role="x-roman">ni ge da su yo ri mo su su mu ko to wo</span>
+            </p>
+            <p begin="54.450" end="56.606" itunes:key="L16" ttm:agent="v1">
+                <span begin="54.450" end="55.040">君が</span>
+                <span begin="55.183" end="55.571">選ん</span>
+                <span begin="55.571" end="56.021">だの</span>
+                <span begin="56.021" end="56.606">なら</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">你选择了前进</span>
+                <span ttm:role="x-roman">ki mi ga e ra n da no na ra</span>
+            </p>
+        </div>
+        <div begin="56.968" end="1:17.944">
+            <p begin="56.968" end="59.756" itunes:key="L17" ttm:agent="v1">
+                <span begin="56.968" end="57.262">誰</span>
+                <span begin="57.262" end="57.557">かが</span>
+                <span begin="57.557" end="58.251">描いた</span>
+                <span begin="58.251" end="58.750">イメージ</span>
+                <span begin="58.750" end="59.022">じゃ</span>
+                <span begin="59.022" end="59.237">なく</span>
+                <span begin="59.237" end="59.756">て</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">我们想要的并非他人描绘出的幻想</span>
+                <span ttm:role="x-roman">da re ka ga e ga i ta i mee ji ja na ku te</span>
+            </p>
+            <p begin="59.766" end="1:02.606" itunes:key="L18" ttm:agent="v1">
+                <span begin="59.766" end="1:00.097">誰</span>
+                <span begin="1:00.097" end="1:00.393">かが</span>
+                <span begin="1:00.393" end="1:00.823">選ん</span>
+                <span begin="1:00.823" end="1:01.082">だ</span>
+                <span begin="1:01.159" end="1:01.533">ステー</span>
+                <span begin="1:01.533" end="1:01.642">ジ</span>
+                <span begin="1:01.691" end="1:01.900">じゃ</span>
+                <span begin="1:01.900" end="1:02.224">なく</span>
+                <span begin="1:02.224" end="1:02.606">て</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">也并非是他人所选出的舞台</span>
+                <span ttm:role="x-roman">da re ka ga e ra n da su tee ji ja na ku te</span>
+            </p>
+            <p begin="1:02.676" end="1:05.334" itunes:key="L19" ttm:agent="v1">
+                <span begin="1:02.676" end="1:03.040">僕</span>
+                <span begin="1:03.040" end="1:03.572">たちが</span>
+                <span begin="1:03.665" end="1:04.339">作っ</span>
+                <span begin="1:04.339" end="1:04.515">て</span>
+                <span begin="1:04.515" end="1:04.689">いく</span>
+                <span begin="1:04.689" end="1:04.984">ストー</span>
+                <span begin="1:04.984" end="1:05.334">リー</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">我们所编织出的故事</span>
+                <span ttm:role="x-roman">bo ku ta chi ga tsu ku tte i ku su too rii</span>
+            </p>
+            <p begin="1:05.436" end="1:08.335" itunes:key="L20" ttm:agent="v1">
+                <span begin="1:05.436" end="1:05.908">決して</span>
+                <span begin="1:05.908" end="1:06.170">一</span>
+                <span begin="1:06.170" end="1:06.610">人</span>
+                <span begin="1:06.610" end="1:06.981">には</span>
+                <span begin="1:07.212" end="1:07.450">させ</span>
+                <span begin="1:07.450" end="1:07.782">ない</span>
+                <span begin="1:07.782" end="1:08.335">から</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">绝不会让你就此孤独</span>
+                <span ttm:role="x-roman">ke sshi te hi to ri ni wa sa se na i ka ra</span>
+            </p>
+            <p begin="1:08.388" end="1:11.007" itunes:key="L21" ttm:agent="v1">
+                <span begin="1:08.388" end="1:08.884">いつか</span>
+                <span begin="1:08.884" end="1:09.256">その</span>
+                <span begin="1:09.375" end="1:09.996">胸</span>
+                <span begin="1:09.996" end="1:10.108">に</span>
+                <span begin="1:10.108" end="1:10.622">秘め</span>
+                <span begin="1:10.622" end="1:11.007">た</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">往后 就以埋藏于你内心的</span>
+                <span ttm:role="x-roman">i tsu ka so no mu ne ni hi me ta</span>
+            </p>
+            <p begin="1:11.017" end="1:15.100" itunes:key="L22" ttm:agent="v1">
+                <span begin="1:11.017" end="1:11.547">刃</span>
+                <span begin="1:11.547" end="1:11.774">が</span>
+                <span begin="1:11.774" end="1:12.507">鎖</span>
+                <span begin="1:12.507" end="1:12.815">を</span>
+                <span begin="1:12.968" end="1:13.574">断ち</span>
+                <span begin="1:13.574" end="1:14.334">切る</span>
+                <span begin="1:14.334" end="1:14.634">ま</span>
+                <span begin="1:14.634" end="1:15.100">で</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">那柄刀刃将锁链斩尽 在这之前</span>
+                <span ttm:role="x-roman">ha ga ku sa ri wo ta chi ki ru ma de</span>
+            </p>
+            <p begin="1:15.138" end="1:17.944" itunes:key="L23" ttm:agent="v1">
+                <span begin="1:15.138" end="1:15.583">ずっと</span>
+                <span begin="1:16.347" end="1:16.798">共に</span>
+                <span begin="1:16.798" end="1:17.456">闘う</span>
+                <span begin="1:17.456" end="1:17.944">よ</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">就让我们 一同战斗吧</span>
+                <span ttm:role="x-roman">zu tto to mo ni ta ta ka u yo</span>
+            </p>
+        </div>
+        <div begin="1:27.670" end="1:39.115">
+            <p begin="1:27.670" end="1:29.343" itunes:key="L24" ttm:agent="v1">
+                <span begin="1:27.670" end="1:27.941">決め</span>
+                <span begin="1:27.941" end="1:28.279">付け</span>
+                <span begin="1:28.279" end="1:28.841">られた</span>
+                <span begin="1:28.841" end="1:29.343">運命</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">早被注定的命运</span>
+                <span ttm:role="x-roman">ki me tsu ke ra re ta u n me i</span>
+            </p>
+            <p begin="1:29.438" end="1:30.799" itunes:key="L25" ttm:agent="v1">
+                <span begin="1:29.438" end="1:29.694">そん</span>
+                <span begin="1:29.694" end="1:30.036">なの</span>
+                <span begin="1:30.036" end="1:30.303">壊し</span>
+                <span begin="1:30.303" end="1:30.799">て</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">不如将这彻底毁坏</span>
+                <span ttm:role="x-roman">so n na no ko wa shi te</span>
+            </p>
+            <p begin="1:30.809" end="1:33.607" itunes:key="L26" ttm:agent="v1">
+                <span begin="1:30.809" end="1:31.319">僕達</span>
+                <span begin="1:31.319" end="1:31.709">は</span>
+                <span begin="1:31.709" end="1:32.326">操り</span>
+                <span begin="1:32.326" end="1:32.787">人形</span>
+                <span begin="1:32.787" end="1:33.031">じゃ</span>
+                <span begin="1:33.031" end="1:33.607">ない</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">我们可不是命运的傀儡</span>
+                <span ttm:role="x-roman">bo ku ta chi wa a ya tsu ri ni n gyo u ja na i</span>
+            </p>
+            <p begin="1:33.617" end="1:36.492" itunes:key="L27" ttm:agent="v1">
+                <span begin="1:33.617" end="1:34.294">君の</span>
+                <span begin="1:34.294" end="1:34.716">世界</span>
+                <span begin="1:34.716" end="1:34.962">だ</span>
+                <span begin="1:35.157" end="1:35.734">君の</span>
+                <span begin="1:35.734" end="1:36.089">未来</span>
+                <span begin="1:36.089" end="1:36.492">だ</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">你所选的世界 你所选的未来</span>
+                <span ttm:role="x-roman">ki mi no se ka i da ki mi no mi ra i da</span>
+            </p>
+            <p begin="1:36.502" end="1:39.115" itunes:key="L28" ttm:agent="v1">
+                <span begin="1:36.502" end="1:36.902">どんな</span>
+                <span begin="1:36.902" end="1:37.920">物語</span>
+                <span begin="1:37.920" end="1:38.020">に</span>
+                <span begin="1:38.020" end="1:38.324">でも</span>
+                <span begin="1:38.324" end="1:38.706">出来</span>
+                <span begin="1:38.706" end="1:39.115">る</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">无论何种故事都能缔造</span>
+                <span ttm:role="x-roman">do n na mo no ga ta ri ni de mo de ki ru</span>
+            </p>
+        </div>
+        <div begin="1:39.125" end="1:51.565">
+            <p begin="1:39.125" end="1:42.420" itunes:key="L29" ttm:agent="v1">
+                <span begin="1:39.125" end="1:39.361">逃</span>
+                <span begin="1:39.361" end="1:40.039">げる</span>
+                <span begin="1:40.039" end="1:40.463">様</span>
+                <span begin="1:40.463" end="1:40.764">に</span>
+                <span begin="1:40.764" end="1:41.137">隠</span>
+                <span begin="1:41.237" end="1:41.770">れる</span>
+                <span begin="1:41.770" end="1:42.146">様</span>
+                <span begin="1:42.146" end="1:42.420">に</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">就如逃避与躲藏一般</span>
+                <span ttm:role="x-roman">ni ge ru yo u ni ka ku re ru yo u ni</span>
+            </p>
+            <p begin="1:42.480" end="1:45.282" itunes:key="L30" ttm:agent="v1">
+                <span begin="1:42.480" end="1:42.812">乗り</span>
+                <span begin="1:42.812" end="1:43.263">込んで</span>
+                <span begin="1:43.263" end="1:43.622">来た</span>
+                <span begin="1:43.622" end="1:44.191">コク</span>
+                <span begin="1:44.191" end="1:44.738">ピット</span>
+                <span begin="1:44.738" end="1:45.282">には</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">乘上这驾驶舱的你</span>
+                <span ttm:role="x-roman">no ri ko n de ki ta ko ku pi tto ni wa</span>
+            </p>
+            <p begin="1:45.292" end="1:48.090" itunes:key="L31" ttm:agent="v1">
+                <span begin="1:45.292" end="1:45.599">泣き</span>
+                <span begin="1:45.599" end="1:46.066">虫な</span>
+                <span begin="1:46.066" end="1:46.639">君は</span>
+                <span begin="1:46.833" end="1:47.336">もう</span>
+                <span begin="1:47.336" end="1:47.706">居な</span>
+                <span begin="1:47.706" end="1:48.090">い</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">已然不再是那个爱哭鬼</span>
+                <span ttm:role="x-roman">na ki mu shi na ki mi wa mo u i na i</span>
+            </p>
+            <p begin="1:48.100" end="1:51.565" itunes:key="L32" ttm:agent="v1">
+                <span begin="1:48.100" end="1:48.622">いつの</span>
+                <span begin="1:48.622" end="1:49.204">間にか</span>
+                <span begin="1:49.204" end="1:49.880">こんなに</span>
+                <span begin="1:49.880" end="1:50.484">強</span>
+                <span begin="1:50.484" end="1:51.565">く</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">不知何时 你已如此坚强</span>
+                <span ttm:role="x-roman">i tsu no ma ni ka ko n na ni tsu yo ku</span>
+            </p>
+        </div>
+        <div begin="1:52.156" end="2:14.468">
+            <p begin="1:52.156" end="1:57.671" itunes:key="L33" ttm:agent="v1">
+                <span begin="1:52.156" end="1:52.447">こ</span>
+                <span begin="1:52.447" end="1:52.856">れ</span>
+                <span begin="1:52.856" end="1:53.195">は</span>
+                <span begin="1:53.390" end="1:53.844">君</span>
+                <span begin="1:53.844" end="1:54.144">の</span>
+                <span begin="1:54.144" end="1:54.944">人生</span>
+                <span ttm:role="x-bg">
+                    <span begin="1:55.014" end="1:55.707">(誰</span>
+                    <span begin="1:55.707" end="1:56.028">の</span>
+                    <span begin="1:56.185" end="1:56.597">もの</span>
+                    <span begin="1:56.662" end="1:57.129">でも</span>
+                    <span begin="1:57.129" end="1:57.671">ない)</span>
+                    <span ttm:role="x-translation" xml:lang="zh-CN">并非他人之物</span>
+                    <span ttm:role="x-roman">da re no mo no de mo na i</span>
+                </span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">这是属于你的人生</span>
+                <span ttm:role="x-roman">ko re wa ki mi no ji n se i</span>
+            </p>
+            <p begin="1:57.681" end="2:03.879" itunes:key="L34" ttm:agent="v1">
+                <span begin="1:57.681" end="1:58.363">それ</span>
+                <span begin="1:58.363" end="1:58.696">は</span>
+                <span begin="1:58.950" end="1:59.694">答え</span>
+                <span begin="1:59.694" end="2:00.195">なんて</span>
+                <span begin="2:00.195" end="2:00.411">無</span>
+                <span begin="2:00.411" end="2:01.055">い</span>
+                <span ttm:role="x-bg">
+                    <span begin="2:00.788" end="2:01.589">(自分</span>
+                    <span begin="2:01.701" end="2:01.938">で</span>
+                    <span begin="2:01.938" end="2:02.948">選ぶ</span>
+                    <span begin="2:02.948" end="2:03.879">道)</span>
+                    <span ttm:role="x-translation" xml:lang="zh-CN">道路由自己抉择</span>
+                    <span ttm:role="x-roman">ji bun de e ra bu mi chi</span>
+                </span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">人生之中并无答案</span>
+                <span ttm:role="x-roman">so re wa ko ta e na n te na i</span>
+            </p>
+            <p begin="2:04.101" end="2:06.118" itunes:key="L35" ttm:agent="v1">
+                <span begin="2:04.101" end="2:04.435">もう</span>
+                <span begin="2:04.572" end="2:05.072">呪縛</span>
+                <span begin="2:05.238" end="2:05.338">は</span>
+                <span begin="2:05.338" end="2:05.636">解い</span>
+                <span begin="2:05.636" end="2:06.118">て</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">已然解开这诅咒的束缚</span>
+                <span ttm:role="x-roman">mo u ju ba ku wa to i te</span>
+            </p>
+            <p begin="2:06.128" end="2:10.278" itunes:key="L36" ttm:agent="v1">
+                <span begin="2:06.128" end="2:06.628">定め</span>
+                <span begin="2:06.628" end="2:07.201">られた</span>
+                <span begin="2:07.342" end="2:07.540">フィ</span>
+                <span begin="2:07.540" end="2:08.091">ク</span>
+                <span begin="2:08.091" end="2:08.599">ション</span>
+                <span begin="2:08.599" end="2:09.305">から</span>
+                <span begin="2:09.305" end="2:10.278">今</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">过去仅活于被既定的虚像中 如今</span>
+                <span ttm:role="x-roman">sa da me ra re ta fi ku sho n ka ra i ma</span>
+            </p>
+            <p begin="2:10.401" end="2:11.698" itunes:key="L37" ttm:agent="v1">
+                <span begin="2:10.401" end="2:10.650">飛び</span>
+                <span begin="2:10.650" end="2:11.042">出すん</span>
+                <span begin="2:11.042" end="2:11.698">だ</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">飞出这虚像吧</span>
+                <span ttm:role="x-roman">to bi da su n da</span>
+            </p>
+            <p begin="2:11.708" end="2:14.468" itunes:key="L38" ttm:agent="v1">
+                <span begin="2:11.708" end="2:12.067">飛び</span>
+                <span begin="2:12.067" end="2:12.465">立つん</span>
+                <span begin="2:12.465" end="2:12.986">だ</span>
+                <span begin="2:13.266" end="2:14.468">Ah</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">飞于真实之中</span>
+                <span ttm:role="x-roman">to bi ta tsu n da</span>
+            </p>
+        </div>
+        <div begin="2:14.624" end="3:01.097">
+            <p begin="2:14.624" end="2:17.471" itunes:key="L39" ttm:agent="v1">
+                <span begin="2:14.624" end="2:14.885">誰</span>
+                <span begin="2:14.885" end="2:15.205">にも</span>
+                <span begin="2:15.244" end="2:15.711">追い</span>
+                <span begin="2:15.761" end="2:16.040">つけ</span>
+                <span begin="2:16.040" end="2:16.235">ない</span>
+                <span begin="2:16.294" end="2:16.491">ス</span>
+                <span begin="2:16.491" end="2:17.177">ピード</span>
+                <span begin="2:17.177" end="2:17.471">で</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">就以无人追及的速度</span>
+                <span ttm:role="x-roman">da re ni mo o i tsu ke na i su pii do de</span>
+            </p>
+            <p begin="2:17.481" end="2:20.277" itunes:key="L40" ttm:agent="v1">
+                <span begin="2:17.481" end="2:18.064">地面</span>
+                <span begin="2:18.064" end="2:18.610">蹴り</span>
+                <span begin="2:18.610" end="2:19.142">上げ</span>
+                <span begin="2:19.142" end="2:19.870">空を</span>
+                <span begin="2:19.870" end="2:20.277">舞う</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">一跃而起 飞舞于空</span>
+                <span ttm:role="x-roman">ji me n ke ri a ge so ra wo ma u</span>
+            </p>
+            <p begin="2:20.334" end="2:23.015" itunes:key="L41" ttm:agent="v1">
+                <span begin="2:20.334" end="2:20.870">呪い</span>
+                <span begin="2:20.870" end="2:21.448">呪</span>
+                <span begin="2:21.448" end="2:21.616">わ</span>
+                <span begin="2:21.616" end="2:22.109">れた</span>
+                <span begin="2:22.109" end="2:22.711">未来</span>
+                <span begin="2:22.711" end="2:23.015">は</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">这曾被诅咒过的未来</span>
+                <span ttm:role="x-roman">no ro i no ro wa re ta mi ra i wa</span>
+            </p>
+            <p begin="2:23.045" end="2:25.855" itunes:key="L42" ttm:agent="v1">
+                <span begin="2:23.045" end="2:23.586">君が</span>
+                <span begin="2:23.586" end="2:23.900">その</span>
+                <span begin="2:23.900" end="2:24.328">手</span>
+                <span begin="2:24.328" end="2:24.428">で</span>
+                <span begin="2:24.428" end="2:24.715">変え</span>
+                <span begin="2:24.715" end="2:24.968">て</span>
+                <span begin="2:24.968" end="2:25.366">いくん</span>
+                <span begin="2:25.366" end="2:25.855">だ</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">就由你亲手将之改变</span>
+                <span ttm:role="x-roman">ki mi ga so no te de ka e te i ku n da</span>
+            </p>
+            <p begin="2:25.865" end="2:28.575" itunes:key="L43" ttm:agent="v1">
+                <span begin="2:25.865" end="2:26.160">逃げ</span>
+                <span begin="2:26.160" end="2:26.340">ず</span>
+                <span begin="2:26.340" end="2:26.573">に</span>
+                <span begin="2:26.573" end="2:26.970">進ん</span>
+                <span begin="2:26.970" end="2:27.229">だ</span>
+                <span begin="2:27.229" end="2:27.792">こと</span>
+                <span begin="2:27.792" end="2:27.956">で</span>
+                <span begin="2:27.956" end="2:28.575">きっと</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">这反抗命运的前进之路</span>
+                <span ttm:role="x-roman">ni ge zu ni su su n da ko to de ki tto</span>
+            </p>
+            <p begin="2:28.673" end="2:32.872" itunes:key="L44" ttm:agent="v1">
+                <span begin="2:28.673" end="2:29.088">掴</span>
+                <span begin="2:29.088" end="2:29.399">める</span>
+                <span begin="2:29.399" end="2:29.963">もの</span>
+                <span begin="2:29.963" end="2:30.238">が</span>
+                <span begin="2:30.238" end="2:31.002">沢</span>
+                <span begin="2:31.002" end="2:31.694">山</span>
+                <span begin="2:31.694" end="2:32.228">ある</span>
+                <span begin="2:32.228" end="2:32.872">よ</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">想必有着众多机遇可握于手中</span>
+                <span ttm:role="x-roman">tsu ka me ru mo no ga ta ku sa n'a ru yo</span>
+            </p>
+            <p begin="2:33.014" end="2:38.214" itunes:key="L45" ttm:agent="v1">
+                <span begin="2:33.014" end="2:33.867">もっと</span>
+                <span begin="2:34.114" end="2:34.704">強く</span>
+                <span begin="2:34.704" end="2:35.022">なれ</span>
+                <span begin="2:35.022" end="2:38.214">る</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">能够 让你更为坚强</span>
+                <span ttm:role="x-roman">mo tto tsu yo ku na re ru</span>
+            </p>
+            <p begin="2:45.609" end="2:48.093" itunes:key="L46" ttm:agent="v1">
+                <span begin="2:45.609" end="2:45.874">この</span>
+                <span begin="2:45.874" end="2:46.233">星</span>
+                <span begin="2:46.233" end="2:46.438">に</span>
+                <span begin="2:46.438" end="2:46.743">生</span>
+                <span begin="2:46.743" end="2:47.409">まれ</span>
+                <span begin="2:47.409" end="2:47.549">た</span>
+                <span begin="2:47.549" end="2:48.093">こと</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">无论曾诞生于这个星球</span>
+                <span ttm:role="x-roman">ko no ho shi ni u ma re ta ko to</span>
+            </p>
+            <p begin="2:48.103" end="2:51.670" itunes:key="L47" ttm:agent="v1">
+                <span begin="2:48.103" end="2:48.438">この</span>
+                <span begin="2:48.438" end="2:49.057">世界</span>
+                <span begin="2:49.057" end="2:49.229">で</span>
+                <span begin="2:49.289" end="2:49.716">生き</span>
+                <span begin="2:49.716" end="2:50.430">続</span>
+                <span begin="2:50.430" end="2:50.948">ける</span>
+                <span begin="2:50.948" end="2:51.670">こと</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">或是如今活在这个世界</span>
+                <span ttm:role="x-roman">ko no se ka i de i ki tsu zu ke ru ko to</span>
+            </p>
+            <p begin="2:51.726" end="2:56.937" itunes:key="L48" ttm:agent="v1">
+                <span begin="2:51.726" end="2:52.503">その</span>
+                <span begin="2:52.503" end="2:53.456">全て</span>
+                <span begin="2:53.456" end="2:53.794">を</span>
+                <span begin="2:53.955" end="2:54.553">愛</span>
+                <span begin="2:54.553" end="2:55.269">せる</span>
+                <span begin="2:55.544" end="2:56.287">様</span>
+                <span begin="2:56.287" end="2:56.937">に</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">只愿能够 爱上这一切</span>
+                <span ttm:role="x-roman">so no su be te wo a i se ru yo u ni</span>
+            </p>
+            <p begin="2:57.151" end="3:01.097" itunes:key="L49" ttm:agent="v1">
+                <span begin="2:57.151" end="2:57.803">目</span>
+                <span begin="2:57.803" end="2:58.366">一杯</span>
+                <span begin="2:58.366" end="2:58.683">の</span>
+                <span begin="2:59.464" end="3:00.167">祝福</span>
+                <span begin="3:00.167" end="3:00.267">を</span>
+                <span begin="3:00.267" end="3:00.556">君</span>
+                <span begin="3:00.556" end="3:01.097">に</span>
+                <span ttm:role="x-translation" xml:lang="zh-CN">如今就将这祝福 全都予你</span>
+                <span ttm:role="x-roman">me i ppa i no shu ku fu ku wo ki mi ni</span>
+            </p>
+        </div>
+    </body>
+</tt>
