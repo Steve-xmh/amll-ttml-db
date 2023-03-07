@@ -1,0 +1,506 @@
+<tt xmlns="http://www.w3.org/ns/ttml"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata"
+    xmlns:itunes="http://music.apple.com/lyric-ttml-internal">
+    <head>
+        <metadata>
+            <ttm:agent type="person" xml:id="v1"/>
+        </metadata>
+    </head>
+    <body dur="3:5.8870000000000005">
+        <div begin="2.711" end="2:11.691000000000003">
+            <p begin="2.711" end="3.945" ttm:agent="v1" itunes:key="L1">
+                でっかい牙 でっかい爪 
+                <span ttm:role="x-translation" xml:lang="zh-CN">獠牙大大 爪子大大</span>
+                <span ttm:role="x-roman">te kka i ki ba te kka i tsu me</span>
+            </p>
+            <p begin="3.994" end="4.743" ttm:agent="v1" itunes:key="L2">
+                でっかい身体
+                <span ttm:role="x-translation" xml:lang="zh-CN">身子也大大</span>
+                <span ttm:role="x-roman">te kka i shi n ta i</span>
+            </p>
+            <p begin="5.262" end="6.508" ttm:agent="v1" itunes:key="L3">
+                ちっちゃい耳 ちっちゃい尻尾 
+                <span ttm:role="x-translation" xml:lang="zh-CN">耳朵小小 尾巴小小</span>
+                <span ttm:role="x-roman">chi tcha i mi mi chi tcha i shi ppo</span>
+            </p>
+            <p begin="6.508" end="7.292" ttm:agent="v1" itunes:key="L4">
+                ちっちゃい肉球
+                <span ttm:role="x-translation" xml:lang="zh-CN">肉垫也小小</span>
+                <span ttm:role="x-roman">chi tcha i ni ku kyu u</span>
+            </p>
+            <p begin="7.858" end="8.406" ttm:agent="v1" itunes:key="L5">
+                ワンワン ニャーニャー 
+                <span ttm:role="x-translation" xml:lang="zh-CN">汪汪 喵喵</span>
+                <span ttm:role="x-roman">wa n wa n nyaa nyaa</span>
+            </p>
+            <p begin="8.418" end="9.002" ttm:agent="v1" itunes:key="L6">
+                ガオガオ チュンチュン
+                <span ttm:role="x-translation" xml:lang="zh-CN">嗷嗷 啾啾</span>
+                <span ttm:role="x-roman">ga o ga o chu n chu n</span>
+            </p>
+            <p begin="9.135" end="10.321" ttm:agent="v1" itunes:key="L7">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吵死啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="10.756" end="12.473" ttm:agent="v1" itunes:key="L8">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i! de sho?</span>
+            </p>
+            <p begin="12.829" end="13.178" ttm:agent="v1" itunes:key="L9">
+                でしょ？
+                <span ttm:role="x-translation" xml:lang="zh-CN">对吧？</span>
+                <span ttm:role="x-roman">de sho?</span>
+            </p>
+            <p begin="14.179" end="15.483" ttm:agent="v1" itunes:key="L10">
+                ウケる ケモ クラップハンズ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超棒的 兽人 鼓鼓掌</span>
+                <span ttm:role="x-roman">u ke ru ke mo ku ra ppu ha n ji</span>
+            </p>
+            <p begin="16.78" end="17.963" ttm:agent="v1" itunes:key="L11">
+                ウケる ケモ ハンズアップ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超赞的 兽人 举起爪</span>
+                <span ttm:role="x-roman">u ke ru ke mo ha n zu a ppu</span>
+            </p>
+            <p begin="19.381" end="20.58" ttm:agent="v1" itunes:key="L12">
+                ウケる ケモ ジャンプジャンプ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超酷的 兽人 跳一跳</span>
+                <span ttm:role="x-roman">u ke ru ke mo ja n pu ja n pu</span>
+            </p>
+            <p begin="20.976" end="22.71" ttm:agent="v1" itunes:key="L13">
+                ウケる それもラブでしょ？ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">受欢迎 这也是爱对吧？</span>
+                <span ttm:role="x-roman">u ke ru so re mo love de sho?</span>
+            </p>
+            <p begin="23.251" end="25.501" ttm:agent="v1" itunes:key="L14">
+                好きで 頭がトロトロになる 
+                <span ttm:role="x-translation" xml:lang="zh-CN">太喜欢 脑子都变成一团浆糊啦</span>
+                <span ttm:role="x-roman">su ki de a ta ma ga to ro to ro ni na ru</span>
+            </p>
+            <p begin="25.808" end="28.057" ttm:agent="v1" itunes:key="L15">
+                年収忘れて ぼやけるリアル 
+                <span ttm:role="x-translation" xml:lang="zh-CN">年收入忘光光 现实随他去吧</span>
+                <span ttm:role="x-roman">ne n shu u wa su re te bo ya ke ru ri a ru</span>
+            </p>
+            <p begin="28.368" end="30.702" ttm:agent="v1" itunes:key="L16">
+                ブレる人並み 安心する毛並み 
+                <span ttm:role="x-translation" xml:lang="zh-CN">摇摆不定的世人 随遇而安的毛毛</span>
+                <span ttm:role="x-roman">bu re ru hi to na mi a n shi n su ru ke na mi</span>
+            </p>
+            <p begin="30.935" end="32.152" ttm:agent="v1" itunes:key="L17">
+                人工の波じゃなく 
+                <span ttm:role="x-translation" xml:lang="zh-CN">并非人造浪潮</span>
+                <span ttm:role="x-roman">ji n ko u no na mi ja na ku</span>
+            </p>
+            <p begin="32.18" end="33.398" ttm:agent="v1" itunes:key="L18">
+                野性でやってま～す
+                <span ttm:role="x-translation" xml:lang="zh-CN">而是野生~哦</span>
+                <span ttm:role="x-roman">ya se i de ya tte ma~su</span>
+            </p>
+            <p begin="33.979" end="37.345" ttm:agent="v1" itunes:key="L19">
+                「学校も会社もリマインダもないけれど、
+                <span ttm:role="x-translation" xml:lang="zh-CN">“虽然不用上学 不用上班 没有任务清单</span>
+                <span ttm:role="x-roman">ga kko u mo ka i sha mo ri ma i n da mo na i ke re do</span>
+            </p>
+            <p begin="37.94" end="40.324" ttm:agent="v1" itunes:key="L21">
+                自然の掟はめっちゃあるゾイ」 
+                <span ttm:role="x-translation" xml:lang="zh-CN">但是大自然的法则可是有一堆啊”</span>
+                <span ttm:role="x-roman">shi ze n no o ki te wa me tcha a ru zo i</span>
+            </p>
+            <p begin="41.001" end="43.302" ttm:agent="v1" itunes:key="L22">
+                やってらんね 醒める そのマウント 
+                <span ttm:role="x-translation" xml:lang="zh-CN">真是受够了 省省吧 你那优越感</span>
+                <span ttm:role="x-roman">ya tte ra n ne sa me ru so no ma u n to</span>
+            </p>
+            <p begin="43.508" end="45.978" ttm:agent="v1" itunes:key="L23">
+                生態系 知ってるわ そういうもん 
+                <span ttm:role="x-translation" xml:lang="zh-CN">生态系统 我懂的 不就是那么回事吗</span>
+                <span ttm:role="x-roman">se i ta i ke i shi tte ru wa so u i mo n</span>
+            </p>
+            <p begin="46.005" end="49.039" ttm:agent="v1" itunes:key="L24">
+                理解されたい されない 文明退化だ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">想被理解 却不被理解的 文明退化罢了</span>
+                <span ttm:role="x-roman">ri ka i sa re ta i sa re na i bu n me i ta i ka da</span>
+            </p>
+            <p begin="49.438" end="51.406" ttm:agent="v1" itunes:key="L25">
+                いやいや進化だ 舐めんじゃねえ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">明明是进化啊 搁这儿看不起谁呢</span>
+                <span ttm:role="x-roman">i ya i ya shi n ka da na me n ja ne e</span>
+            </p>
+            <p begin="51.692" end="52.775" ttm:agent="v1" itunes:key="L26">
+                でっかい牙 でっかい爪 
+                <span ttm:role="x-translation" xml:lang="zh-CN">獠牙大大 爪子大大</span>
+                <span ttm:role="x-roman">te kka i ki ba te kka i tsu me</span>
+            </p>
+            <p begin="52.867" end="53.633" ttm:agent="v1" itunes:key="L27">
+                でっかい身体
+                <span ttm:role="x-translation" xml:lang="zh-CN">身子也大大</span>
+                <span ttm:role="x-roman">te kka i shi n ta i</span>
+            </p>
+            <p begin="54.22" end="55.487" ttm:agent="v1" itunes:key="L28">
+                ちっちゃい耳 ちっちゃい尻尾 
+                <span ttm:role="x-translation" xml:lang="zh-CN">耳朵小小 尾巴小小</span>
+                <span ttm:role="x-roman">chi tcha i mi mi chi tcha i shi ppo</span>
+            </p>
+            <p begin="55.55" end="56.217" ttm:agent="v1" itunes:key="L29">
+                ちっちゃい肉球
+                <span ttm:role="x-translation" xml:lang="zh-CN">肉垫也小小</span>
+                <span ttm:role="x-roman">chi tcha i ni ku kyu u</span>
+            </p>
+            <p begin="56.835" end="57.459" ttm:agent="v1" itunes:key="L30">
+                ワンワン ニャーニャー 
+                <span ttm:role="x-translation" xml:lang="zh-CN">汪汪 喵喵</span>
+                <span ttm:role="x-roman">wa n wa n nyaa nyaa</span>
+            </p>
+            <p begin="57.459" end="58.044" ttm:agent="v1" itunes:key="L31">
+                ガオガオ チュンチュン
+                <span ttm:role="x-translation" xml:lang="zh-CN">嗷嗷 啾啾</span>
+                <span ttm:role="x-roman">ga o ga o chu n chu n</span>
+            </p>
+            <p begin="58.141" end="59.342" ttm:agent="v1" itunes:key="L32">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吵死啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="59.725" end="1:1.4579999999999984" ttm:agent="v1" itunes:key="L33">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="1:2" end="1:3.2730000000000032" ttm:agent="v1" itunes:key="L34">
+                かっけえやつ かわいいやつ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">帅气的家伙 可爱的家伙</span>
+                <span ttm:role="x-roman">ka kke e ya tsu ka wa i i ya tsu</span>
+            </p>
+            <p begin="1:3.2730000000000032" end="1:4.239000000000004" ttm:agent="v1" itunes:key="L35">
+                愛されちゃうよね
+                <span ttm:role="x-translation" xml:lang="zh-CN">肯定广受好评啦</span>
+                <span ttm:role="x-roman">a i sa re cha u yo ne</span>
+            </p>
+            <p begin="1:4.516000000000005" end="1:5.799000000000007" ttm:agent="v1" itunes:key="L36">
+                ぶっさいやつ きっしょいやつ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">丑丑的家伙 恶心的家伙</span>
+                <span ttm:role="x-roman">bu ssa i ya tsu ki ssho i ya tsu</span>
+            </p>
+            <p begin="1:5.905000000000001" end="1:6.7549999999999955" ttm:agent="v1" itunes:key="L37">
+                でも最強だね
+                <span ttm:role="x-translation" xml:lang="zh-CN">但是超强的哦</span>
+                <span ttm:role="x-roman">de mo sa i kyo u da ne</span>
+            </p>
+            <p begin="1:7.140000000000001" end="1:7.689999999999998" ttm:agent="v1" itunes:key="L38">
+                ピョンピョン ブーブー
+                <span ttm:role="x-translation" xml:lang="zh-CN">蹦蹦 哼哼</span>
+                <span ttm:role="x-roman">pyo n pyo n buu buu</span>
+            </p>
+            <p begin="1:7.795000000000002" end="1:8.379000000000005" ttm:agent="v1" itunes:key="L39">
+                モーモー チューチュー
+                <span ttm:role="x-translation" xml:lang="zh-CN">哞哞 吱吱</span>
+                <span ttm:role="x-roman">moo moo chuu chuu</span>
+            </p>
+            <p begin="1:8.468000000000004" end="1:9.667000000000002" ttm:agent="v1" itunes:key="L40">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吵死啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="1:10.111999999999995" end="1:11.695999999999998" ttm:agent="v1" itunes:key="L41">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="1:11.959000000000003" end="1:12.260000000000005" ttm:agent="v1" itunes:key="L42">
+                でしょ？
+                <span ttm:role="x-translation" xml:lang="zh-CN">你说是吧？</span>
+                <span ttm:role="x-roman">de sho?</span>
+            </p>
+            <p begin="1:13.545000000000002" end="1:14.828999999999994" ttm:agent="v1" itunes:key="L43">
+                ウケる ケモ クラップハンズ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超棒的 兽人 鼓鼓掌</span>
+                <span ttm:role="x-roman">u ke ru ke mo ku ra ppu ha n ji</span>
+            </p>
+            <p begin="1:16.128" end="1:17.308000000000007" ttm:agent="v1" itunes:key="L44">
+                ウケる ケモ ハンズアップ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超赞的 兽人 举起爪</span>
+                <span ttm:role="x-roman">u ke ru ke mo ha n zu a ppu</span>
+            </p>
+            <p begin="1:18.661" end="1:19.896" ttm:agent="v1" itunes:key="L45">
+                ウケる ケモ ジャンプジャンプ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超酷的 兽人 跳一跳</span>
+                <span ttm:role="x-roman">u ke ru ke mo ja n pu ja n pu</span>
+            </p>
+            <p begin="1:20.292" end="1:22.358999999999995" ttm:agent="v1" itunes:key="L46">
+                ウケる それもラブでしょ？ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">受欢迎 已经爱上我了吧？</span>
+                <span ttm:role="x-roman">u ke ru so re mo love de sho?</span>
+            </p>
+            <p begin="1:22.971999999999994" end="1:25.087999999999994" ttm:agent="v1" itunes:key="L47">
+                異種間の ワンワンワンダーランド 
+                <span ttm:role="x-translation" xml:lang="zh-CN">不同的种族 汪汪汪 Wonder Land</span>
+                <span ttm:role="x-roman">i shu ka n no wa n wa n wa n daa ra n do</span>
+            </p>
+            <p begin="1:25.583" end="1:27.650000000000006" ttm:agent="v1" itunes:key="L48">
+                無理解は ニャンニャンにゃんとも 
+                <span ttm:role="x-translation" xml:lang="zh-CN">无法理解是 喵喵喵了个咪</span>
+                <span ttm:role="x-roman">mu ri ka i wa nya n nya n nya n to mo</span>
+            </p>
+            <p begin="1:28.17" end="1:29.921999999999997" ttm:agent="v1" itunes:key="L49">
+                同化して どうかしてる 
+                <span ttm:role="x-translation" xml:lang="zh-CN">同化了啊 怎么办呢</span>
+                <span ttm:role="x-roman">do u ka shi te do u ka shi te ru</span>
+            </p>
+            <p begin="1:30.367999999999995" end="1:32.568" ttm:agent="v1" itunes:key="L50">
+                カフェインなしで頭キマってます 
+                <span ttm:role="x-translation" xml:lang="zh-CN">没有咖啡因也嗨到不行了啊</span>
+                <span ttm:role="x-roman">ka fe i n na shi de a ta ma ki ma tte ma su</span>
+            </p>
+            <p begin="1:34.11" end="1:36.676" ttm:agent="v1" itunes:key="L51">
+                「宇宙 宇宙 宇宙 宇宙… 
+                <span ttm:role="x-translation" xml:lang="zh-CN">“宇宙 宇宙 宇宙 宇宙...</span>
+                <span ttm:role="x-roman">u chu u u chu u u chu u u chu u</span>
+            </p>
+            <p begin="1:37.319" end="1:39.453" ttm:agent="v1" itunes:key="L52">
+                宇宙の真理に近づいた」 
+                <span ttm:role="x-translation" xml:lang="zh-CN">宇宙的真理 我悟了”</span>
+                <span ttm:role="x-roman">u chu u no shi n ri ni ki n zu ta</span>
+            </p>
+            <p begin="1:40.384" end="1:40.69199999999999" ttm:agent="v1" itunes:key="L53">滑稽 
+                <span ttm:role="x-translation" xml:lang="zh-CN">笑了</span>
+                <span ttm:role="x-roman">ko kke i</span>
+            </p>
+            <p begin="1:41.033" end="1:42.769999999999996" ttm:agent="v1" itunes:key="L54">
+                アニマル無視のソリューション
+                <span ttm:role="x-translation" xml:lang="zh-CN">那无视动物的解决方案</span>
+                <span ttm:role="x-roman">a ni ma ru mu shi no so ri yuu sho n</span>
+            </p>
+            <p begin="1:42.80500000000001" end="1:45.223" ttm:agent="v1" itunes:key="L55">
+                シンギュラリティ超えて残る需要 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超越起点后依旧存在的需求</span>
+                <span ttm:role="x-roman">shi so kyu ra ri te i ko e te no ko ru ju yo u</span>
+            </p>
+            <p begin="1:45.414" end="1:47.19799999999999" ttm:agent="v1" itunes:key="L56">
+                生き残りたい 媚びたい？ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">想活下来？想要献媚？</span>
+                <span ttm:role="x-roman">i ki no ko ri ta i? ko bi ta i?</span>
+            </p>
+            <p begin="1:47.203" end="1:48.422" ttm:agent="v1" itunes:key="L57">
+                人生讃歌だ
+                <span ttm:role="x-translation" xml:lang="zh-CN">真可是人生人生的赞歌啊</span>
+                <span ttm:role="x-roman">ji n se i sa n ka da</span>
+            </p>
+            <p begin="1:48.608000000000004" end="1:50.608000000000004" ttm:agent="v1" itunes:key="L58">
+                人で括んな視野がせめえ！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">别局限于人类啦 视野真狭隘！</span>
+                <span ttm:role="x-roman">hi to de ku ku n na shi ya ga se me e!</span>
+            </p>
+            <p begin="1:51.045" end="1:52.18000000000001" ttm:agent="v1" itunes:key="L59">
+                いっぱい食って いっぱい寝て 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吃饱饱 睡饱饱</span>
+                <span ttm:role="x-roman">i ppa i ku tte i ppa i ne te</span>
+            </p>
+            <p begin="1:52.275000000000006" end="1:53.025000000000006" ttm:agent="v1" itunes:key="L60">
+                いっぱい育て
+                <span ttm:role="x-translation" xml:lang="zh-CN">茁壮成长好棒棒</span>
+                <span ttm:role="x-roman">i ppa i so da te</span>
+            </p>
+            <p begin="1:53.557" end="1:55.741" ttm:agent="v1" itunes:key="L61">
+                やっばい虫 やっばい花 絶対避けて 
+                <span ttm:role="x-translation" xml:lang="zh-CN">可怕的虫子 可怕的花朵 可得躲远点</span>
+                <span ttm:role="x-roman">ya ppa i mu shi ya ppa i ha na ze tta i sa ke te</span>
+            </p>
+            <p begin="1:56.209999999999994" end="1:56.759" ttm:agent="v1" itunes:key="L62">
+                ワンワン ニャーニャー 
+                <span ttm:role="x-translation" xml:lang="zh-CN">汪汪 喵喵</span>
+                <span ttm:role="x-roman">wa n wa n nyaa nyaa</span>
+            </p>
+            <p begin="1:56.777" end="1:57.376999999999995" ttm:agent="v1" itunes:key="L63">
+                ガオガオ チュンチュン
+                <span ttm:role="x-translation" xml:lang="zh-CN">嗷嗷 啾啾</span>
+                <span ttm:role="x-roman">ga o ga o chu n chu n</span>
+            </p>
+            <p begin="1:57.474999999999994" end="1:58.657" ttm:agent="v1" itunes:key="L64">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好吵啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="1:59.084" end="2:0.8829999999999956" ttm:agent="v1" itunes:key="L65">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="2:1.3930000000000007" end="2:2.4069999999999965" ttm:agent="v1" itunes:key="L66">
+                奇怪でも 引っ掻いても 
+                <span ttm:role="x-translation" xml:lang="zh-CN">就算奇奇怪怪 就算令人不快</span>
+                <span ttm:role="x-roman">ki kka i de mo hi kka i te mo</span>
+            </p>
+            <p begin="2:2.6340000000000003" end="2:3.4180000000000064" ttm:agent="v1" itunes:key="L67">
+                たまんねえ造形
+                <span ttm:role="x-translation" xml:lang="zh-CN">这造型还是太顶了</span>
+                <span ttm:role="x-roman">ta ma n ne e zo u ke i</span>
+            </p>
+            <p begin="2:3.905000000000001" end="2:5.938999999999993" ttm:agent="v1" itunes:key="L68">
+                強くても 弱くても 生存戦略 
+                <span ttm:role="x-translation" xml:lang="zh-CN">强大也好 弱小也好 都是生存策略</span>
+                <span ttm:role="x-roman">tsu yo ku te mo yo wa ku te mo se i zo n se n rya ku</span>
+            </p>
+            <p begin="2:6.472999999999999" end="2:7.006" ttm:agent="v1" itunes:key="L69">
+                ピョンピョン ブーブー 
+                <span ttm:role="x-translation" xml:lang="zh-CN">蹦蹦 哼哼</span>
+                <span ttm:role="x-roman">pyo n pyo n buu buu</span>
+            </p>
+            <p begin="2:7.108000000000004" end="2:7.709000000000003" ttm:agent="v1" itunes:key="L70">
+                モーモー チューチュー
+                <span ttm:role="x-translation" xml:lang="zh-CN">哞哞 吱吱</span>
+                <span ttm:role="x-roman">moo moo chuu chuu</span>
+            </p>
+            <p begin="2:7.8359999999999985" end="2:9.052999999999997" ttm:agent="v1" itunes:key="L71">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好吵啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="2:9.427999999999997" end="2:11.163000000000011" ttm:agent="v1" itunes:key="L72">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="2:11.355999999999995" end="2:11.691000000000003" ttm:agent="v1" itunes:key="L73">
+                でしょ？
+                <span ttm:role="x-translation" xml:lang="zh-CN">你说是吧？</span>
+                <span ttm:role="x-roman">de sho?</span>
+            </p>
+        </div>
+        <div begin="2:21.99600000000001" end="3:5.8870000000000005">
+            <p begin="2:21.99600000000001" end="2:24.274" ttm:agent="v1" itunes:key="L1">
+                何かになりたい 成り代わりたい 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想做出改变 变成什么都行</span>
+                <span ttm:role="x-roman">na ni ka ni na ri ta i na ri ka wa ri ta i</span>
+            </p>
+            <p begin="2:24.426999999999992" end="2:26.626000000000005" ttm:agent="v1" itunes:key="L2">
+                自分じゃない 何かになりたい 
+                <span ttm:role="x-translation" xml:lang="zh-CN">只要不是自己 变成什么都好</span>
+                <span ttm:role="x-roman">ji bu n ja na i na ni ka ni na ri ta i</span>
+            </p>
+            <p begin="2:27.141999999999996" end="2:29.227000000000004" ttm:agent="v1" itunes:key="L3">
+                勝者 敗者では括れない 
+                <span ttm:role="x-translation" xml:lang="zh-CN">胜负什么的无关紧要</span>
+                <span ttm:role="x-roman">sho u sha ha i sha de wa ku bi re na i</span>
+            </p>
+            <p begin="2:29.409999999999997" end="2:32.04900000000001" ttm:agent="v1" itunes:key="L4">
+                サウイフモノニ ワタシハ ナリタイ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">我就是想 变成 那个样子</span>
+                <span ttm:role="x-roman">sa u i fu mo no ni wa ta shi i na ri ta i</span>
+            </p>
+            <p begin="2:32.331999999999994" end="2:33.36699999999999" ttm:agent="v1" itunes:key="L5">
+                でっかい牙 でっかい爪 
+                <span ttm:role="x-translation" xml:lang="zh-CN">獠牙大大 爪子大大</span>
+                <span ttm:role="x-roman">te kka i ki ba te kka i tsu me</span>
+            </p>
+            <p begin="2:33.59700000000001" end="2:34.281000000000006" ttm:agent="v1" itunes:key="L6">
+                でっかい身体
+                <span ttm:role="x-translation" xml:lang="zh-CN">身子也大大</span>
+                <span ttm:role="x-roman">te kka i shi n ta i</span>
+            </p>
+            <p begin="2:34.872000000000014" end="2:36.07300000000001" ttm:agent="v1" itunes:key="L7">
+                ちっちゃい耳 ちっちゃい尻尾 
+                <span ttm:role="x-translation" xml:lang="zh-CN">耳朵小小 尾巴小小</span>
+                <span ttm:role="x-roman">chi tcha i mi mi chi tcha i shi ppo</span>
+            </p>
+            <p begin="2:36.196" end="2:36.86500000000001" ttm:agent="v1" itunes:key="L8">
+                ちっちゃい肉球
+                <span ttm:role="x-translation" xml:lang="zh-CN">肉垫也小小</span>
+                <span ttm:role="x-roman">chi tcha i ni ku kyu u</span>
+            </p>
+            <p begin="2:37.46799999999999" end="2:38.05099999999999" ttm:agent="v1" itunes:key="L9">
+                ワンワン ニャーニャー 
+                <span ttm:role="x-translation" xml:lang="zh-CN">汪汪 喵喵</span>
+                <span ttm:role="x-roman">wa n wa n nyaa nyaa</span>
+            </p>
+            <p begin="2:38.08099999999999" end="2:38.732" ttm:agent="v1" itunes:key="L10">
+                ガオガオ チュンチュン
+                <span ttm:role="x-translation" xml:lang="zh-CN">嗷嗷 啾啾</span>
+                <span ttm:role="x-roman">ga o ga o chu n chu n</span>
+            </p>
+            <p begin="2:38.815" end="2:39.96600000000001" ttm:agent="v1" itunes:key="L11">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吵死啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="2:40.41" end="2:42.260999999999996" ttm:agent="v1" itunes:key="L12">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="2:42.64500000000001" end="2:43.65100000000001" ttm:agent="v1" itunes:key="L13">
+                かっけえやつ かわいいやつ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">帅气的家伙 可爱的家伙</span>
+                <span ttm:role="x-roman">ka kke e ya tsu、ka wa i i ya tsu</span>
+            </p>
+            <p begin="2:43.92699999999999" end="2:44.77699999999999" ttm:agent="v1" itunes:key="L14">
+                愛されちゃうよね
+                <span ttm:role="x-translation" xml:lang="zh-CN">肯定广受好评啦</span>
+                <span ttm:role="x-roman">a i sa re cha u yo ne</span>
+            </p>
+            <p begin="2:45.17099999999999" end="2:46.24000000000001" ttm:agent="v1" itunes:key="L15">
+                ぶっさいやつ きっしょいやつ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">丑丑的家伙 恶心的家伙</span>
+                <span ttm:role="x-roman">bu ssa i ya tsu ki ssho i ya tsu</span>
+            </p>
+            <p begin="2:46.519000000000005" end="2:47.31999999999999" ttm:agent="v1" itunes:key="L16">
+                でも最強だね
+                <span ttm:role="x-translation" xml:lang="zh-CN">但是超强的哦</span>
+                <span ttm:role="x-roman">de mo sa i kyo u da ne</span>
+            </p>
+            <p begin="2:47.77199999999999" end="2:48.28899999999999" ttm:agent="v1" itunes:key="L17">
+                ピョンピョン ブーブー
+                <span ttm:role="x-translation" xml:lang="zh-CN">蹦蹦 哼哼</span>
+                <span ttm:role="x-roman">pyo n pyo n buu buu</span>
+            </p>
+            <p begin="2:48.416" end="2:48.998999999999995" ttm:agent="v1" itunes:key="L18">
+                モーモー チューチュー
+                <span ttm:role="x-translation" xml:lang="zh-CN">哞哞 吱吱</span>
+                <span ttm:role="x-roman">moo moo chuu chuu</span>
+            </p>
+            <p begin="2:49.083" end="2:50.285" ttm:agent="v1" itunes:key="L19">
+                うるせえ！大好き！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">吵死啊！好棒啊！</span>
+                <span ttm:role="x-roman">u ru se i!da i su ki!</span>
+            </p>
+            <p begin="2:50.72" end="2:52.35300000000001" ttm:agent="v1" itunes:key="L20">
+                けものになりたい！ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">好想变成兽人啊！</span>
+                <span ttm:role="x-roman">ke mo no ni na ri ta i!</span>
+            </p>
+            <p begin="2:52.632000000000005" end="2:52.900000000000006" ttm:agent="v1" itunes:key="L21">
+                でしょ？
+                <span ttm:role="x-translation" xml:lang="zh-CN">你说是吧？</span>
+                <span ttm:role="x-roman">de sho?</span>
+            </p>
+            <p begin="2:54.297" end="2:55.447" ttm:agent="v1" itunes:key="L22">ウケる ケモ クラップハンズ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超棒的 兽人 鼓鼓掌</span>
+                <span ttm:role="x-roman">u ke ru ke mo ku ra ppu ha n ji</span>
+            </p>
+            <p begin="2:56.742999999999995" end="2:57.96199999999999" ttm:agent="v1" itunes:key="L23">ウケる ケモ ハンズアップ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超赞的 兽人 举起爪</span>
+                <span ttm:role="x-roman">u ke ru ke mo ha n zu a ppu</span>
+            </p>
+            <p begin="2:59.34100000000001" end="3:0.4759999999999991" ttm:agent="v1" itunes:key="L24">ウケる ケモ ジャンプジャンプ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超酷的 兽人 跳一跳</span>
+                <span ttm:role="x-roman">u ke ru ke mo ja n pu ja n pu</span>
+            </p>
+            <p begin="3:0.9499999999999886" end="3:1.9269999999999925" ttm:agent="v1" itunes:key="L25">
+                ウケる ウケない 
+                <span ttm:role="x-translation" xml:lang="zh-CN">受欢迎 不受欢迎</span>
+                <span ttm:role="x-roman">u ke ru u ke na i</span>
+            </p>
+            <p begin="3:2.227000000000004" end="3:3.2290000000000134" ttm:agent="v1" itunes:key="L26">
+                ウケる ウケない 
+                <span ttm:role="x-translation" xml:lang="zh-CN">超流行 超不流行</span>
+                <span ttm:role="x-roman">u ke ru u ke na i</span>
+            </p>
+            <p begin="3:3.5149999999999864" end="3:5.8870000000000005" ttm:agent="v1" itunes:key="L27">
+                どちらにせよ全部ラブでしょ？ 
+                <span ttm:role="x-translation" xml:lang="zh-CN">不管怎么样 全都是满满的爱对吧？</span>
+                <span ttm:role="x-roman">do chi ra ni se yo ze n bu love de sho?</span>
+            </p>
+        </div>
+    </body>
+</tt>
