@@ -23,12 +23,14 @@ body:
       placeholder: "1472480890"
     validations:
       required: true
-  - type: textarea
-    id: ttml-content
+  - type: input
+    id: ttml-download-url
     attributes:
-      label: TTML 歌词文件数据
-      description: 请直接将你的 TTML 歌词文件内容复制粘贴到此处即可
-      render: xml
+      label: TTML 歌词文件下载直链
+      description: |
+        Github Action 将会获取该链接指向的歌词文件数据并检查正确性
+        确认无误后，Github Action 机器人将会在该 Issue 下方评论歌词文件数据原文供留存检查
+        如果访问出错或格式有误，会导致你的 Issue 被直接关闭，请注意哦！
     validations:
       required: true
   - type: dropdown
