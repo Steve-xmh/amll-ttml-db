@@ -1,0 +1,29 @@
+name: 检查歌词提交正确性
+on:
+  issues:
+    types: [opened]
+concurrency:
+  group: check-submit
+  cancel-in-progress: true
+
+jobs:
+  UpdatePlugins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 安装 Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+      - name: 安装依赖
+        run: yarn
+        working-directory: scripts
+      - name: 运行检查程序
+        timeout-minutes: 10
+        run: yarn node .\run-submit-check.js
+        working-directory: scripts
