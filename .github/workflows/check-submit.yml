@@ -28,4 +28,6 @@ jobs:
       - name: 运行检查程序
         timeout-minutes: 10
         run: yarn node ./run-submit-check.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: scripts
