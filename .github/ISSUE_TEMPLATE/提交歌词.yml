@@ -20,7 +20,7 @@ body:
       description: |
         可以通过在 AMLL 插件内右键复制音乐 ID 得到，应该都是纯数字
         如果需要同时提交到多个歌曲上，可以以英文逗号分隔 ID
-      placeholder: YOASOBI - 群青
+      placeholder: 1472480890
     validations:
       required: true
   - type: textarea
@@ -28,6 +28,7 @@ body:
     attributes:
       label: TTML 歌词文件数据
       description: 请直接将你的 TTML 歌词文件内容复制粘贴到此处即可
+      render: xml
     validations:
       required: true
   - type: dropdown
