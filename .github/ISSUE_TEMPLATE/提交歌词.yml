@@ -37,7 +37,7 @@ body:
         - 修正已有歌词
     validations:
       required: true
-  - type: markdown
+  - type: textarea
     id: comment
     attributes:
       label: 备注
