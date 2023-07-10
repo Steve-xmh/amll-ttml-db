@@ -1,5 +1,6 @@
 name: 检查歌词提交正确性
 on:
+  workflow_dispatch:
   issues:
     types: [opened]
 concurrency:
@@ -19,7 +20,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: "npm"
+          cache: yarn
+          cache-dependency-path: scripts/yarn.lock
       - name: 安装依赖
         run: yarn
         working-directory: scripts
