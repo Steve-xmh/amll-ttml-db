@@ -4,6 +4,7 @@
  * 但是可能会有信息会丢失
  */
 import { JSDOM } from "jsdom";
+import prettier from "prettier";
 
 function msToTimestamp(timeMS) {
 	if (timeMS === Infinity) {
@@ -177,27 +178,7 @@ export function exportTTMLText(lyric, pretty = false) {
 	}
 
 	if (pretty) {
-		var xsltDoc = new DOMParser().parseFromString(
-			[
-				'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
-				'  <xsl:strip-space elements="*"/>',
-				'  <xsl:template match="para[content-style][not(text())]">',
-				'    <xsl:value-of select="normalize-space(.)"/>',
-				"  </xsl:template>",
-				'  <xsl:template match="node()|@*">',
-				'    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
-				"  </xsl:template>",
-				'  <xsl:output indent="yes"/>',
-				"</xsl:stylesheet>",
-			].join("\n"),
-			"application/xml",
-		);
-
-		var xsltProcessor = new XSLTProcessor();
-		xsltProcessor.importStylesheet(xsltDoc);
-		var resultDoc = xsltProcessor.transformToDocument(doc);
-
-		return jsdom.serialize();
+		return prettier.format(jsdom.serialize(), { parser: "html" });
 	} else {
 		return jsdom.serialize();
 	}
