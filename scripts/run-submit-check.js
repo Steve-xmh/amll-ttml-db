@@ -169,7 +169,7 @@ async function main() {
 							const submitBranch = "auto-submit-issue-" + issue.number;
 							execSync("git checkout main");
 							try {
-								execSync("git branch -d " + submitBranch);
+								execSync("git branch -D " + submitBranch);
 							} catch {}
 							execSync("git checkout --force -b " + submitBranch);
 							await Promise.all(
@@ -177,7 +177,7 @@ async function main() {
 									await writeFile(resolve("..", "lyrics", `${v}.ttml`), lyric);
 								}),
 							);
-							execSync("git add .");
+							execSync("git add ..");
 							execSync(`git commit -m "提交歌曲歌词 #${issue.number}"`);
 							execSync("git push --set-upstream origin " + submitBranch);
 							execSync("git checkout main");
