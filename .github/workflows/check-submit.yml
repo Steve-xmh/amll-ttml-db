@@ -27,7 +27,10 @@ jobs:
         working-directory: scripts
       - name: 运行检查程序
         timeout-minutes: 10
-        run: yarn node ./run-submit-check.js
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          yarn node ./run-submit-check.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: scripts
