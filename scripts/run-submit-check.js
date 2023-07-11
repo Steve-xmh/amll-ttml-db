@@ -50,24 +50,57 @@ async function main() {
 				issue_number: issue.number,
 			});
 			async function confirmIssue(lyric, regeneratedLyric) {
-				await octokit.rest.issues.createComment({
-					owner: REPO_OWNER,
-					repo: REPO_NAME,
-					issue_number: issue.number,
-					body: [
+				let commentBody = [
+					HAS_CHECKED_MARK,
+					"歌词提交议题检查完毕！歌词文件没有异常！",
+					"已自动创建歌词提交合并请求！",
+					"请耐心等待管理员审核歌词吧！",
+					"以下是留存的歌词数据：",
+					"```xml",
+					...lyric.split("\n"),
+					"```",
+					"以下是转存的歌词数据：",
+					"```xml",
+					...regeneratedLyric.split("\n"),
+					"```",
+				].join("\n");
+				if (commentBody.length > 65536) {
+					commentBody = [
 						HAS_CHECKED_MARK,
 						"歌词提交议题检查完毕！歌词文件没有异常！",
 						"已自动创建歌词提交合并请求！",
 						"请耐心等待管理员审核歌词吧！",
 						"以下是留存的歌词数据：",
 						"```xml",
-						...lyric.split("\n"),
+						"<!-- 因数据过大不做留存 -->",
 						"```",
 						"以下是转存的歌词数据：",
 						"```xml",
 						...regeneratedLyric.split("\n"),
 						"```",
-					].join("\n"),
+					].join("\n");
+					if (commentBody.length > 65536) {
+						commentBody = [
+							HAS_CHECKED_MARK,
+							"歌词提交议题检查完毕！歌词文件没有异常！",
+							"已自动创建歌词提交合并请求！",
+							"请耐心等待管理员审核歌词吧！",
+							"以下是留存的歌词数据：",
+							"```xml",
+							"<!-- 因数据过大不做留存 -->",
+							"```",
+							"以下是转存的歌词数据：",
+							"```xml",
+							"<!-- 因数据过大不做转存显示 -->",
+							"```",
+						].join("\n");
+					}
+				}
+				await octokit.rest.issues.createComment({
+					owner: REPO_OWNER,
+					repo: REPO_NAME,
+					issue_number: issue.number,
+					body: commentBody,
 				});
 				await octokit.rest.issues.update({
 					owner: REPO_OWNER,
@@ -181,6 +214,46 @@ async function main() {
 							execSync(`git commit -m "提交歌曲歌词 #${issue.number}"`);
 							execSync("git push --set-upstream origin " + submitBranch);
 							execSync("git checkout main");
+							let pullBody = [
+								"### 歌词议题",
+								"#" + issue.number,
+								"### 歌词文件内容",
+								"```xml",
+								regeneratedLyric,
+								"```",
+								"### 歌词文件内容（已格式化）",
+								"```xml",
+								regeneratedLyricFormatted,
+								"```",
+							].join("\n");
+							if (pullBody.length > 65536) {
+								pullBody = [
+									"### 歌词议题",
+									"#" + issue.number,
+									"### 歌词文件内容",
+									"```xml",
+									"<!-- 因数据过大请自行查看变更 -->",
+									"```",
+									"### 歌词文件内容（已格式化）",
+									"```xml",
+									regeneratedLyricFormatted,
+									"```",
+								].join("\n");
+								if (pullBody.length > 65536) {
+									pullBody = [
+										"### 歌词议题",
+										"#" + issue.number,
+										"### 歌词文件内容",
+										"```xml",
+										"<!-- 因数据过大请自行查看变更 -->",
+										"```",
+										"### 歌词文件内容（已格式化）",
+										"```xml",
+										"<!-- 因数据过大请自行查看变更 -->",
+										"```",
+									].join("\n");
+								}
+							}
 							await octokit.rest.pulls.create({
 								owner: REPO_OWNER,
 								repo: REPO_NAME,
