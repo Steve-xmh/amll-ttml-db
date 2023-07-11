@@ -260,18 +260,7 @@ async function main() {
 								title: issue.title,
 								head: submitBranch,
 								base: "main",
-								body: [
-									"### 歌词议题",
-									"#" + issue.number,
-									"### 歌词文件内容",
-									"```xml",
-									regeneratedLyric,
-									"```",
-									"### 歌词文件内容（已格式化）",
-									"```xml",
-									regeneratedLyricFormatted,
-									"```",
-								].join("\n"),
+								body: pullBody,
 							});
 							console.log(
 								"议题",
