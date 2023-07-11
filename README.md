@@ -1,10 +1,12 @@
 # AMLL TTML Database
 
-作者特供给 AMLL 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库
+作者特供给 AMLL 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
+
+如果需要制作逐词歌词，可以使用 [AMLL TTML Tools](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
 ## 提交要求
 
-请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，并命名成 `歌曲在网易云上的音乐ID.ttml` 后存放于 `./lyrics` 文件夹后发送 Pull Request 提交歌词即可。
+请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `歌曲在网易云上的音乐ID.ttml` 后存放于 `./lyrics` 文件夹后发送 Pull Request 提交歌词即可。
 
 同时你可以在每行 `p` 元素中加入 `span[ttm:role=x-translation]` 作为翻译文本或者 `span[ttm:role=x-roman]` 作为音译文本。具体可以参考下方的歌词范例。
 
