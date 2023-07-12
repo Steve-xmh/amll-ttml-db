@@ -50,7 +50,7 @@ async function main() {
 				issue_number: issue.number,
 			});
 			const hasPullRequest = (await octokit.rest.search.issuesAndPullRequests({
-				q: `repo:${REPO_OWNER}/${REPO_NAME} is:pr author:app/github-actions 歌词议题 #${issue.number}`,
+				q: `repo:${REPO_OWNER}/${REPO_NAME} is:pr author:app/github-actions head:auto-submit-issue-${issue.number}`,
 			})).data.total_count > 0;
 			if (hasPullRequest) {
 				console.log("议题", issue.title, "(", issue.id, ") 已存在关联的合并请求，跳过");
