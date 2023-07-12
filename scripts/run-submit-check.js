@@ -189,7 +189,13 @@ async function main() {
 				}
 				console.log("正在下载 TTML 歌词文件", lyricURL.trim());
 				try {
-					const lyric = await fetch(lyricURL).then((v) => v.text());
+					const lyric = await fetch(lyricURL).then((v) => {
+						if (v.ok) {
+							return v.text();
+						} else {
+							throw new Error(v.statusText);
+						}
+					});
 					try {
 						const parsedLyric = parseLyric(lyric);
 						const regeneratedLyric = await exportTTMLText(parsedLyric);
