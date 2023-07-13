@@ -4,11 +4,20 @@
 
 如果需要制作逐词歌词，可以使用 [AMLL TTML Tools](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
-## 提交要求
+## 歌词要求
+
+### 歌词内容要求
+
+- 不要包含除歌词内容以外的信息（例如 作词、作曲 这类信息）
+- 尽量是逐词歌词，会优先审核
+- 尽量利用好 TTML 歌词特性，例如背景人声歌词和对唱人声歌词，会优先审核
+- 尽可能提供翻译和音译（如果有），你可以在每行 `p` 元素中加入 `span[ttm:role=x-translation]` 作为翻译文本或者 `span[ttm:role=x-roman]` 作为音译文本。具体可以参考下方的歌词范例。
+
+### 歌词提交要求
 
 请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `歌曲在网易云上的音乐ID.ttml` 后存放于 `./lyrics` 文件夹后发送 Pull Request 提交歌词即可。
 
-同时你可以在每行 `p` 元素中加入 `span[ttm:role=x-translation]` 作为翻译文本或者 `span[ttm:role=x-roman]` 作为音译文本。具体可以参考下方的歌词范例。
+或者根据议题模板提交模板，Github Action 会自动检查歌词文件格式并为你创建合并请求。
 
 ## 歌词文件范例
 
