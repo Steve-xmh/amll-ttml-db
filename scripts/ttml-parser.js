@@ -27,10 +27,6 @@ export function parseLyric(ttmlText, strictMode = false) {
 	const ttmlDoc = new JSDOM(ttmlText).window.document;
 
 	let mainAgentId = "v1";
-	
-	if (ttmlDoc.getRootNode().nodeName !== "TT") {
-		throw new TypeError("TTML 文档根节点不是 TT 标签");
-	}
 
 	for (const agent of ttmlDoc.querySelectorAll("ttm\\:agent")) {
 		if (agent.getAttribute("type") === "person") {
