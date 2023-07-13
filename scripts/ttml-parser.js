@@ -24,7 +24,9 @@ function parseTimespan(timeSpan) {
 const wordReg = /^([,.'"?A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\-]+)$/;
 
 export function parseLyric(ttmlText, strictMode = false) {
-	const ttmlDoc = new JSDOM(ttmlText).window.document;
+	const win = new JSDOM(ttmlText).window;
+	const Node = win.Node;
+	const ttmlDoc = win.document;
 
 	let mainAgentId = "v1";
 
