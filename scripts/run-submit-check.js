@@ -287,7 +287,9 @@ async function main() {
 									"### 歌词关联歌曲 ID",
 									...musicIds.map((v) => `- \`${v}\``),
 									"### 歌词关联歌曲链接",
-									...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
+									...musicIds.map(
+										(v) => `- https://music.163.com/song?id=${v}`,
+									),
 									"### 歌词文件内容",
 									"```xml",
 									"<!-- 因数据过大请自行查看变更 -->",
@@ -308,7 +310,9 @@ async function main() {
 										"### 歌词关联歌曲 ID",
 										...musicIds.map((v) => `- \`${v}\``),
 										"### 歌词关联歌曲链接",
-										...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
+										...musicIds.map(
+											(v) => `- https://music.163.com/song?id=${v}`,
+										),
 										"### 歌词文件内容",
 										"```xml",
 										"<!-- 因数据过大请自行查看变更 -->",
