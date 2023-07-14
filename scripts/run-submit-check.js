@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import prettier from "prettier";
 import { execSync } from "child_process";
 import { Octokit } from "octokit";
 import { parseLyric } from "./ttml-parser.js";
@@ -228,10 +229,9 @@ async function main() {
 							continue;
 						}
 						const regeneratedLyric = await exportTTMLText(parsedLyric);
-						const regeneratedLyricFormatted = await exportTTMLText(
-							parsedLyric,
-							true,
-						);
+						const lyricFormatted = await prettier.format(lyric, {
+							parser: "html",
+						});
 						await confirmIssue(lyric, regeneratedLyric);
 						console.log(
 							"议题",
@@ -273,7 +273,7 @@ async function main() {
 								"```",
 								"### 歌词文件内容（已格式化）",
 								"```xml",
-								regeneratedLyricFormatted,
+								lyricFormatted,
 								"```",
 							].join("\n");
 							if (pullBody.length > 65536) {
@@ -296,7 +296,7 @@ async function main() {
 									"```",
 									"### 歌词文件内容（已格式化）",
 									"```xml",
-									regeneratedLyricFormatted,
+									lyricFormatted,
 									"```",
 								].join("\n");
 								if (pullBody.length > 65536) {
