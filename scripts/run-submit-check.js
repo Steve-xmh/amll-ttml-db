@@ -259,6 +259,14 @@ async function main() {
 							let pullBody = [
 								"### 歌词议题",
 								"#" + issue.number,
+								"### 歌词作者",
+								issue.user?.name
+									? "@" + issue.user?.name
+									: "未知，请查看议题发送者",
+								"### 歌词关联歌曲 ID",
+								...musicIds.map((v) => `- \`${v}\``),
+								"### 歌词关联歌曲链接",
+								...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
 								"### 歌词文件内容",
 								"```xml",
 								regeneratedLyric,
@@ -272,6 +280,14 @@ async function main() {
 								pullBody = [
 									"### 歌词议题",
 									"#" + issue.number,
+									"### 歌词作者",
+									issue.user?.name
+										? "@" + issue.user?.name
+										: "未知，请查看议题发送者",
+									"### 歌词关联歌曲 ID",
+									...musicIds.map((v) => `- \`${v}\``),
+									"### 歌词关联歌曲链接",
+									...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
 									"### 歌词文件内容",
 									"```xml",
 									"<!-- 因数据过大请自行查看变更 -->",
@@ -285,6 +301,14 @@ async function main() {
 									pullBody = [
 										"### 歌词议题",
 										"#" + issue.number,
+										"### 歌词作者",
+										issue.user?.name
+											? "@" + issue.user?.name
+											: "未知，请查看议题发送者",
+										"### 歌词关联歌曲 ID",
+										...musicIds.map((v) => `- \`${v}\``),
+										"### 歌词关联歌曲链接",
+										...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
 										"### 歌词文件内容",
 										"```xml",
 										"<!-- 因数据过大请自行查看变更 -->",
