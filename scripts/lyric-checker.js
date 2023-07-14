@@ -1,6 +1,3 @@
-import { parseLyric } from "./ttml-parser.js";
-import { readFileSync } from "fs";
-
 /**
  *
  * @param {any[]} lyric
