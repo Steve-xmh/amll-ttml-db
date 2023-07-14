@@ -5,6 +5,7 @@ import { parseLyric } from "./ttml-parser.js";
 import { exportTTMLText } from "./ttml-writer.js";
 import { writeFile } from "fs/promises";
 import { resolve } from "path";
+import { checkLyric } from "./lyric-checker.js";
 
 const githubToken = process.env.GITHUB_TOKEN;
 const octokit = new Octokit({
@@ -49,11 +50,20 @@ async function main() {
 				repo: REPO_NAME,
 				issue_number: issue.number,
 			});
-			const hasPullRequest = (await octokit.rest.search.issuesAndPullRequests({
-				q: `repo:${REPO_OWNER}/${REPO_NAME} is:pr author:app/github-actions head:auto-submit-issue-${issue.number}`,
-			})).data.total_count > 0;
+			const hasPullRequest =
+				(
+					await octokit.rest.search.issuesAndPullRequests({
+						q: `repo:${REPO_OWNER}/${REPO_NAME} is:pr author:app/github-actions head:auto-submit-issue-${issue.number}`,
+					})
+				).data.total_count > 0;
 			if (hasPullRequest) {
-				console.log("议题", issue.title, "(", issue.id, ") 已存在关联的合并请求，跳过");
+				console.log(
+					"议题",
+					issue.title,
+					"(",
+					issue.id,
+					") 已存在关联的合并请求，跳过",
+				);
 				continue;
 			}
 			async function confirmIssue(lyric, regeneratedLyric) {
@@ -198,6 +208,25 @@ async function main() {
 					});
 					try {
 						const parsedLyric = parseLyric(lyric);
+						const errors = checkLyric(parsedLyric);
+						if (errors.length > 0) {
+							const errMsg = [
+								"歌词检查发现以下错误，请修正后重新提交：",
+								"```",
+								...errors,
+								"```",
+							].join("\n");
+							if (errMsg.length < 2048) {
+								await declineIssue(errMsg, null, lyric);
+							} else {
+								await declineIssue(
+									"歌词检查出过多错误，请修正后重新提交：",
+									null,
+									lyric,
+								);
+							}
+							continue;
+						}
 						const regeneratedLyric = await exportTTMLText(parsedLyric);
 						const regeneratedLyricFormatted = await exportTTMLText(
 							parsedLyric,
