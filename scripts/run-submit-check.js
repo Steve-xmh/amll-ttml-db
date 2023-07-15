@@ -260,8 +260,8 @@ async function main() {
 								"### 歌词议题",
 								"#" + issue.number,
 								"### 歌词作者",
-								issue.user?.name
-									? "@" + issue.user?.name
+								issue.user?.login
+									? "@" + issue.user?.login
 									: "未知，请查看议题发送者",
 								"### 歌词关联歌曲 ID",
 								...musicIds.map((v) => `- \`${v}\``),
@@ -281,8 +281,8 @@ async function main() {
 									"### 歌词议题",
 									"#" + issue.number,
 									"### 歌词作者",
-									issue.user?.name
-										? "@" + issue.user?.name
+									issue.user?.login
+										? "@" + issue.user?.login
 										: "未知，请查看议题发送者",
 									"### 歌词关联歌曲 ID",
 									...musicIds.map((v) => `- \`${v}\``),
@@ -304,8 +304,8 @@ async function main() {
 										"### 歌词议题",
 										"#" + issue.number,
 										"### 歌词作者",
-										issue.user?.name
-											? "@" + issue.user?.name
+										issue.user?.login
+											? "@" + issue.user?.login
 											: "未知，请查看议题发送者",
 										"### 歌词关联歌曲 ID",
 										...musicIds.map((v) => `- \`${v}\``),
