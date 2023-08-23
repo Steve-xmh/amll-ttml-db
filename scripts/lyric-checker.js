@@ -12,11 +12,14 @@ export function checkLyric(lyric) {
 	}
 	for (const line of indexedLyric) {
 		if (line.originalLyric.trim().length > 0) {
-			const moreSpace = /\s\s+/
-			if (moreSpace.test(line.originalLyric)) {
-				errors.push(
-					`第 ${line.id + 1} 行歌词内容中有多余的空格`,
-				);
+			const moreSpace = /\s\s+/;
+			console.log(
+				`正在检查第 ${line.id + 1} 行:`,
+				JSON.stringify(line.originalLyric),
+			);
+			const moreSpaceRegResult = moreSpace.exec(line.originalLyric);
+			if (moreSpaceRegResult) {
+				errors.push(`第 ${line.id + 1} 行歌词内容中有多余的空格`);
 			}
 			if (line.dynamicLyric) {
 				line.dynamicLyric.forEach((word, wordIndex) => {

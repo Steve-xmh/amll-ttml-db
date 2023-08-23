@@ -208,7 +208,7 @@ async function main() {
 						}
 					});
 					try {
-						const parsedLyric = parseLyric(lyric);
+						const parsedLyric = parseLyric(lyric, true);
 						const errors = checkLyric(parsedLyric);
 						if (errors.length > 0) {
 							const errMsg = [
