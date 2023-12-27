@@ -4,7 +4,7 @@
 
 如果需要制作逐词歌词，可以使用 [AMLL TTML Tools](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
-为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchOnAMLLDB](https://steamfinder.github.io/SearchOnAMLLDB/) 来检索你的歌曲是否拥有 TTML 歌词噢！
+为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
 （感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）
 
 ## 歌词要求
