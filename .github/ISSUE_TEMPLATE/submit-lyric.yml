@@ -47,6 +47,8 @@ body:
     id: comment
     attributes:
       label: 备注
-      description: 有什么需要补充说明的呢？
+      description: |
+        有什么需要补充说明的呢？
+        如果你所提交的歌曲中包含因特殊原因无法直接播放或获取的歌曲，建议提供一个音源下载链接，音质不做要求但是必须准确，这样可以方便审核哦！
     validations:
       required: false
