@@ -6,24 +6,6 @@ assignees:
   - Steve-xmh
 body:
   - type: input
-    id: song-name
-    attributes:
-      label: 歌曲名称
-      description: 推荐使用 歌手 - 歌曲 格式，方便仓库管理员确认你的歌曲是否存在
-      placeholder: YOASOBI - 群青
-    validations:
-      required: true
-  - type: input
-    id: song-id
-    attributes:
-      label: 音乐对应的网易云音乐 ID
-      description: |
-        可以通过在 AMLL 插件内右键复制音乐 ID 得到，应该都是纯数字
-        如果需要同时提交到多个歌曲上，可以以英文逗号分隔 ID
-      placeholder: "1472480890"
-    validations:
-      required: true
-  - type: input
     id: ttml-download-url
     attributes:
       label: TTML 歌词文件下载直链

@@ -1,6 +1,6 @@
 # AMLL TTML Database
 
-作者特供给 AMLL 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
+作者特供给 [AMLL](https://github.com/Steve-xmh/applemusic-like-lyrics) 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
 
 如果需要制作逐词歌词，可以使用 [AMLL TTML Tools](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
@@ -36,6 +36,22 @@
 - [Taylor Swift,Brendon Urie - ME! (feat. Brendon Urie of Panic! At The Disco) （含对唱/背景人声歌词）](./lyrics/1361348080.ttml)
 
 （歌词文件非常标准的也可以在 PR 时给本列表增加项目）
+
+## 使用歌词数据库
+
+> [!TIP]
+> 虽然这并非强制，但我们希望你在使用本歌词数据库时，能够在你的项目中加入一个指向本仓库或者衍生项目的链接或说明，或是展示每个歌词文件中的歌词作者信息（均已在元数据中可以读取），以便更多人能够发现这个数据库，一同建设本歌词数据库。
+
+如果你想要接入本歌词数据库，可以通过各类以平台类型区分的文件夹，用您对应平台的音乐ID来获取歌词文件。
+
+现阶段支持以下平台的歌词索引：
+
+- [Netease Cloud Music - 网易云音乐](./ncm-lyrics) （注：原 `lyrics` 文件夹依然保留且一并同步，但不再推荐使用该路径）
+- [QQ Music - QQ 音乐](./qq-lyrics)
+- [Apple Music](./apple-lyrics)
+- [Spotify](./spotify-lyrics)
+
+如果需要检索从建立数据库开始至今所有的歌词文件，可以访问 [./raw-lyrics](./raw-lyrics) 文件夹，内部的文件以 `[提交UNIX时间戳]-[提交者GithubID]-[8位随机ID].ttml` 命名。
 
 ## 共享协议
 

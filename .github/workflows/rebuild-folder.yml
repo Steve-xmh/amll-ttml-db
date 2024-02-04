@@ -1,0 +1,39 @@
+name: 重建歌词文件夹
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: 
+      - 'scripts/**'
+      - 'raw-lyrics/**'
+concurrency:
+  group: check-submit
+  cancel-in-progress: true
+
+jobs:
+  check-submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 安装 Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: yarn
+          cache-dependency-path: scripts/yarn.lock
+      - name: 安装依赖
+        run: yarn
+        working-directory: scripts
+      - name: 运行重建脚本
+        timeout-minutes: 10
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          yarn node ./rebuild-folder.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: scripts

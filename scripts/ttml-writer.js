@@ -7,6 +7,9 @@ import { JSDOM } from "jsdom";
 import prettier from "prettier";
 
 function msToTimestamp(timeMS) {
+	if (!Number.isSafeInteger(timeMS) || timeMS < 0) {
+		return "00:00.000";
+	}
 	if (timeMS === Infinity) {
 		return "99:99.999";
 	}
@@ -27,15 +30,19 @@ function msToTimestamp(timeMS) {
 	}
 }
 
-export function exportTTMLText(lyric, pretty = false) {
+function exportTTMLTextInner(
+    doc,
+	ttmlLyric,
+) {
 	const params = [];
+	const lyric = ttmlLyric.lyricLines;
 
 	let tmp = [];
 	for (const line of lyric) {
-		if (line.originalLyric.length === 0 && tmp.length > 0) {
+		if (line.words.length === 0 && tmp.length > 0) {
 			params.push(tmp);
 			tmp = [];
-		} else if (!line.isBackgroundLyric && line.originalLyric.length > 0) {
+		} else {
 			tmp.push(line);
 		}
 	}
@@ -44,112 +51,154 @@ export function exportTTMLText(lyric, pretty = false) {
 		params.push(tmp);
 	}
 
-	const jsdom = new JSDOM(
-		`<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:itunes="http://music.apple.com/lyric-ttml-internal"><head></head><body></body></tt>`,
-		{
-			contentType: "application/xml",
-		},
+	function createWordElement(word) {
+		const span = doc.createElement("span");
+		span.setAttribute("begin", msToTimestamp(word.startTime));
+		span.setAttribute("end", msToTimestamp(word.endTime));
+		if (word.emptyBeat) {
+			span.setAttribute("amll:empty-beat", `${word.emptyBeat}`);
+		}
+		span.appendChild(doc.createTextNode(word.word));
+		return span;
+	}
+
+	const ttRoot = doc.querySelector("tt");
+
+	ttRoot.setAttribute("xmlns", "http://www.w3.org/ns/ttml");
+	ttRoot.setAttribute("xmlns:ttm", "http://www.w3.org/ns/ttml#metadata");
+	ttRoot.setAttribute("xmlns:amll", "http://www.example.com/ns/amll");
+	ttRoot.setAttribute(
+		"xmlns:itunes",
+		"http://music.apple.com/lyric-ttml-internal",
 	);
-	const doc = jsdom.window.document;
 
 	const head = doc.querySelector("head");
 
-	const body = doc.querySelector("body");
-	const hasOtherPerson = !!lyric.find((v) => v.shouldAlignRight);
+	ttRoot.appendChild(head);
 
-	const metadata = doc.createElement("metadata");
+	const body = doc.querySelector("body");
+	const hasOtherPerson = !!lyric.find((v) => v.isDuet);
+
+	const metadataEl = doc.createElement("metadata");
 	const mainPersonAgent = doc.createElement("ttm:agent");
 	mainPersonAgent.setAttribute("type", "person");
 	mainPersonAgent.setAttribute("xml:id", "v1");
 
-	metadata.appendChild(mainPersonAgent);
+	metadataEl.appendChild(mainPersonAgent);
 
 	if (hasOtherPerson) {
 		const otherPersonAgent = doc.createElement("ttm:agent");
 		otherPersonAgent.setAttribute("type", "other");
 		otherPersonAgent.setAttribute("xml:id", "v2");
 
-		metadata.appendChild(otherPersonAgent);
+		metadataEl.appendChild(otherPersonAgent);
 	}
 
-	head.appendChild(metadata);
+	for (const metadata of ttmlLyric.metadata) {
+		for (const value of metadata.value) {
+			const metaEl = doc.createElement("amll:meta");
+			metaEl.setAttribute("key", metadata.key);
+			metaEl.setAttribute("value", value);
+			metadataEl.appendChild(metaEl);
+		}
+	}
 
-	const guessDuration =
-		(lyric[lyric.length - 1]?.beginTime ?? 0) +
-		(lyric[lyric.length - 1]?.duration ?? 0);
+	head.appendChild(metadataEl);
+
+	let i = 0;
+
+	const guessDuration = lyric[lyric.length - 1]?.endTime ?? 0;
 	body.setAttribute("dur", msToTimestamp(guessDuration));
 
 	for (const param of params) {
 		const paramDiv = doc.createElement("div");
-		const beginTime = param[0]?.beginTime ?? 0;
-		const endTime =
-			(param[param.length - 1]?.beginTime ?? 0) +
-			(param[param.length - 1]?.duration ?? 0);
+		const beginTime = param[0]?.startTime ?? 0;
+		const endTime = param[param.length - 1]?.endTime ?? 0;
 
 		paramDiv.setAttribute("begin", msToTimestamp(beginTime));
 		paramDiv.setAttribute("end", msToTimestamp(endTime));
 
-		let i = 0;
-
-		for (const line of param) {
+		for (let lineIndex = 0; lineIndex < param.length; lineIndex++) {
+			const line = param[lineIndex];
 			const lineP = doc.createElement("p");
-			const beginTime = line.beginTime ?? 0;
-			const endTime = line.beginTime + line.duration;
+			const beginTime = line.startTime ?? 0;
+			const endTime = line.endTime;
 
 			lineP.setAttribute("begin", msToTimestamp(beginTime));
 			lineP.setAttribute("end", msToTimestamp(endTime));
 
-			lineP.setAttribute("ttm:agent", line.shouldAlignRight ? "v2" : "v1");
+			lineP.setAttribute("ttm:agent", line.isDuet ? "v2" : "v1");
 			lineP.setAttribute("itunes:key", `L${++i}`);
 
-			if (line.dynamicLyric && line.dynamicLyricTime !== undefined) {
-				for (const word of line.dynamicLyric) {
-					const span = doc.createElement("span");
-					span.setAttribute("begin", msToTimestamp(word.time));
-					span.setAttribute("end", msToTimestamp(word.time + word.duration));
-					span.appendChild(doc.createTextNode(word.word.trim()));
-					lineP.appendChild(span);
+			if (line.words.length > 1) {
+				let beginTime = Infinity;
+				let endTime = 0;
+				for (const word of line.words) {
+					if (word.word.trim().length === 0) {
+						lineP.appendChild(doc.createTextNode(word.word));
+					} else {
+						const span = createWordElement(word);
+						lineP.appendChild(span);
+						beginTime = Math.min(beginTime, word.startTime);
+						endTime = Math.max(endTime, word.endTime);
+					}
 				}
-			} else {
-				lineP.appendChild(doc.createTextNode(line.originalLyric));
+				lineP.setAttribute("begin", msToTimestamp(line.startTime));
+				lineP.setAttribute("end", msToTimestamp(line.endTime));
+			} else if (line.words.length === 1) {
+				const word = line.words[0];
+				lineP.appendChild(doc.createTextNode(word.word));
+				lineP.setAttribute("begin", msToTimestamp(word.startTime));
+				lineP.setAttribute("end", msToTimestamp(word.endTime));
 			}
 
-			if (line.backgroundLyric) {
-				const bgLine = line.backgroundLyric;
+			const nextLine = param[lineIndex + 1];
+			if (nextLine && nextLine.isBG) {
+				lineIndex++;
+				const bgLine = nextLine;
 				const bgLineSpan = doc.createElement("span");
+				bgLineSpan.setAttribute("ttm:role", "x-bg");
 
-				bgLineSpan.setAttribute(
-					"ttm:agent",
-					bgLine.shouldAlignRight ? "v2" : "v1",
-				);
-				bgLineSpan.setAttribute("itunes:key", `L${++i}`);
-
-				if (bgLine.dynamicLyric && bgLine.dynamicLyricTime !== undefined) {
-					for (const word of bgLine.dynamicLyric) {
-						const span = doc.createElement("span");
-						span.setAttribute("begin", msToTimestamp(word.time));
-						span.setAttribute("end", msToTimestamp(word.time + word.duration));
-						span.appendChild(doc.createTextNode(word.word.trim()));
-						bgLineSpan.appendChild(span);
+				if (bgLine.words.length > 1) {
+					let beginTime = Infinity;
+					let endTime = 0;
+					for (let wordIndex = 0; wordIndex < bgLine.words.length; wordIndex++) {
+						const word = bgLine.words[wordIndex];
+						if (word.word.trim().length === 0) {
+							bgLineSpan.appendChild(doc.createTextNode(word.word));
+						} else {
+							const span = createWordElement(word);
+							if (wordIndex === 0) {
+								span.prepend(doc.createTextNode("("));
+							} else if (wordIndex === bgLine.words.length - 1) {
+								span.appendChild(doc.createTextNode(")"));
+							}
+							bgLineSpan.appendChild(span);
+							beginTime = Math.min(beginTime, word.startTime);
+							endTime = Math.max(endTime, word.endTime);
+						}
 					}
-				} else {
-					bgLineSpan.appendChild(
-						doc.createTextNode(bgLine.originalLyric.trim()),
-					);
+					bgLineSpan.setAttribute("begin", msToTimestamp(beginTime));
+					bgLineSpan.setAttribute("end", msToTimestamp(endTime));
+				} else if (bgLine.words.length === 1) {
+					const word = bgLine.words[0];
+					bgLineSpan.appendChild(doc.createTextNode(`(${word.word})`));
+					bgLineSpan.setAttribute("begin", msToTimestamp(word.startTime));
+					bgLineSpan.setAttribute("end", msToTimestamp(word.endTime));
 				}
 
 				if (bgLine.translatedLyric) {
 					const span = doc.createElement("span");
 					span.setAttribute("ttm:role", "x-translation");
 					span.setAttribute("xml:lang", "zh-CN");
-					span.appendChild(doc.createTextNode(bgLine.translatedLyric.trim()));
+					span.appendChild(doc.createTextNode(bgLine.translatedLyric));
 					bgLineSpan.appendChild(span);
 				}
 
 				if (bgLine.romanLyric) {
 					const span = doc.createElement("span");
 					span.setAttribute("ttm:role", "x-roman");
-					span.appendChild(doc.createTextNode(bgLine.romanLyric.trim()));
+					span.appendChild(doc.createTextNode(bgLine.romanLyric));
 					bgLineSpan.appendChild(span);
 				}
 
@@ -160,14 +209,14 @@ export function exportTTMLText(lyric, pretty = false) {
 				const span = doc.createElement("span");
 				span.setAttribute("ttm:role", "x-translation");
 				span.setAttribute("xml:lang", "zh-CN");
-				span.appendChild(doc.createTextNode(line.translatedLyric.trim()));
+				span.appendChild(doc.createTextNode(line.translatedLyric));
 				lineP.appendChild(span);
 			}
 
 			if (line.romanLyric) {
 				const span = doc.createElement("span");
 				span.setAttribute("ttm:role", "x-roman");
-				span.appendChild(doc.createTextNode(line.romanLyric.trim()));
+				span.appendChild(doc.createTextNode(line.romanLyric));
 				lineP.appendChild(span);
 			}
 
@@ -177,8 +226,21 @@ export function exportTTMLText(lyric, pretty = false) {
 		body.appendChild(paramDiv);
 	}
 
+	ttRoot.appendChild(body);
+}
+
+
+export async function exportTTMLText(lyric, pretty = false) {
+	const jsdom = new JSDOM(
+		`<tt xmlns="http://www.w3.org/ns/ttml" xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:itunes="http://music.apple.com/lyric-ttml-internal"><head></head><body></body></tt>`,
+		{
+			contentType: "application/xml",
+		},
+	);
+	const doc = jsdom.window.document;
+	exportTTMLTextInner(doc, lyric);
 	if (pretty) {
-		return prettier.format(jsdom.serialize(), { parser: "html" });
+		return await prettier.format(jsdom.serialize(), { parser: "html" });
 	} else {
 		return jsdom.serialize();
 	}

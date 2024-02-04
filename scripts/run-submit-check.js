@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import prettier from "prettier";
+import { uid } from "uid/secure";
 import { execSync } from "child_process";
 import { Octokit } from "octokit";
 import { parseLyric } from "./ttml-parser.js";
@@ -7,34 +8,12 @@ import { exportTTMLText } from "./ttml-writer.js";
 import { writeFile } from "fs/promises";
 import { resolve } from "path";
 import { checkLyric } from "./lyric-checker.js";
+import { HAS_CHECKED_MARK, REPO_NAME, REPO_OWNER, addFileToGit, checkoutBranch, commit, createBranch, deleteBranch, getMetadata, githubToken, parseBody, push } from "./utils.js";
 
-const githubToken = process.env.GITHUB_TOKEN;
 const octokit = new Octokit({
 	auth: githubToken,
 	userAgent: "AMLLTTMLDBSubmitChecker",
 });
-const [REPO_OWNER, REPO_NAME] = process.env.GITHUB_REPOSITORY?.split("/") ?? [
-	"Steve-xmh",
-	"amll-ttml-db",
-];
-
-const HAS_CHECKED_MARK = "<!-- AMLL-DB-BOT-CHECKED -->";
-
-function parseBody(body) {
-	const params = {};
-	let curKey = "";
-	for (const line of body) {
-		if (line.startsWith("### ")) {
-			curKey = line.substring(4).trim();
-			params[curKey] = "";
-		} else if (line.startsWith("```")) {
-			continue;
-		} else {
-			params[curKey] += line + "\n";
-		}
-	}
-	return params;
-}
 
 async function main() {
 	const openingIssues = await octokit.rest.issues.listForRepo({
@@ -127,6 +106,12 @@ async function main() {
 					state: "closed",
 					state_reason: "completed",
 				});
+				await octokit.rest.issues.lock({
+					owner: REPO_OWNER,
+					repo: REPO_NAME,
+					issue_number: issue.number,
+					lock_reason: "resolved",
+				});
 			}
 			async function declineIssue(msg, err = null, lyric = "") {
 				await octokit.rest.issues.createComment({
@@ -151,6 +136,12 @@ async function main() {
 					state: "closed",
 					state_reason: "completed",
 				});
+				await octokit.rest.issues.lock({
+					owner: REPO_OWNER,
+					repo: REPO_NAME,
+					issue_number: issue.number,
+					lock_reason: "resolved",
+				});
 			}
 			if (
 				comments.data.find(
@@ -172,10 +163,7 @@ async function main() {
 				const body = issue.body?.split("\n")?.filter((v) => v.length > 0) ?? [];
 				const params = parseBody(body);
 				const lyricURL = params["TTML 歌词文件下载直链"];
-				const musicIds = String(params["音乐对应的网易云音乐 ID"])
-					.split(",")
-					.map((v) => parseInt(v.trim()))
-					.filter((v) => v > 0 && Number.isSafeInteger(v));
+				const comment = params["备注"].trim().split("\n");
 				if (typeof lyricURL !== "string") {
 					console.log(
 						"议题",
@@ -185,17 +173,6 @@ async function main() {
 						") 无法找到 TTML 歌词文件下载直链",
 					);
 					await declineIssue("无法找到 TTML 歌词文件下载直链");
-					continue;
-				}
-				if (musicIds.length === 0) {
-					console.log(
-						"议题",
-						issue.title,
-						"(",
-						issue.id,
-						") 无法识别到对应的网易云音乐 ID",
-					);
-					await declineIssue("无法识别到对应的网易云音乐 ID");
 					continue;
 				}
 				console.log("正在下载 TTML 歌词文件", lyricURL.trim());
@@ -208,8 +185,72 @@ async function main() {
 						}
 					});
 					try {
-						const parsedLyric = parseLyric(lyric, true);
-						const errors = checkLyric(parsedLyric);
+						const parsedLyric = parseLyric(lyric);
+						const errors = [];
+						const musicPlatformKeyLabelPairs = {
+							"ncmMusicId": "歌曲关联网易云音乐 ID",
+							"qqMusicId": "歌曲关联 QQ 音乐 ID",
+							"spotifyId": "歌曲关联 Spotify 音乐 ID",
+							"appleMusicId": "歌曲关联 Apple Music 音乐 ID",
+						};
+						let containsId = false;
+						const pullMetadataMessage = [];
+						const musicName = getMetadata(parsedLyric, "musicName");
+						const artists = getMetadata(parsedLyric, "artists");
+						const album = getMetadata(parsedLyric, "album");
+						let addToolsUsageTip = false;
+						if (musicName.length === 0) {
+							errors.push("歌词文件中未包含歌曲名称信息（缺失 musicName 元数据）");
+							addToolsUsageTip = true;
+						}
+						if (artists.length === 0) {
+							errors.push("歌词文件中未包含音乐作者信息（缺失 artists 元数据）");
+							addToolsUsageTip = true;
+						}
+						if (album.length === 0) {
+							errors.push("歌词文件中未包含专辑信息（缺失 album 元数据）(注：如果是单曲专辑请和歌曲名称同名)");
+							addToolsUsageTip = true;
+						}
+						pullMetadataMessage.push("### 音乐名称");
+						musicName.forEach(v => pullMetadataMessage.push(`- \`${v}\``));
+						pullMetadataMessage.push("### 音乐作者");
+						artists.forEach(v => pullMetadataMessage.push(`- \`${v}\``));
+						pullMetadataMessage.push("### 音乐专辑名称");
+						album.forEach(v => pullMetadataMessage.push(`- \`${v}\``));
+						for (const key in musicPlatformKeyLabelPairs) {
+							const ids = getMetadata(parsedLyric, key);
+							if (ids.length > 0) {
+								containsId = true;
+								pullMetadataMessage.push(`### ${musicPlatformKeyLabelPairs[key]}`);
+								for (const id of ids) {
+									if (!(/^(?!\.)(?!com[0-9]$)(?!con$)(?!lpt[0-9]$)(?!nul$)(?!prn$)[^\|\*\?\\:<>/$"]*[^\.\|\*\?\\:<>/$"]+$/.test(id))) {
+										errors.push(
+											`歌词文件中的 ${key} 元数据包含非法字符：${JSON.stringify(id)}`,
+										);
+									} else {
+										pullMetadataMessage.push(`- \`${id}\``);
+									}
+								}
+							}
+						}
+						if (issue.user) {
+							parsedLyric.metadata.push({
+								key: "ttmlAuthorGithub",
+								value: [`${issue.user.id}`],
+							});
+							parsedLyric.metadata.push({
+								key: "ttmlAuthorGithubLogin",
+								value: [`${issue.user.login}`],
+							});
+						}
+						if (!containsId) {
+							errors.push("歌词文件中未包含任何音乐平台 ID");
+							addToolsUsageTip = true;
+						}
+						if (addToolsUsageTip) {
+							errors.push("（注：如果你正在使用 AMLL TTML Tools 歌词编辑工具，可以通过顶部菜单 编辑 - 编辑歌曲元数据 来编辑元数据）");
+						}
+						errors.push(...checkLyric(parsedLyric.lyricLines));
 						if (errors.length > 0) {
 							const errMsg = [
 								"歌词检查发现以下错误，请修正后重新提交：",
@@ -242,20 +283,17 @@ async function main() {
 						);
 						try {
 							const submitBranch = "auto-submit-issue-" + issue.number;
-							execSync("git checkout main");
+							await checkoutBranch("main");
 							try {
-								execSync("git branch -D " + submitBranch);
-							} catch {}
-							execSync("git checkout --force -b " + submitBranch);
-							await Promise.all(
-								musicIds.map(async (v) => {
-									await writeFile(resolve("..", "lyrics", `${v}.ttml`), lyric);
-								}),
-							);
-							execSync("git add ..");
-							execSync(`git commit -m "提交歌曲歌词 #${issue.number}"`);
-							execSync("git push --set-upstream origin " + submitBranch);
-							execSync("git checkout main");
+								await deleteBranch(submitBranch);
+							} catch { }
+							await createBranch(submitBranch);
+							const newFileName = `${Date.now()}-${issue.user?.id || "0"}-${uid(8)}.ttml`;
+							await writeFile(resolve("..", "raw-lyrics", newFileName), lyric);
+							await addFileToGit("..");
+							await commit(`提交歌曲歌词 ${newFileName} #${issue.number}`);
+							await push(submitBranch);
+							await checkoutBranch("main");
 							let pullBody = [
 								"### 歌词议题",
 								"#" + issue.number,
@@ -263,10 +301,9 @@ async function main() {
 								issue.user?.login
 									? "@" + issue.user?.login
 									: "未知，请查看议题发送者",
-								"### 歌词关联歌曲 ID",
-								...musicIds.map((v) => `- \`${v}\``),
-								"### 歌词关联歌曲链接",
-								...musicIds.map((v) => `- https://music.163.com/song?id=${v}`),
+								...pullMetadataMessage,
+								"### 备注",
+								...comment,
 								"### 歌词文件内容",
 								"```xml",
 								regeneratedLyric,
@@ -284,12 +321,9 @@ async function main() {
 									issue.user?.login
 										? "@" + issue.user?.login
 										: "未知，请查看议题发送者",
-									"### 歌词关联歌曲 ID",
-									...musicIds.map((v) => `- \`${v}\``),
-									"### 歌词关联歌曲链接",
-									...musicIds.map(
-										(v) => `- https://music.163.com/song?id=${v}`,
-									),
+									...pullMetadataMessage,
+									"### 备注",
+									...comment,
 									"### 歌词文件内容",
 									"```xml",
 									"<!-- 因数据过大请自行查看变更 -->",
@@ -307,12 +341,6 @@ async function main() {
 										issue.user?.login
 											? "@" + issue.user?.login
 											: "未知，请查看议题发送者",
-										"### 歌词关联歌曲 ID",
-										...musicIds.map((v) => `- \`${v}\``),
-										"### 歌词关联歌曲链接",
-										...musicIds.map(
-											(v) => `- https://music.163.com/song?id=${v}`,
-										),
 										"### 歌词文件内容",
 										"```xml",
 										"<!-- 因数据过大请自行查看变更 -->",

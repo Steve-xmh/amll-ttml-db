@@ -18,10 +18,9 @@ body:
   - type: input
     id: song-id
     attributes:
-      label: 音乐对应的网易云音乐 ID
+      label: 音乐对应的音乐平台和音乐 ID
       description: |
         提供 ID 能帮助歌词制作者更好地找到你需要请愿歌词的歌曲
-        可以通过在 AMLL 插件内右键复制音乐 ID 得到，应该都是纯数字
         如果歌曲存在其他变体（例如伴奏），可以以英文逗号分隔多个 ID
       placeholder: "1472480890"
     validations:
@@ -33,8 +32,6 @@ body:
       description: 如果可以确认其他信息的话也会对歌词制作有所帮助哦
       options:
         - label: 这个歌曲在 Apple Music 上有逐词歌词
-    validations:
-      required: false
   - type: textarea
     id: comment
     attributes:
