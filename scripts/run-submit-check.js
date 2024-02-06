@@ -234,6 +234,8 @@ async function main() {
 							}
 						}
 						if (issue.user) {
+							parsedLyric.metadata = parsedLyric.metadata.filter(v => v.key !== "ttmlAuthorGithub");
+							parsedLyric.metadata = parsedLyric.metadata.filter(v => v.key !== "ttmlAuthorGithubLogin");
 							parsedLyric.metadata.push({
 								key: "ttmlAuthorGithub",
 								value: [`${issue.user.id}`],
