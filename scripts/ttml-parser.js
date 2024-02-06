@@ -81,7 +81,7 @@ function parseLyricInner(ttmlDoc) {
 				const wordEl = wordNode;
 				const role = wordEl.getAttribute("ttm:role");
 
-				if (wordEl.nodeName === "span" && role) {
+				if (wordEl.nodeName.toLowerCase() === "span" && role) {
 					if (role === "x-bg") {
 						parseParseLine(wordEl, true);
 						haveBg = true;

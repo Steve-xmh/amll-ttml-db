@@ -289,7 +289,7 @@ async function main() {
 							} catch { }
 							await createBranch(submitBranch);
 							const newFileName = `${Date.now()}-${issue.user?.id || "0"}-${uid(8)}.ttml`;
-							await writeFile(resolve("..", "raw-lyrics", newFileName), lyric);
+							await writeFile(resolve("..", "raw-lyrics", newFileName), regeneratedLyric);
 							await addFileToGit("..");
 							await commit(`提交歌曲歌词 ${newFileName} #${issue.number}`);
 							await push(submitBranch);

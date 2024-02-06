@@ -31,7 +31,7 @@ function msToTimestamp(timeMS) {
 }
 
 function exportTTMLTextInner(
-    doc,
+	doc,
 	ttmlLyric,
 ) {
 	const params = [];
