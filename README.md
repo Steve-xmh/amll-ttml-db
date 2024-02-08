@@ -33,7 +33,8 @@
 
 ## 歌词文件范例
 
-- [Taylor Swift,Brendon Urie - ME! (feat. Brendon Urie of Panic! At The Disco) （含对唱/背景人声歌词）](./lyrics/1361348080.ttml)
+- [Taylor Swift,Brendon Urie - ME! (feat. Brendon Urie of Panic! At The Disco) （含对唱/背景人声歌词）](./ncm-lyrics/1361348080.ttml)
+- [Jake Miller, HOYO-MiX - WHITE NIGHT (不眠之夜）（含对唱/背景人声歌词）](./ncm-lyrics/2122308128.ttml)
 
 （歌词文件非常标准的也可以在 PR 时给本列表增加项目）
 
