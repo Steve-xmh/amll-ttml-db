@@ -70,12 +70,26 @@ function parseLyricInner(ttmlDoc) {
 		};
 		let haveBg = false;
 
+		const startTime = lineEl.getAttribute("begin");
+		const endTime = lineEl.getAttribute("end");
+		if (startTime && endTime) {
+			line.startTime = parseTimespan(startTime);
+			line.endTime = parseTimespan(endTime);
+		} else {
+			line.startTime = line.words.reduce(
+				(pv, cv) => Math.min(pv, cv.startTime),
+				Infinity,
+			);
+			line.endTime = line.words.reduce((pv, cv) => Math.max(pv, cv.endTime), 0);
+		}
+
 		for (const wordNode of lineEl.childNodes) {
 			if (wordNode.nodeType === ttmlDoc.TEXT_NODE) {
-				line.words?.push({
-					word: wordNode.textContent ?? "",
-					startTime: 0,
-					endTime: 0,
+				const word = wordNode.textContent ?? "";
+				line.words.push({
+					word: word,
+					startTime: word.trim().length > 0 ? line.startTime : 0,
+					endTime: word.trim().length > 0 ? line.endTime : 0,
 				});
 			} else if (wordNode.nodeType === ttmlDoc.ELEMENT_NODE) {
 				const wordEl = wordNode;
@@ -106,31 +120,21 @@ function parseLyricInner(ttmlDoc) {
 		}
 
 		if (line.isBG) {
-			const firstWord = line.words?.[0];
-			if (firstWord?.word.startsWith("(")) {
+			const firstWord = line.words[0];
+			if (firstWord?.word?.startsWith("(")) {
 				firstWord.word = firstWord.word.substring(1);
 				if (firstWord.word.length === 0) {
 					line.words.shift();
 				}
 			}
 
-			const lastWord = line.words?.[line.words.length - 1];
-			if (lastWord?.word.endsWith(")")) {
+			const lastWord = line.words[line.words.length - 1];
+			if (lastWord?.word?.endsWith(")")) {
 				lastWord.word = lastWord.word.substring(0, lastWord.word.length - 1);
 				if (lastWord.word.length === 0) {
 					line.words.pop();
 				}
 			}
-		}
-
-		const startTime = lineEl.getAttribute("begin");
-		const endTime = lineEl.getAttribute("end");
-		if (startTime && endTime) {
-			line.startTime = parseTimespan(startTime);
-			line.endTime = parseTimespan(endTime);
-		} else {
-			line.startTime = line.words.reduce((pv, cv) => Math.min(pv, cv.startTime), Infinity);
-			line.endTime = line.words.reduce((pv, cv) => Math.max(pv, cv.endTime), 0);
 		}
 
 
