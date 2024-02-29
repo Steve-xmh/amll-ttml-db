@@ -7,32 +7,43 @@ use chrono::prelude::*;
 fn is_git_worktree_clean() -> anyhow::Result<bool> {
     let output = std::process::Command::new("git")
         .args(["status", "--porcelain"])
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
         .output()
         .context("无法执行 git status 命令")?;
     Ok(output.stdout.is_empty() && output.stderr.is_empty())
 }
 
 fn add_file_to_git(file: &str) -> anyhow::Result<()> {
-    std::process::Command::new("git")
+    let result = std::process::Command::new("git")
         .args(["add", file])
-        .output()
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
+        .status()
         .context("无法执行 git add 命令")?;
+    anyhow::ensure!(result.success(), "git add 命令执行失败");
     Ok(())
 }
 
 fn commit(message: &str) -> anyhow::Result<()> {
-    std::process::Command::new("git")
+    let result = std::process::Command::new("git")
         .args(["commit", "-m", message])
-        .output()
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
+        .status()
         .context("无法执行 git commit 命令")?;
+    anyhow::ensure!(result.success(), "git commit 命令执行失败");
     Ok(())
 }
 
 fn push(branch: &str) -> anyhow::Result<()> {
-    std::process::Command::new("git")
+    let result = std::process::Command::new("git")
         .args(["push", "--set-upstream", "origin", branch])
-        .output()
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
+        .status()
         .context("无法执行 git push 命令")?;
+    anyhow::ensure!(result.success(), "git push 命令执行失败");
     Ok(())
 }
 
@@ -128,7 +139,7 @@ fn main() -> anyhow::Result<()> {
         add_file_to_git("../..")?;
         let time = Utc::now();
         commit(&format!("于 {time:?} 重新构建更新"))?;
-        push("master")?;
+        push("main")?;
 
         println!("文件夹重建完毕！耗时: {:?}", t.elapsed());
     }
