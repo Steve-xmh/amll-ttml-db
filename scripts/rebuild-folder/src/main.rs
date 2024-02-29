@@ -7,8 +7,6 @@ use chrono::prelude::*;
 fn is_git_worktree_clean() -> anyhow::Result<bool> {
     let output = std::process::Command::new("git")
         .args(["status", "--porcelain"])
-        .stdout(std::process::Stdio::inherit())
-        .stderr(std::process::Stdio::inherit())
         .output()
         .context("无法执行 git status 命令")?;
     Ok(output.stdout.is_empty() && output.stderr.is_empty())
