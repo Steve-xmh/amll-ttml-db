@@ -1,0 +1,11 @@
+[package]
+name = "rebuild-folder"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+amll-lyric = { git = "https://github.com/Steve-xmh/applemusic-like-lyrics.git", branch = "dev" }
+anyhow = "1.0.80"
+rayon = "1.9.0"
