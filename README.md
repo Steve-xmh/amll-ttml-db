@@ -52,6 +52,14 @@
 - [Apple Music](./apple-lyrics)
 - [Spotify](./spotify-lyrics)
 
+每个歌词 ID 均已自动生成不同格式的歌词文件，通过文件后缀名区分：
+- `.ttml`: 原 TTML 歌词格式
+- `.lrc`: LyRiC 歌词格式
+- `.yrc`: 网易云音乐逐词歌词格式
+- `.qrc`: QQ 音乐逐词歌词格式
+- `.lys`: Lyricify Syllable 逐词歌词格式
+- `.eslrc`: ESLrc 逐词歌词格式
+
 如果需要检索从建立数据库开始至今所有的歌词文件，可以访问 [./raw-lyrics](./raw-lyrics) 文件夹，内部的文件以 `[提交UNIX时间戳]-[提交者GithubID]-[8位随机ID].ttml` 命名。
 
 ## 共享协议
