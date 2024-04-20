@@ -5,7 +5,7 @@
   "dependencies": {
     "jsdom": "^22.1.0",
     "node-fetch": "^3.3.1",
-    "octokit": "^2.1.0",
+    "octokit": "^3.1.2",
     "prettier": "^3.0.0",
     "uid": "^2.0.2"
   },
