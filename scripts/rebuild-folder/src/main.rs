@@ -207,7 +207,7 @@ fn main() -> anyhow::Result<()> {
 
         writeln!(
             svg_file,
-            r##"<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">"##
+            r##"<svg version="1.1" baseProfile="full" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">"##
         )?;
 
         for (i, (contributor, _count)) in contribution_list.iter().enumerate() {
@@ -215,7 +215,7 @@ fn main() -> anyhow::Result<()> {
             let y = (i / (width / avatar_size)) * avatar_size + padding;
             writeln!(
                 svg_file,
-                r##"<image x="{x}" y="{y}" width="{avatar_size_inner}" height="{avatar_size_inner}" xlink:href="https://avatars.githubusercontent.com/u/{contributor}?v=4" style="clip-path: inset(0 0 0 0 round 50%);" />"##
+                r##"<image x="{x}" y="{y}" width="{avatar_size_inner}" height="{avatar_size_inner}" href="https://avatars.githubusercontent.com/u/{contributor}?v=4" style="clip-path: inset(0 0 0 0 round 50%);" />"##
             )?;
         }
 
