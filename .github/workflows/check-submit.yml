@@ -19,7 +19,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20
           cache: yarn
           cache-dependency-path: scripts/yarn.lock
       - name: 安装依赖
