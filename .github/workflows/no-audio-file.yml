@@ -1,0 +1,20 @@
+name: 添加缺少音源标签
+
+on:
+  issue_comment:
+    types: [created]  # 监听评论创建事件
+
+jobs:
+  add-slowqueue-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Add "No Audio" label if "!noaudio" command is used
+        if: contains(github.event.comment.body, '!noaudio') && github.actor == 'admin-username'  # 仅限管理员操作
+        run: |
+          echo "Admin is adding 'Slow Queue' label to PR #${{ github.event.issue.number }}"
+          gh pr edit ${{ github.event.issue.number }} --add-label "缺少音源"
+env:
+  GITHUB_TOKEN: ${ secrets.GITHUB_TOKEN }}
