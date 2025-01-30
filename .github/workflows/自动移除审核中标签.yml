@@ -1,0 +1,18 @@
+name: 关闭PR后自动移除审核中标签
+
+on:
+  pull_request:
+    types: [closed]  # PR 被合并或关闭时触发
+
+jobs:
+  remove-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Remove "审核中" label if PR is merged or closed
+        if: github.event.pull_request.merged == true || github.event.pull_request.state == 'closed'
+        run: |
+          echo "Removing '审核中' label from PR #${{ github.event.pull_request.number }}"
+          gh pr edit ${{ github.event.pull_request.number }} --remove-label "审核中"
