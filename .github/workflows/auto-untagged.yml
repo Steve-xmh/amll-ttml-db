@@ -16,3 +16,5 @@ jobs:
         run: |
           echo "Removing '审核中' label from PR #${{ github.event.pull_request.number }}"
           gh pr edit ${{ github.event.pull_request.number }} --remove-label "审核中"
+env:
+  GITHUB_TOKEN: {{ secrets.GITHUB_TOKEN }}
