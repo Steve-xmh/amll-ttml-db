@@ -22,6 +22,21 @@ jobs:
             gh pr close $pr_number
             gh pr delete $pr_number --confirm
           done
+          
+      - name: Get repository collaborators
+        id: get-collaborators
+        run: |
+          # 获取所有仓库协作者的 GitHub 用户名（包括管理员）
+          collaborators=$(gh repo collaborators --json login -q '.[].login')
+          echo "::set-output name=collaborators::$collaborators"
+
+      - name: Auto reply to PR with preset message
+        if: contains(github.event.comment.body, '!slowqueue') && contains(steps.get-collaborators.outputs.collaborators, github.actor)
+        run: |
+          echo "Admin is replying to PR #${{ github.event.issue.number }} with preset message"
+          # 使用 GitHub API 或 gh CLI 回复 PR 评论
+          COMMENT_BODY="您好，您的投稿与已有 PR 存在重复，我们已将其删除。"
+          gh pr comment ${{ github.event.issue.number }} --body "$COMMENT_BODY"
 
 env:
   GITHUB_TOKEN: ${ secrets.GITHUB_TOKEN }}
