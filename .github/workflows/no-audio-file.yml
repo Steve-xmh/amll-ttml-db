@@ -2,10 +2,10 @@ name: 缺少音源提醒
 
 on:
   issue_comment:
-    types: [created]  # 监听评论创建事件
+    types: [created]  # 监听 PR 评论
 
 jobs:
-  add-slowqueue-label:
+  add-noaudio-label:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -18,16 +18,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 获取所有仓库协作者的 GitHub 用户名
-          collaborators=$(gh api repos/${{ github.repository }}/collaborators --jq '.[].login' | tr '\n' ' ')
-          echo "collaborators=$collaborators" >> $GITHUB_ENV
+          # 获取所有仓库协作者的 GitHub 用户名，并存入文件
+          gh api repos/${{ github.repository }}/collaborators --jq '.[].login' > collaborators.txt
+          cat collaborators.txt
+          echo "collaborators_collected=true" >> $GITHUB_ENV
+
+      - name: Check if commenter is a collaborator
+        id: check-collaborator
+        run: |
+          if grep -wq "^${{ github.actor }}$" collaborators.txt; then
+            echo "is_collaborator=true" >> $GITHUB_ENV
+          else
+            echo "is_collaborator=false" >> $GITHUB_ENV
+          fi
 
       - name: Add "缺少音源" label if "!noaudio" command is used
-        if: |
-          github.event.issue.pull_request &&
-          contains(github.event.comment.body, '!noaudio') &&
-          env.collaborators != '' &&
-          env.collaborators =~ github.actor
+        if: env.is_collaborator == 'true' && contains(github.event.comment.body, '!noaudio')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -35,11 +41,7 @@ jobs:
           gh pr edit ${{ github.event.issue.number }} --add-label "缺少音源"
 
       - name: Auto reply to PR with preset message
-        if: |
-          github.event.issue.pull_request &&
-          contains(github.event.comment.body, '!noaudio') &&
-          env.collaborators != '' &&
-          env.collaborators =~ github.actor
+        if: env.is_collaborator == 'true' && contains(github.event.comment.body, '!noaudio')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
