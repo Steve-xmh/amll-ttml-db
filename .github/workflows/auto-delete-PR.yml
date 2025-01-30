@@ -1,0 +1,21 @@
+name: 自动删除PR
+
+on:
+  issue_comment:
+    types: [created]  # 监听评论创建事件
+
+jobs:
+  close-pr-and-delete-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Close PR and delete branch if "!closepr" command is used
+        if: contains(github.event.comment.body, '!closepr') && github.actor == 'admin-username'  # 确保是管理员执行
+        run: |
+          echo "Admin is closing PR #${{ github.event.issue.number }} and deleting the branch"
+          gh pr close ${{ github.event.issue.number }}
+          gh pr delete ${{ github.event.issue.number }} --confirm
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
