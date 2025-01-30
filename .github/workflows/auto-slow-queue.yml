@@ -1,0 +1,21 @@
+name: 自动加入慢速审核队列
+
+on:
+  issue_comment:
+    types: [created]  # 监听评论创建事件
+
+jobs:
+  add-slowqueue-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Add "Slow Queue" label if "!slowqueue" command is used
+        if: contains(github.event.comment.body, '!slowqueue') && github.actor == 'admin-username'  # 仅限管理员操作
+        run: |
+          echo "Admin is adding 'Slow Queue' label to PR #${{ github.event.issue.number }}"
+          gh pr edit ${{ github.event.issue.number }} --add-label "慢速审核队列"
+
+env:
+  GITHUB_TOKEN: ${ secrets.GITHUB_TOKEN }}
