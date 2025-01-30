@@ -17,4 +17,4 @@ jobs:
           echo "Adding 'HOYO-MiX' label to PR #${{ github.event.pull_request.number }}"
           gh pr edit ${{ github.event.pull_request.number }} --add-label "HOYO-MiX"
 env:
-  GH_TOKEN:${{}}
+  GH_TOKEN:${{ secrets.GITHUB_TOKEN }}
