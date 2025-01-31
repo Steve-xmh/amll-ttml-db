@@ -207,7 +207,7 @@ fn main() -> anyhow::Result<()> {
         let padding = 1;
         let avatar_size_inner = avatar_size - padding * 2;
         let width = 800 / avatar_size * avatar_size;
-        let height = (contributors_count % (width / avatar_size) + 1) * avatar_size;
+        let height = (contributors_count / (width / avatar_size) + 1) * avatar_size;
 
         let mut svg_file = std::fs::File::create(root_dir.join("CONTRIBUTORS.svg"))?;
 
