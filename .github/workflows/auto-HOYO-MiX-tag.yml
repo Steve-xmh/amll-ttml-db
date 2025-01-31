@@ -1,0 +1,20 @@
+name: 自动加HOYO-MiX标签
+
+on:
+  pull_request:
+    types: [opened]  # PR 被打开时触发
+
+jobs:
+  add-hoyo-mix-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Add "HOYO-MiX" label if PR title contains "HOYO-MiX"
+        if: contains(github.event.pull_request.title, 'HOYO-MiX')
+        run: |
+          echo "Adding 'HOYO-MiX' label to PR #${{ github.event.pull_request.number }}"
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "HOYO-MiX"
+env:
+  GH_TOKEN:${{ secrets.GITHUB_TOKEN }}
