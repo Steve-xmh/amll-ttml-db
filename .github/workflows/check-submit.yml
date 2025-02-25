@@ -2,13 +2,14 @@ name: 检查歌词提交正确性
 on:
   workflow_dispatch:
   issues:
-    types: [opened]
+    types: [labeled]
 concurrency:
   group: check-submit
   cancel-in-progress: true
 
 jobs:
   check-submit:
+    if: github.event.label.name == '歌词提交/补正'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
