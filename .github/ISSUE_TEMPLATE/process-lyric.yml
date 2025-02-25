@@ -16,12 +16,12 @@ body:
       required: true
   - type: textarea
     id: song-list
-    placeholder: |
+    attributes:
+      label: 歌曲列表
+      placeholder: |
         请按照以下格式填写：
         - 歌手 - 歌曲
         - 歌手 - 歌曲
         并且用分隔线分割不同的歌手/专辑/歌单，使结构清晰
-    attributes:
-      label: 歌曲列表
     validations:
       required: true
