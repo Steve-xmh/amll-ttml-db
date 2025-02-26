@@ -1,27 +1,21 @@
-name: 占坑
-description: 我准备制作以下 TTML 歌词！
-title: "[占坑] "
-labels: ["占坑"]
+name: 歌词制作占位
+description: 我准备接手这个歌词的制作，同时创建这个议题以免他人同时制作导致撞车！
+title: "[歌词制作占位] "
+labels: ["歌词制作占位"]
 body:
   - type: markdown
     attributes:
       value: |
         在创建 Issue 前，请确认歌词确实从来没有人提交过
-        占坑之后请尽快提交歌词，并且在歌词审核通过后及时关闭哦！
-  - type: input
-    id: artist-name
-    attributes:
-      label: 歌手名称
-    validations:
-      required: true
+        占位之后请尽快提交歌词，并且在歌词审核通过后及时关闭哦！
   - type: textarea
     id: song-list
     attributes:
-      label: 歌曲列表
+      label: 待做歌曲列表
       placeholder: |
-        请按照以下格式填写：
+        请尽量按照以下格式填写：
         - 歌手 - 歌曲
         - 歌手 - 歌曲
-        并且用分隔线分割不同的歌手/专辑/歌单，使结构清晰
+        并且用分隔线分割不同的歌手 / 专辑 / 歌单，使结构清晰
     validations:
       required: true
