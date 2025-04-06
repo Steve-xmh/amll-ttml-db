@@ -1,0 +1,27 @@
+name: 关闭PR后自动移除审核相关标签
+
+on:
+  pull_request:
+    types: [closed]  # PR 被合并或关闭时触发
+
+jobs:
+  remove-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      # 处理 PR 合并或拒绝时移除标签
+      - name: Remove "Reviewing" and "Slow Queue" labels when PR is merged or closed
+        if: github.event.pull_request.state == 'closed' && (github.event.pull_request.merged == true || github.event.pull_request.merged == false)
+        run: |
+          pr_number=${{ github.event.pull_request.number }}
+          echo "Removing labels from PR #$pr_number as it was merged or closed"
+
+          # 移除 "审核中" 标签
+          gh pr edit $pr_number --remove-label "审核中"
+          
+          # 移除 "慢速审核队列" 标签
+          gh pr edit $pr_number --remove-label "慢速审核队列"
+env:
+  GITHUB_TOKEN: {{ secrets.GITHUB_TOKEN }}

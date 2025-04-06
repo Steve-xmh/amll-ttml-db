@@ -6,8 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-amll-lyric = "0.2"
-anyhow = "1.0"
-chrono = "0.4"
-ureq = "2"
-base64 = "0.22"
+amll-lyric = "^0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "^1.0"
+chrono = "^0.4"
+ureq = "^3"
+base64 = "^0.22"

@@ -1,0 +1,12 @@
+name: 词库议题
+description: 我想针对这个歌词仓库本身提出建议/问题！
+title: "[词库议题] "
+labels: ["词库议题"]
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: 议题内容
+      description: 在创建 Issue 前，请确认你的情况/建议没有被人早先提及哦！
+    validations:
+      required: true

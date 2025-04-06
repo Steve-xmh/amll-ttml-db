@@ -74,7 +74,7 @@
 
 现阶段支持以下平台的歌词索引：
 
-- [Netease Cloud Music - 网易云音乐](./ncm-lyrics) （注：原 `lyrics` 文件夹依然保留且一并同步，但不再推荐使用该路径）
+- [Netease Cloud Music - 网易云音乐](./ncm-lyrics) 
 - [QQ Music - QQ 音乐](./qq-lyrics)
 - [Apple Music](./apple-lyrics)
 - [Spotify](./spotify-lyrics)
@@ -90,6 +90,8 @@
 
 如果需要检索从建立数据库开始至今所有的歌词文件，可以访问 [./raw-lyrics](./raw-lyrics) 文件夹，内部的文件以 `[提交UNIX时间戳]-[提交者GithubID]-[8位随机ID].ttml` 命名。
 
+同时，在每个平台文件夹下，还有一个存有基本信息的 `index.jsonl` 逐行存储了该平台下所属的所有歌词基本信息，以原始歌词文件顺序排列，也列出了所有历史歌词信息。
+
 ## 共享协议
 
 本仓库的外来数据部分遵循原数据提供方的共享协议共享，提交者自主编写的部分使用 CC0 1.0 共享协议共享。
@@ -98,4 +100,4 @@
 
 感谢所有为建设本仓库提供歌词的贡献者们！
 
-[![贡献者头像画廊，点击可查阅](./CONTRIBUTORS.svg)](./CONTRIBUTORS.md)
+[![贡献者头像画廊，点击可查阅](https://amll-ttml-db.stevexmh.net/contributors.png)](./CONTRIBUTORS.md)

@@ -1,0 +1,50 @@
+name: 缺少音源提醒
+
+on:
+  issue_comment:
+    types: [created]  # 监听 PR 评论
+
+jobs:
+  add-noaudio-label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Get repository collaborators
+        id: get-collaborators
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 获取所有仓库协作者的 GitHub 用户名，并存入文件
+          gh api repos/${{ github.repository }}/collaborators --jq '.[].login' > collaborators.txt
+          cat collaborators.txt
+          echo "collaborators_collected=true" >> $GITHUB_ENV
+
+      - name: Check if commenter is a collaborator
+        id: check-collaborator
+        run: |
+          if grep -wq "^${{ github.actor }}$" collaborators.txt; then
+            echo "is_collaborator=true" >> $GITHUB_ENV
+          else
+            echo "is_collaborator=false" >> $GITHUB_ENV
+          fi
+
+      - name: Add "缺少音源" label if "!noaudio" command is used
+        if: env.is_collaborator == 'true' && contains(github.event.comment.body, '!noaudio')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Adding '缺少音源' label to PR #${{ github.event.issue.number }}"
+          gh pr edit ${{ github.event.issue.number }} --add-label "缺少音源"
+
+      - name: Auto reply to PR with preset message
+        if: env.is_collaborator == 'true' && contains(github.event.comment.body, '!noaudio')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Replying to PR #${{ github.event.issue.number }}"
+          COMMENT_BODY="您好，您的投稿缺少对应音源，请向我们提供与之对应的音源以便审核，感谢您对本项目的支持！"
+          gh pr comment ${{ github.event.issue.number }} --body "$COMMENT_BODY"
