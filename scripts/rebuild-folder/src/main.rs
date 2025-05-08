@@ -136,6 +136,11 @@ fn main() -> anyhow::Result<()> {
         count: usize,
     }
 
+    let mut raw_indecies_file = std::fs::OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(metadata_dir.join("raw-lyrics-index.jsonl"))?;
+
     let mut contribution_map = std::collections::HashMap::new();
     let mut log_i = Instant::now();
     'lyric_parse: for (entry_i, entry) in raw_lyrics.iter().enumerate() {
@@ -171,6 +176,17 @@ fn main() -> anyhow::Result<()> {
                     continue 'lyric_parse;
                 }
             }
+        }
+        {
+            let raw_lyric_file = file_path.as_path().file_name().map(|x| x.to_string_lossy());
+            serde_json::to_writer(
+                &mut raw_indecies_file,
+                &serde_json::json!({
+                    "rawLyricFile": raw_lyric_file,
+                    "metadata": lyric_data.metadata,
+                }),
+            )?;
+            raw_indecies_file.write_all(b"\n")?;
         }
         for (key, values) in lyric_data.metadata.iter() {
             match key.as_ref() {
