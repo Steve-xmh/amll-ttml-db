@@ -1,4 +1,4 @@
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 
 export const githubToken = process.env.GITHUB_TOKEN;
 export const [REPO_OWNER, REPO_NAME] = process.env.GITHUB_REPOSITORY?.split("/") ?? [
@@ -127,16 +127,33 @@ export function deleteBranch(branch) {
  */
 export function commit(message) {
     return new Promise((resolve, reject) => {
-        const env = { ...process.env, GIT_COMMIT_MESSAGE: message };
-        exec(`git commit -F -`, { env }, (err, stdout, stderr) => {
-            if (err) {
-                console.error("Git commit 命令失败, 错误: ", stderr);
-                reject(err);
-            } else {
+        // 执行 git commit，并获取其 stdin
+        const gitCommit = spawn('git', ['commit', '-F', '-']);
+
+        let stderr = '';
+        // 捕获错误输出
+        gitCommit.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        // 监听进程退出事件
+        gitCommit.on('close', (code) => {
+            if (code === 0) {
                 resolve();
+            } else {
+                console.error("Git commit 命令失败, 错误: ", stderr);
+                reject(new Error(`Git commit 进程退出, 代码: ${code}`));
             }
-        }
-        );
+        });
+        
+        // 监听执行错误事件
+        gitCommit.on('error', (err) => {
+            reject(err);
+        });
+
+        // 将 message 写入 git commit 进程的 stdin
+        gitCommit.stdin.write(message);
+        gitCommit.stdin.end();
     });
 }
 
