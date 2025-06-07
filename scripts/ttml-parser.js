@@ -101,25 +101,21 @@ function parseLyricInner(ttmlDoc) {
 						parseParseLine(wordEl, true);
 						haveBg = true;
 					} else if (role === "x-translation") {
-						line.translatedLyric = (wordEl.textContent ?? "").trim();
+						line.translatedLyric = wordEl.textContent ?? "";
 					} else if (role === "x-roman") {
-						line.romanLyric = (wordEl.textContent ?? "").trim();
+						line.romanLyric = wordEl.textContent ?? "";
 					}
 				} else if (wordEl.hasAttribute("begin") && wordEl.hasAttribute("end")) {
-                    const wordContent = (wordNode.textContent ?? "").trim();
-                    
-                    if (wordContent) {
-                        const word = {
-                            word: wordContent,
-                            startTime: parseTimespan(wordEl.getAttribute("begin") ?? ""),
-                            endTime: parseTimespan(wordEl.getAttribute("end") ?? ""),
-                        };
-                        const emptyBeat = wordEl.getAttribute("amll:empty-beat");
-                        if (emptyBeat) {
-                            word.emptyBeat = Number(emptyBeat);
-                        }
-                        line.words.push(word);
-                    }
+					const word = {
+						word: wordNode.textContent ?? "",
+						startTime: parseTimespan(wordEl.getAttribute("begin") ?? ""),
+						endTime: parseTimespan(wordEl.getAttribute("end") ?? ""),
+					};
+					const emptyBeat = wordEl.getAttribute("amll:empty-beat");
+					if (emptyBeat) {
+						word.emptyBeat = Number(emptyBeat);
+					}
+					line.words.push(word);
 				}
 			}
 		}
