@@ -155,3 +155,121 @@ export function push(branch) {
     });
 }
 
+
+/**
+ * 规范化所有空白字符
+ * @param {string} text 原始文本。
+ * @param {string} context 上下文，用于日志记录.
+ * @param {string[]} logs 日志收集器。
+ * @returns {{normalized: string, changed: boolean}} 返回一个包含规范化后文本和变更状态的对象。
+ */
+export function normalizeString(text, context, logs) {
+  if (typeof text !== 'string' || !text) {
+    return { normalized: '', changed: false };
+  }
+  // 按任意空白分割，用单个空格连接，再移除首尾空格。
+  const normalized = text.split(/\s+/).join(' ').trim();
+  const changed = normalized !== text;
+  if (changed) {
+    const logMessage = `- **${context}**: 格式不规范，已自动清理。\n  - **原始**: \`${text}\`\n  - **修正**: \`${normalized}\``;
+    if (!logs.includes(logMessage)) {
+        logs.push(logMessage);
+    }
+  }
+  return { normalized, changed };
+}
+
+
+/**
+ * 规范化单行歌词
+ * @param {object} line 包含 words 数组的歌词行对象。
+ * @param {number} lineIndex 当前行的索引，用于日志。
+ * @param {string[]} logs 日志收集器。
+ * @returns {{newLine: object, changed: boolean}} 返回包含处理后行对象和变更状态的对象。
+ */
+export function normalizeLyricLine(line, lineIndex, logs) {
+    if (!line || !line.words || line.words.length === 0) {
+        return { newLine: line, changed: false };
+    }
+
+    const originalWordsString = JSON.stringify(line.words);
+    const finalWords = [];
+    let hasChanges = false;
+
+    /**
+     * 日志记录的辅助函数
+     * @param {string} message - 日志内容
+     * @param {boolean} [isWarning=false] - 是否为警告日志
+     */
+    const logChange = (message, isWarning = false) => {
+        const logMessage = `- **第 ${lineIndex + 1} 行主歌词**: ${message}`;
+        if (!logs.includes(logMessage)) {
+            logs.push(logMessage);
+        }
+        // 只有修复了才算作 hasChanges，纯警告不算
+        if (!isWarning) {
+            hasChanges = true;
+        }
+    };
+
+    let pendingSpaceObjects = [];
+
+    // 辅助函数，用于处理累积的空格
+    const processPendingSpaces = (isTrailing = false) => {
+        if (pendingSpaceObjects.length === 0) return;
+
+        if (isTrailing || finalWords.length === 0) {
+            // 如果是句首或句尾空格，则记录为“移除”
+            logChange(`移除了 ${pendingSpaceObjects.length} 个不规范的首尾空格。`);
+        } else {
+            // 如果是词间空格，则记录为“合并”
+            logChange(`合并了 ${pendingSpaceObjects.length} 个不规范的词间空格。`);
+            finalWords.push({ word: ' ', startTime: 0, endTime: 0 });
+        }
+        pendingSpaceObjects = [];
+    };
+
+    for (const wordObj of line.words) {
+        if (!wordObj || typeof wordObj.word !== 'string') {
+            logChange(`发现并跳过了一个无效的歌词音节。`, true);
+            continue;
+        }
+
+        const isSpace = wordObj.startTime === 0 && wordObj.endTime === 0;
+
+        if (isSpace) {
+             if (wordObj.word.trim() === '') {
+                // 无时间戳的空格
+                pendingSpaceObjects.push(wordObj);
+             } else {
+                // 无时间戳但有内容
+                processPendingSpaces(); // 处理掉前面的空格
+                logChange(`保留了一个无时间戳的音节: \`${wordObj.word}\`。请检查其格式。`, true);
+                finalWords.push(wordObj);
+             }
+        } else {
+            processPendingSpaces();
+
+            const originalText = wordObj.word;
+            const normalizedText = originalText.trim().split(/\s+/).join(' ');
+            let wordToPush = wordObj;
+
+            if (originalText !== normalizedText) {
+                if (normalizedText === '') {
+                     wordToPush = { ...wordObj, word: ' ' };
+                } else {
+                    logChange(`规范化了音节 \`${originalText}\` 内部的空格。`);
+                    wordToPush = { ...wordObj, word: normalizedText };
+                }
+            }
+            finalWords.push(wordToPush);
+        }
+    }
+
+    // 处理所有遗留的句尾空格
+    processPendingSpaces(true);
+
+    const changed = hasChanges || (JSON.stringify(finalWords) !== originalWordsString);
+    const newLine = { ...line, words: finalWords };
+    return { newLine, changed };
+}
