@@ -50,6 +50,7 @@ function parseLyricInner(ttmlDoc) {
 			const id = agent.getAttribute("xml:id");
 			if (id) {
 				mainAgentId = id;
+        break;
 			}
 		}
 	}
