@@ -127,8 +127,10 @@ export function deleteBranch(branch) {
  */
 export function commit(message) {
     return new Promise((resolve, reject) => {
-        exec(`git commit -m "${message}"`, (err, stdout, stderr) => {
+        const env = { ...process.env, GIT_COMMIT_MESSAGE: message };
+        exec(`git commit -F -`, { env }, (err, stdout, stderr) => {
             if (err) {
+                console.error("Git commit 命令失败, 错误: ", stderr);
                 reject(err);
             } else {
                 resolve();
