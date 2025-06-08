@@ -1,0 +1,58 @@
+name: 检查歌词提交正确性 (实验性 Rust 后端)
+on:
+  workflow_dispatch:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: check-submit-rust
+  cancel-in-progress: true
+
+jobs:
+  check-submit-rust:
+    if: github.event.label.name == '实验性歌词提交/修正'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Rust 环境
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: 缓存 Cargo 依赖
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            scripts/ttml_processor/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('scripts/ttml_processor/Cargo.lock') }}
+      
+      - name: 编译 Rust 程序
+        run: cargo build --release --verbose
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+          cache-dependency-path: scripts/yarn.lock
+      
+      - name: 安装 Node.js 依赖
+        run: yarn
+        working-directory: scripts
+
+      - name: 运行检查程序 (实验性)
+        timeout-minutes: 10
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          yarn node ./run-submit-check-rust.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: scripts
