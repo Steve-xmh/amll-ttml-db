@@ -8,8 +8,7 @@ import { exportTTMLText } from "./ttml-writer.js";
 import { writeFile } from "fs/promises";
 import { resolve } from "path";
 import { checkLyric } from "./lyric-checker.js";
-import { HAS_CHECKED_MARK, REPO_NAME, REPO_OWNER, addFileToGit, checkoutBranch, commit, createBranch, deleteBranch, getMetadata, githubToken, parseBody, push } from "./utils.js";
-
+import { HAS_CHECKED_MARK, REPO_NAME, REPO_OWNER, addFileToGit, checkoutBranch, commit, createBranch, deleteBranch, getMetadata, githubToken, parseBody, push, normalizeString, normalizeLyricLine } from "./utils.js";
 const octokit = new Octokit({
 	auth: githubToken,
 	userAgent: "AMLLTTMLDBSubmitChecker",
@@ -186,6 +185,41 @@ async function main() {
 					});
 					try {
 						const parsedLyric = parseLyric(lyric);
+
+                        const normalizedLyric = JSON.parse(JSON.stringify(parsedLyric));
+                        let hasNormalizationOccurred = false;
+                        const normalizationLogs = [];
+
+                        // 遍历所有歌词行进行规范化
+                        for (let i = 0; i < normalizedLyric.lyricLines.length; i++) {
+                            const line = normalizedLyric.lyricLines[i];
+                            
+                            // 规范化主歌词文本
+                            const mainLineResult = normalizeLyricLine(line, i, normalizationLogs);
+                            if (mainLineResult.changed) {
+                                normalizedLyric.lyricLines[i] = mainLineResult.newLine;
+                                hasNormalizationOccurred = true;
+                            }
+
+                            // 规范化翻译文本
+                            if (line.translatedLyric) {
+                                const transResult = normalizeString(line.translatedLyric, `第 ${i + 1} 行的翻译文本`, normalizationLogs);
+                                if (transResult.changed) {
+                                    line.translatedLyric = transResult.normalized;
+                                    hasNormalizationOccurred = true;
+                                }
+                            }
+
+                            // 规范化罗马音文本
+                            if (line.romanLyric) {
+                                const romanResult = normalizeString(line.romanLyric, `第 ${i + 1} 行的罗马音文本`, normalizationLogs);
+                                if (romanResult.changed) {
+                                    line.romanLyric = romanResult.normalized;
+                                    hasNormalizationOccurred = true;
+                                }
+                            }
+                        }
+
 						const errors = [];
 						const musicPlatformKeyLabelPairs = {
 							"ncmMusicId": "歌曲关联网易云音乐 ID",
@@ -271,8 +305,8 @@ async function main() {
 							}
 							continue;
 						}
-						const regeneratedLyric = await exportTTMLText(parsedLyric);
-						const lyricFormatted = await prettier.format(lyric, {
+						const regeneratedLyric = await exportTTMLText(normalizedLyric);
+						const lyricFormatted = await prettier.format(regeneratedLyric, {
 							parser: "html",
 						});
 						await confirmIssue(lyric, regeneratedLyric);
@@ -315,6 +349,12 @@ async function main() {
 								lyricFormatted,
 								"```",
 							].join("\n");
+							if (hasNormalizationOccurred) {
+								const warningHeader = "> [!WARNING]\n";
+								const warningBody = `> 歌词文本已被自动规范化，详情如下：\n>\n` +
+													normalizationLogs.map(log => `> ${log.replace(/\n/g, '\n> ')}`).join('\n');
+								pullBody += `\n\n---\n\n${warningHeader}${warningBody}`;
+							}
 							if (pullBody.length > 65536) {
 								pullBody = [
 									"### 歌词议题",

@@ -101,9 +101,9 @@ function parseLyricInner(ttmlDoc) {
 						parseParseLine(wordEl, true);
 						haveBg = true;
 					} else if (role === "x-translation") {
-						line.translatedLyric = wordEl.innerHTML;
+						line.translatedLyric = wordEl.textContent ?? "";
 					} else if (role === "x-roman") {
-						line.romanLyric = wordEl.innerHTML;
+						line.romanLyric = wordEl.textContent ?? "";
 					}
 				} else if (wordEl.hasAttribute("begin") && wordEl.hasAttribute("end")) {
 					const word = {

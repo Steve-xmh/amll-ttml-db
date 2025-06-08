@@ -130,27 +130,18 @@ function exportTTMLTextInner(
 			lineP.setAttribute("ttm:agent", line.isDuet ? "v2" : "v1");
 			lineP.setAttribute("itunes:key", `L${++i}`);
 
-			if (line.words.length > 1) {
-				let beginTime = Infinity;
-				let endTime = 0;
-				for (const word of line.words) {
-					if (word.word.trim().length === 0) {
-						lineP.appendChild(doc.createTextNode(word.word));
-					} else {
-						const span = createWordElement(word);
-						lineP.appendChild(span);
-						beginTime = Math.min(beginTime, word.startTime);
-						endTime = Math.max(endTime, word.endTime);
-					}
-				}
-				lineP.setAttribute("begin", msToTimestamp(line.startTime));
-				lineP.setAttribute("end", msToTimestamp(line.endTime));
-			} else if (line.words.length === 1) {
-				const word = line.words[0];
-				lineP.appendChild(doc.createTextNode(word.word));
-				lineP.setAttribute("begin", msToTimestamp(word.startTime));
-				lineP.setAttribute("end", msToTimestamp(word.endTime));
-			}
+			if (line.words.length === 1) {
+                lineP.appendChild(doc.createTextNode(line.words[0].word));
+            } else {
+                for (const word of line.words) {
+                    if (word.word === ' ') {
+                        lineP.appendChild(doc.createTextNode(' '));
+                    } else {
+                        const span = createWordElement(word);
+                        lineP.appendChild(span);
+                    }
+                }
+            }
 
 			const nextLine = param[lineIndex + 1];
 			if (nextLine && nextLine.isBG) {
