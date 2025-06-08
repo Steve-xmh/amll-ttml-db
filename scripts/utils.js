@@ -290,6 +290,7 @@ export function normalizeLyricLine(line, lineIndex, logs) {
 
         if (trailingSpace) {
             pendingSpaces++;
+            hasChanges = true;
         }
     }
 
