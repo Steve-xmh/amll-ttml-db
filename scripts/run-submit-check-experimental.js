@@ -213,8 +213,7 @@ async function main() {
 
         try {
           console.log("正在调用 Rust 处理器...");
-          const rustProcessorPath =
-            "./ttml_processor/target/release/ttml_processor";
+          const rustProcessorPath = "./target/release/ttml_processor";
           const command = `${rustProcessorPath} --input ${tempInputFile} --output ${tempProcessedFile} --json-output ${tempMetadataFile} --timing-mode ${timingMode}`;
           execSync(command, { stdio: "inherit" });
           console.log("Rust 处理器执行成功，文件已验证并生成。");

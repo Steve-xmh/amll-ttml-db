@@ -38,10 +38,10 @@ jobs:
         working-directory: scripts/ttml_processor
 
       - name: 列出编译产物
-        run: ls -lR scripts/ttml_processor/target/
+        run: ls -lR target/release
 
       - name: 赋予可执行权限
-        run: chmod +x scripts/ttml_processor/target/release/ttml_processor
+        run: chmod +x target/release/ttml_processor
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
