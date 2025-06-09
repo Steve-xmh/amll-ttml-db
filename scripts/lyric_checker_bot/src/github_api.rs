@@ -15,7 +15,7 @@ use ttml_processor::types::CanonicalMetadataKey;
 
 use crate::git_utils;
 
-const EXPERIMENTAL_LABEL: &str = "[实验性歌词提交/修正]";
+const EXPERIMENTAL_LABEL: &str = "实验性歌词提交/修正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 
 #[derive(Clone)]
@@ -292,24 +292,20 @@ impl GitHubClient {
     /// 根据 Issue 标题和元数据生成 Pull Request 的标题。
     /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
     fn generate_pr_title(&self, issue_title: &str, metadata_store: &MetadataStore) -> String {
-        let trimmed_title = issue_title.trim();
-        if trimmed_title.is_empty() || trimmed_title == EXPERIMENTAL_LABEL {
-            let artists = metadata_store
-                .get_multiple_values(&CanonicalMetadataKey::Artist)
-                .map(|v| v.join("/"));
+        let artists = metadata_store
+            .get_multiple_values(&CanonicalMetadataKey::Artist)
+            .map(|v| v.join("/"));
+        let titles = metadata_store
+            .get_multiple_values(&CanonicalMetadataKey::Title)
+            .map(|v| v.join("/"));
 
-            let titles = metadata_store
-                .get_multiple_values(&CanonicalMetadataKey::Title)
-                .map(|v| v.join("/"));
-
-            if let (Some(artist_str), Some(title_str)) = (artists, titles) {
-                if !artist_str.is_empty() && !title_str.is_empty() {
-                    let new_title = format!("{} - {}", artist_str, title_str);
-                    return new_title;
-                }
+        if let (Some(artist_str), Some(title_str)) = (artists, titles) {
+            if !artist_str.is_empty() && !title_str.is_empty() {
+                let new_title = format!("{} - {}", artist_str, title_str);
+                return new_title;
             }
         }
-        
+
         issue_title.to_string()
     }
 
