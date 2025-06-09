@@ -240,10 +240,10 @@ async function main() {
 
           function buildMetadataMessage(metadata) {
             const musicPlatformKeyLabelPairs = {
-              ncmMusicId: "歌曲关联网易云音乐 ID",
-              qqMusicId: "歌曲关联 QQ 音乐 ID",
-              spotifyId: "歌曲关联 Spotify 音乐 ID",
-              appleMusicId: "歌曲关联 Apple Music 音乐 ID",
+              NcmMusicId: "歌曲关联网易云音乐 ID",
+              QqMusicId: "歌曲关联 QQ 音乐 ID",
+              SpotifyId: "歌曲关联 Spotify 音乐 ID",
+              AppleMusicId: "歌曲关联 Apple Music 音乐 ID",
             };
             let containsId = false;
             const pullMetadataMessage = [];
