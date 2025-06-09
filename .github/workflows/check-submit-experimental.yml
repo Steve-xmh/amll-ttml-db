@@ -12,11 +12,6 @@ jobs:
   check-submit-rust:
     if: github.event.label.name == '实验性歌词提交/修正'
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: scripts
-
     timeout-minutes: 10
     steps:
       - name: 签出代码
@@ -27,26 +22,14 @@ jobs:
       - name: 安装 Rust 环境
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          cache-workspaces: './scripts'
+          cache: false
 
-      - name: 缓存 Cargo & Target 目录
-        uses: actions/cache@v4
-        id: cache-rust
+      - name: 缓存 Cargo 依赖
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          workspaces: ./scripts -> target
 
       - name: 编译 Rust 程序
-        if: steps.cache-rust.outputs.cache-hit != 'true'
         run: cargo build -p lyric_checker_bot --release --verbose
         working-directory: scripts
       
