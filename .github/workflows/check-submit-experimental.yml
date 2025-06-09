@@ -30,30 +30,19 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            scripts/ttml_processor/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('scripts/ttml_processor/Cargo.lock') }}
+            scripts/target/
+          key: ${{ runner.os }}-cargo-workspace-${{ hashFiles('scripts/Cargo.lock') }}
 
       - name: 编译 Rust 程序
-        run: cargo build --release --verbose
-        working-directory: scripts/ttml_processor
-
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.x"
-          cache: "yarn"
-          cache-dependency-path: scripts/yarn.lock
-
-      - name: 安装 Node.js 依赖
-        run: yarn
+        run: cargo build -p lyric_checker_bot --release --verbose
         working-directory: scripts
-
-      - name: 运行检查程序 (实验性)
+      
+      - name: 运行检查程序
         timeout-minutes: 10
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
-          yarn node ./run-submit-check-experimental.js
+          ./target/release/lyric_checker_bot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: scripts

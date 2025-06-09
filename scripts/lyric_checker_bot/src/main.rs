@@ -1,0 +1,165 @@
+mod git_utils;
+mod github_api;
+
+use anyhow::Result;
+use reqwest::Client;
+use std::path::{Path, PathBuf};
+use ttml_processor::{
+    MetadataStore, generate_ttml, parse_ttml_content,
+    types::{DefaultLanguageOptions, TtmlGenerationOptions, TtmlTimingMode},
+    validate_lyrics_and_metadata,
+};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    env_logger::init();
+    log::info!("启动实验性歌词提交检查程序...");
+
+    let token = std::env::var("GITHUB_TOKEN").expect("未设置 GITHUB_TOKEN");
+    let repo_str = std::env::var("GITHUB_REPOSITORY").expect("未设置 GITHUB_REPOSITORY");
+    let (owner, repo_name) = repo_str
+        .split_once('/')
+        .expect("GITHUB_REPOSITORY 格式无效");
+    log::info!("目标仓库: {}/{}", owner, repo_name);
+
+    let workspace_root = std::env::var("GITHUB_WORKSPACE")
+        .expect("错误：未设置 GITHUB_WORKSPACE 环境变量。此程序应在 GitHub Actions 环境中运行。");
+    let root_path = PathBuf::from(workspace_root);
+
+    let http_client = Client::new();
+    let github = github_api::GitHubClient::new(token, owner.to_string(), repo_name.to_string())?;
+
+    log::info!("正在获取带 '实验性歌词提交/修正' 标签的 Issue...");
+    let issues = github.list_experimental_issues().await?;
+
+    for issue in issues {
+        let http_client = http_client.clone();
+        let github = github.clone();
+        let root_path = root_path.clone();
+
+        log::info!("开始处理 Issue #{}: {}", issue.number, issue.title);
+        if let Err(e) = process_issue(&issue, http_client, github, &root_path).await {
+            log::error!("处理 Issue #{} 失败: {:?}", issue.number, e);
+        }
+    }
+
+    log::info!("所有 Issue 处理完毕。");
+    Ok(())
+}
+
+/// 处理单个 Issue
+async fn process_issue(
+    issue: &octocrab::models::issues::Issue,
+    http_client: Client,
+    github: github_api::GitHubClient,
+    root_path: &Path,
+) -> Result<()> {
+
+    if github.pr_for_issue_exists(issue.number).await? {
+        // 如果 PR 已存在，直接返回，不再处理
+        return Ok(());
+    }
+
+    // 检查是否已处理
+    if github.has_bot_commented(issue.number).await? {
+        log::info!("Issue #{} 已被机器人评论过，跳过。", issue.number);
+        return Ok(());
+    }
+
+    // 2. 解析 Issue Body
+    let body_params = github.parse_issue_body(issue.body.as_deref().unwrap_or(""));
+    let ttml_url = match body_params.get("TTML 歌词文件下载直链") {
+        Some(url) if !url.is_empty() => url,
+        _ => {
+            github
+                .post_decline_comment(
+                    issue.number,
+                    "无法在 Issue 中找到有效的“TTML 歌词文件下载直链”。",
+                    "",
+                )
+                .await?;
+            return Ok(());
+        }
+    };
+    let remarks = body_params.get("备注").cloned().unwrap_or_default();
+    let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
+    let timing_mode = if lyric_options.contains("[x]") {
+        TtmlTimingMode::Line
+    } else {
+        TtmlTimingMode::Word
+    };
+    log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
+
+    // 3. 下载 TTML 文件
+    log::info!("正在从 URL 下载 TTML: {}", ttml_url);
+    let original_ttml_content = http_client.get(ttml_url).send().await?.text().await?;
+
+    log::info!("开始解析 TTML 文件...");
+    let default_langs = DefaultLanguageOptions::default();
+    let parsed_data = match parse_ttml_content(&original_ttml_content, &default_langs) {
+        Ok(data) => {
+            if !data.warnings.is_empty() {
+                for warning in &data.warnings {
+                    log::warn!("解析警告 (Issue #{}): {}", issue.number, warning);
+                }
+                // TODO: 可以在 PR 中附上这些警告信息
+            }
+            log::info!("文件解析成功。");
+            data
+        }
+        Err(e) => {
+            let err_msg = format!("解析 TTML 文件失败: `{:?}`", e);
+            github
+                .post_decline_comment(issue.number, &err_msg, &original_ttml_content)
+                .await?;
+            return Ok(());
+        }
+    };
+
+    let warnings = parsed_data.warnings.clone();
+    if !warnings.is_empty() {
+        log::warn!(
+            "发现 {} 条解析警告 (Issue #{})",
+            warnings.len(),
+            issue.number
+        );
+    }
+
+    log::info!("正在处理元数据...");
+    let mut metadata_store = MetadataStore::new();
+    metadata_store.load_from_raw(&parsed_data.raw_metadata);
+    metadata_store.deduplicate_values();
+    log::info!("元数据处理完毕。准备用于验证的内容: {:?}", metadata_store);
+
+    log::info!("正在验证歌词数据和元数据...");
+    if let Err(errors) = validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store) {
+        let err_msg = format!("文件验证失败:\n- {}", errors.join("\n- "));
+        github
+            .post_decline_comment(issue.number, &err_msg, &original_ttml_content)
+            .await?;
+        return Ok(());
+    }
+    log::info!("文件验证通过。");
+
+    log::info!("正在生成 TTML 文件...");
+    let gen_opts = TtmlGenerationOptions {
+        timing_mode,
+        ..Default::default()
+    };
+    let regenerated_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &gen_opts)?;
+
+    log::info!("Issue #{} 验证通过，已生成新的 TTML。", issue.number);
+    github
+        .post_success_and_create_pr(
+            issue,
+            &original_ttml_content,
+            &regenerated_ttml,
+            &metadata_store,
+            &remarks,
+            &warnings,
+            root_path,
+        )
+        .await?;
+
+    Ok(())
+}
