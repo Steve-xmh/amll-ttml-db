@@ -18,6 +18,8 @@ import {
   parseBody,
   push,
 } from "./utils.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const octokit = new Octokit({
   auth: githubToken,
@@ -213,8 +215,18 @@ async function main() {
 
         try {
           console.log("正在调用 Rust 处理器...");
-          const rustProcessorPath = "./target/release/ttml_processor";
-          const command = `${rustProcessorPath} --input ${tempInputFile} --output ${tempProcessedFile} --json-output ${tempMetadataFile} --timing-mode ${timingMode}`;
+
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+
+          const rustProcessorPath = path.resolve(
+            __dirname,
+            "..",
+            "target",
+            "release",
+            "ttml_processor",
+          );
+          const command = `"${rustProcessorPath}" --input ${tempInputFile} --output ${tempProcessedFile} --json-output ${tempMetadataFile} --timing-mode ${timingMode}`;
           execSync(command, { stdio: "inherit" });
           console.log("Rust 处理器执行成功，文件已验证并生成。");
 
