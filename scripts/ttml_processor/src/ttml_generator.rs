@@ -428,7 +428,9 @@ fn write_p_content<W: std::io::Write>(
                     (options.timing_mode == TtmlTimingMode::Line || line.background_section.is_none());
 
                 if !is_last_syllable_overall_in_p_content {
-                    writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
+                    if !options.format {
+                        writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
+                    }
                 }
             }
         }
@@ -535,7 +537,9 @@ fn write_background_section<W: std::io::Write>(
             writer.write_event(Event::End(BytesEnd::new("span")))?;
 
             if syl_bg.ends_with_space && idx < num_syls - 1 {
-                writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
+                if !options.format {
+                    writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
+                }
             }
         }
     }
