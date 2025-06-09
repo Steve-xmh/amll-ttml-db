@@ -332,7 +332,6 @@ async function main() {
             issue.user?.login
               ? `@${issue.user?.login}`
               : "未知，请查看议题发送者",
-            `---`,
             ...metadataMessage,
             `### 备注`,
             ...comment,
