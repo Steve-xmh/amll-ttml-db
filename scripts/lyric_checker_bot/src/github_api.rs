@@ -301,7 +301,7 @@ impl GitHubClient {
 
         if let (Some(artist_str), Some(title_str)) = (artists, titles) {
             if !artist_str.is_empty() && !title_str.is_empty() {
-                let new_title = format!("{} - {}", artist_str, title_str);
+                let new_title = format!("[{}] {} - {}", EXPERIMENTAL_LABEL, artist_str, title_str);
                 return new_title;
             }
         }
