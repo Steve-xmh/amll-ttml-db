@@ -1,8 +1,8 @@
 use crate::metadata_processor::MetadataStore;
 use crate::ttml_parser::normalize_text_whitespace;
 use crate::types::{
-    BackgroundSection, CanonicalMetadataKey, ConvertError, LyricLine, TtmlGenerationOptions,
-    TtmlTimingMode,
+    BackgroundSection, CanonicalMetadataKey, ConvertError, LyricLine, RomanizationEntry,
+    TranslationEntry, TtmlGenerationOptions, TtmlTimingMode,
 };
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::writer::Writer;
@@ -44,13 +44,13 @@ pub fn generate_ttml(
     ));
 
     let amll_keys_to_check_for_namespace = [
+        CanonicalMetadataKey::Title,
         CanonicalMetadataKey::Album,
         CanonicalMetadataKey::AppleMusicId,
         CanonicalMetadataKey::Isrc,
         CanonicalMetadataKey::NcmMusicId,
         CanonicalMetadataKey::QqMusicId,
         CanonicalMetadataKey::SpotifyId,
-        CanonicalMetadataKey::Title,
         CanonicalMetadataKey::TtmlAuthorGithub,
         CanonicalMetadataKey::TtmlAuthorGithubLogin,
         CanonicalMetadataKey::Artist,
@@ -120,7 +120,7 @@ fn write_ttml_head(
         if agent_ids_in_lines.is_empty() && !lines.is_empty() {
             let v1_defined_in_meta = metadata_store
                 .get_multiple_values(&CanonicalMetadataKey::Custom("agent".to_string()))
-                .map_or(false, |vals| vals.iter().any(|v| v.starts_with("v1=")))
+                .is_some_and(|vals| vals.iter().any(|v| v.starts_with("v1=")))
                 || metadata_store
                     .get_single_value(&CanonicalMetadataKey::Custom("v1".to_string()))
                     .is_some();
@@ -305,16 +305,14 @@ fn write_ttml_body(
                 {
                     p_start_element.push_attribute(("ttm:agent", "v1"));
                 }
-            } else {
-                if let Some(agent) = &line.agent {
-                    if !agent.is_empty() && agent != "v0" {
-                        p_start_element.push_attribute(("ttm:agent", agent.as_str()));
-                    } else if agent.is_empty() || agent == "v0" {
-                        p_start_element.push_attribute(("ttm:agent", "v1"));
-                    }
-                } else {
+            } else if let Some(agent) = &line.agent {
+                if !agent.is_empty() && agent != "v0" {
+                    p_start_element.push_attribute(("ttm:agent", agent.as_str()));
+                } else if agent.is_empty() || agent == "v0" {
                     p_start_element.push_attribute(("ttm:agent", "v1"));
                 }
+            } else {
+                p_start_element.push_attribute(("ttm:agent", "v1"));
             }
             writer.write_event(Event::Start(p_start_element))?;
             write_p_content(writer, line, options)?;
@@ -323,6 +321,48 @@ fn write_ttml_body(
         writer.write_event(Event::End(BytesEnd::new("div")))?;
     }
     writer.write_event(Event::End(BytesEnd::new("body")))?;
+    Ok(())
+}
+
+/// 辅助函数，用于写入翻译和罗马音的 <span> 标签。
+///
+/// # 参数
+/// * `writer`: XML writer 的可变引用。
+/// * `entries`: 要处理的数据项切片 (例如 `&[TranslationEntry]`)。
+/// * `role`: 要设置的 `ttm:role` 属性值 (例如 "x-translation")。
+/// * `default_lang`: 备用的默认语言代码。
+/// * `get_text`: 一个闭包，用于从数据项中获取文本。
+/// * `get_lang`: 一个闭包，用于从数据项中获取语言代码。
+fn write_auxiliary_span<T>(
+    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+    entries: &[T],
+    role: &str,
+    default_lang: &Option<String>,
+    get_text: impl Fn(&T) -> &String,
+    get_lang: impl Fn(&T) -> &Option<String>,
+) -> Result<(), ConvertError> {
+    for entry in entries {
+        let text = get_text(entry);
+        let normalized_text = normalize_text_whitespace(text);
+
+        if !normalized_text.is_empty() {
+            let mut span = BytesStart::new("span");
+            span.push_attribute(("ttm:role", role));
+
+            // 优先使用条目自身的语言，否则使用提供的默认语言
+            let lang_code = get_lang(entry).as_ref().or(default_lang.as_ref());
+
+            if let Some(lang) = lang_code.filter(|s| !s.is_empty()) {
+                span.push_attribute(("xml:lang", lang.as_str()));
+            }
+
+            writer.write_event(Event::Start(span))?;
+            writer.write_event(Event::Text(BytesText::from_escaped(
+                quick_xml::escape::escape(&normalized_text).as_ref(),
+            )))?;
+            writer.write_event(Event::End(BytesEnd::new("span")))?;
+        }
+    }
     Ok(())
 }
 
@@ -379,46 +419,23 @@ fn write_p_content(
     }
 
     if !options.use_apple_format_rules {
-        for trans_entry in &line.translations {
-            let normalized_text = normalize_text_whitespace(&trans_entry.text);
-            if !normalized_text.is_empty() {
-                let mut trans_span = BytesStart::new("span");
-                trans_span.push_attribute(("ttm:role", "x-translation"));
-                let lang_code = options
-                    .translation_language
-                    .as_ref()
-                    .or(trans_entry.lang.as_ref())
-                    .filter(|s| !s.is_empty());
-                if let Some(lang) = lang_code {
-                    trans_span.push_attribute(("xml:lang", lang.as_str()));
-                }
-                writer.write_event(Event::Start(trans_span))?;
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&normalized_text).as_ref(),
-                )))?;
-                writer.write_event(Event::End(BytesEnd::new("span")))?;
-            }
-        }
-        for roma_entry in &line.romanizations {
-            let normalized_text = normalize_text_whitespace(&roma_entry.text);
-            if !normalized_text.is_empty() {
-                let mut roma_span = BytesStart::new("span");
-                roma_span.push_attribute(("ttm:role", "x-roman"));
-                let lang_code = options
-                    .romanization_language
-                    .as_ref()
-                    .or(roma_entry.lang.as_ref())
-                    .filter(|s| !s.is_empty());
-                if let Some(lang) = lang_code {
-                    roma_span.push_attribute(("xml:lang", lang.as_str()));
-                }
-                writer.write_event(Event::Start(roma_span))?;
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&normalized_text).as_ref(),
-                )))?;
-                writer.write_event(Event::End(BytesEnd::new("span")))?;
-            }
-        }
+        write_auxiliary_span(
+            writer,
+            &line.translations,
+            "x-translation",
+            &options.translation_language,
+            |e: &TranslationEntry| &e.text,
+            |e: &TranslationEntry| &e.lang,
+        )?;
+
+        write_auxiliary_span(
+            writer,
+            &line.romanizations,
+            "x-roman",
+            &options.romanization_language,
+            |e: &RomanizationEntry| &e.text,
+            |e: &RomanizationEntry| &e.lang,
+        )?;
     }
 
     if options.timing_mode == TtmlTimingMode::Word {
@@ -430,15 +447,18 @@ fn write_p_content(
     Ok(())
 }
 
+/// 写入背景歌词部分
 fn write_background_section(
     writer: &mut Writer<Cursor<&mut Vec<u8>>>,
     bg_section: &BackgroundSection,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
+    // 逐行歌词直接跳过
     if options.timing_mode == TtmlTimingMode::Line {
         return Ok(());
     }
 
+    // 检查背景部分是否有实际内容，如果没有则提前退出
     let has_syllables = !bg_section.syllables.is_empty();
     let has_translations = !options.use_apple_format_rules
         && bg_section
@@ -451,6 +471,7 @@ fn write_background_section(
             .iter()
             .any(|r| !normalize_text_whitespace(&r.text).is_empty());
 
+    // 如果没有任何音节、翻译、罗马音，并且时间戳无效，则不生成任何内容
     if !has_syllables
         && !has_translations
         && !has_romanizations
@@ -459,103 +480,71 @@ fn write_background_section(
         return Ok(());
     }
 
+    // 创建背景歌词的容器 <span> 标签
     let mut bg_container_span = BytesStart::new("span");
     bg_container_span.push_attribute(("ttm:role", "x-bg"));
     bg_container_span.push_attribute(("begin", format_ttml_time(bg_section.start_ms).as_str()));
     bg_container_span.push_attribute(("end", format_ttml_time(bg_section.end_ms).as_str()));
     writer.write_event(Event::Start(bg_container_span))?;
 
-    if options.timing_mode == TtmlTimingMode::Line {
-        let mut bg_line_text_parts = Vec::new();
-        for (syl_idx, syl) in bg_section.syllables.iter().enumerate() {
-            if syl.start_ms >= syl.end_ms && !syl.text.is_empty() {
-                log::warn!(
-                    "TTML生成器警告: 背景音节 '{}' 时间戳无效 ({} >= {})",
-                    syl.text.escape_debug(),
-                    syl.start_ms,
-                    syl.end_ms
-                );
-            }
-            let mut syl_span = BytesStart::new("span");
-            syl_span.push_attribute(("begin", format_ttml_time(syl.start_ms).as_str()));
-            syl_span.push_attribute((
+    // 自动为背景音节添加括号
+    let num_syls = bg_section.syllables.len();
+    for (idx, syl_bg) in bg_section.syllables.iter().enumerate() {
+        if !syl_bg.text.is_empty() || (syl_bg.end_ms > syl_bg.start_ms) {
+            // 文本本身就是空格，不加括号
+            let text_to_write = if syl_bg.text.trim().is_empty() {
+                syl_bg.text.clone()
+            } else {
+                // 根据音节位置决定如何添加括号
+                match (num_syls, idx) {
+                    (1, _) => format!("({})", syl_bg.text), // 只有一个音节
+                    (_, 0) => format!("({}", syl_bg.text),  // 第一个音节
+                    (_, i) if i == num_syls - 1 => format!("{})", syl_bg.text), // 最后一个音节
+                    _ => syl_bg.text.clone(),               // 中间音节
+                }
+            };
+
+            let mut span = BytesStart::new("span");
+            span.push_attribute(("begin", format_ttml_time(syl_bg.start_ms).as_str()));
+            span.push_attribute((
                 "end",
-                format_ttml_time(syl.end_ms.max(syl.start_ms)).as_str(),
+                format_ttml_time(syl_bg.end_ms.max(syl_bg.start_ms)).as_str(),
             ));
-            writer.write_event(Event::Start(syl_span))?;
-            if !syl.text.is_empty() {
+            writer.write_event(Event::Start(span))?;
+            if !text_to_write.is_empty() {
                 writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&syl.text).as_ref(),
+                    quick_xml::escape::escape(&text_to_write).as_ref(),
                 )))?;
             }
             writer.write_event(Event::End(BytesEnd::new("span")))?;
-            if syl.ends_with_space && syl_idx < bg_section.syllables.len() - 1 {
-                writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
-            }
-            bg_line_text_parts.push(syl.text.as_str());
-        }
-    } else {
-        for (syl_idx, syl) in bg_section.syllables.iter().enumerate() {
-            let mut syl_span = BytesStart::new("span");
-            syl_span.push_attribute(("begin", format_ttml_time(syl.start_ms).as_str()));
-            syl_span.push_attribute((
-                "end",
-                format_ttml_time(syl.end_ms.max(syl.start_ms)).as_str(),
-            ));
-            writer.write_event(Event::Start(syl_span))?;
-            if !syl.text.is_empty() {
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&syl.text).as_ref(),
-                )))?;
-            }
-            writer.write_event(Event::End(BytesEnd::new("span")))?;
-            if syl.ends_with_space && syl_idx < bg_section.syllables.len() - 1 {
+
+            if syl_bg.ends_with_space && idx < num_syls - 1 {
                 writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
             }
         }
     }
 
     if !options.use_apple_format_rules {
-        for trans_entry in &bg_section.translations {
-            if !trans_entry.text.is_empty() {
-                let mut trans_span = BytesStart::new("span");
-                trans_span.push_attribute(("ttm:role", "x-translation"));
-                let lang_code = options
-                    .translation_language
-                    .as_ref()
-                    .or(trans_entry.lang.as_ref())
-                    .filter(|s| !s.is_empty());
-                if let Some(lang) = lang_code {
-                    trans_span.push_attribute(("xml:lang", lang.as_str()));
-                }
-                writer.write_event(Event::Start(trans_span))?;
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&trans_entry.text).as_ref(),
-                )))?;
-                writer.write_event(Event::End(BytesEnd::new("span")))?;
-            }
-        }
-        for roma_entry in &bg_section.romanizations {
-            if !roma_entry.text.is_empty() {
-                let mut roma_span = BytesStart::new("span");
-                roma_span.push_attribute(("ttm:role", "x-roman"));
-                let lang_code = options
-                    .romanization_language
-                    .as_ref()
-                    .or(roma_entry.lang.as_ref())
-                    .filter(|s| !s.is_empty());
-                if let Some(lang) = lang_code {
-                    roma_span.push_attribute(("xml:lang", lang.as_str()));
-                }
-                writer.write_event(Event::Start(roma_span))?;
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&roma_entry.text).as_ref(),
-                )))?;
-                writer.write_event(Event::End(BytesEnd::new("span")))?;
-            }
-        }
+        write_auxiliary_span(
+            writer,
+            &bg_section.translations,
+            "x-translation",
+            &options.translation_language,
+            |e: &TranslationEntry| &e.text,
+            |e: &TranslationEntry| &e.lang,
+        )?;
+
+        write_auxiliary_span(
+            writer,
+            &bg_section.romanizations,
+            "x-roman",
+            &options.romanization_language,
+            |e: &RomanizationEntry| &e.text,
+            |e: &RomanizationEntry| &e.lang,
+        )?;
     }
 
+    // 关闭背景歌词容器 </span>
     writer.write_event(Event::End(BytesEnd::new("span")))?;
     Ok(())
 }

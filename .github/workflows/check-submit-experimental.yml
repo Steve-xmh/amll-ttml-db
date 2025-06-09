@@ -32,17 +32,17 @@ jobs:
             ~/.cargo/git/db/
             scripts/ttml_processor/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('scripts/ttml_processor/Cargo.lock') }}
-      
+
       - name: 编译 Rust 程序
         run: cargo build --release --verbose
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
-          cache: 'yarn'
+          node-version: "24.x"
+          cache: "yarn"
           cache-dependency-path: scripts/yarn.lock
-      
+
       - name: 安装 Node.js 依赖
         run: yarn
         working-directory: scripts

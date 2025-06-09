@@ -79,7 +79,7 @@ fn validate_lyric_lines(lines: &[LyricLine], errors: &mut Vec<String>) {
         let has_content = line
             .line_text
             .as_ref()
-            .map_or(false, |s| !s.trim().is_empty())
+            .is_some_and(|s| !s.trim().is_empty())
             || !line.main_syllables.is_empty();
 
         if !has_content {

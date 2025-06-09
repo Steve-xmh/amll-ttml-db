@@ -409,12 +409,14 @@ pub fn parse_ttml_content(
                     }
                     "span" if state.in_p => process_span_start(&e, &mut state, &reader)?,
                     _ => {
-                        if state.in_metadata_section && e.name().as_ref().starts_with(b"ttm:") {
-                            if local_name_str != "agent" && local_name_str != "name" {
-                                state.in_ttm_metadata_tag = true;
-                                state.current_ttm_metadata_key = Some(local_name_str);
-                                state.text_buffer.clear();
-                            }
+                        if state.in_metadata_section
+                            && e.name().as_ref().starts_with(b"ttm:")
+                            && local_name_str != "agent"
+                            && local_name_str != "name"
+                        {
+                            state.in_ttm_metadata_tag = true;
+                            state.current_ttm_metadata_key = Some(local_name_str);
+                            state.text_buffer.clear();
                         }
                     }
                 }
@@ -843,13 +845,23 @@ fn process_span_end(
                                 {
                                     warnings.push(format!("TTML解析警告: 音节 '{}' 的时间戳无效 (start_ms {} >= end_ms {}), 但仍会创建音节。", trimmed_text_for_content_check.escape_debug(), start_ms, end_ms));
                                 }
+
+                                let syllable_text = if ended_span_was_within_background_container {
+                                    // 如果是背景音节，则清理括号
+                                    clean_parentheses_from_bg_text(trimmed_text_for_content_check)
+                                } else {
+                                    // 否则，使用常规的空白清理
+                                    normalize_text_whitespace(trimmed_text_for_content_check)
+                                };
+
                                 let syllable = LyricSyllable {
-                                    text: normalize_text_whitespace(trimmed_text_for_content_check),
+                                    text: syllable_text,
                                     start_ms,
                                     end_ms: end_ms.max(start_ms),
                                     duration_ms: Some(end_ms.saturating_sub(start_ms)),
                                     ends_with_space: had_trailing_whitespace,
                                 };
+
                                 let was_bg_syllable = if ended_span_was_within_background_container
                                 {
                                     if let Some(bg_section) =
@@ -1065,10 +1077,7 @@ fn finalize_p_element(
         if final_line.main_syllables.is_empty()
             && final_line.translations.is_empty()
             && final_line.romanizations.is_empty()
-            && final_line
-                .line_text
-                .as_deref()
-                .map_or(true, |s| s.is_empty())
+            && final_line.line_text.as_deref().is_none_or(|s| s.is_empty())
             && final_line.end_ms <= final_line.start_ms
         {
             return;
@@ -1094,7 +1103,7 @@ fn finalize_p_element(
         && final_line
             .line_text
             .as_ref()
-            .map_or(false, |lt| !lt.is_empty())
+            .is_some_and(|lt| !lt.is_empty())
         && final_line.end_ms > final_line.start_ms
     {
         let syl_start = final_line.start_ms;
@@ -1116,4 +1125,39 @@ fn finalize_p_element(
         });
     }
     lines.push(final_line);
+}
+
+/// 清理文本两端的括号（单个或成对）
+pub fn clean_parentheses_from_bg_text(text: &str) -> String {
+    if text.is_empty() {
+        return "".to_string();
+    }
+
+    let first_char = text.chars().next();
+    let last_char = text.chars().last();
+
+    let has_leading_paren = first_char == Some('(');
+    let has_trailing_paren = last_char == Some(')');
+
+    let mut start_index = 0;
+    let mut end_index = text.len();
+
+    if has_leading_paren && has_trailing_paren && text.len() >= 2 {
+        // 同时有开头和结尾括号
+        start_index = text.chars().next().unwrap().len_utf8();
+        end_index = text.char_indices().last().unwrap().0;
+    } else if has_leading_paren {
+        // 只有开头括号
+        start_index = text.chars().next().unwrap().len_utf8();
+    } else if has_trailing_paren {
+        // 只有结尾括号
+        end_index = text.char_indices().last().unwrap().0;
+    }
+    let final_content_slice = if start_index >= end_index {
+        ""
+    } else {
+        &text[start_index..end_index]
+    };
+
+    final_content_slice.to_string()
 }

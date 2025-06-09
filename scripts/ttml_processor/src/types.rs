@@ -60,15 +60,11 @@ impl std::error::Error for ParseCanonicalMetadataKeyError {}
 /// 枚举：表示支持的歌词格式。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, Serialize, Deserialize)]
 #[strum(ascii_case_insensitive)]
+#[derive(Default)]
 pub enum LyricFormat {
     /// Timed Text Markup Language 格式。
+    #[default]
     Ttml,
-}
-
-impl Default for LyricFormat {
-    fn default() -> Self {
-        LyricFormat::Ttml
-    }
 }
 
 //=============================================================================
@@ -204,6 +200,24 @@ impl fmt::Display for CanonicalMetadataKey {
             CanonicalMetadataKey::Custom(s) => s.as_str(),
         };
         write!(f, "{}", key_name)
+    }
+}
+
+impl CanonicalMetadataKey {
+    pub fn is_public(&self) -> bool {
+        matches!(
+            self,
+            Self::Title
+                | Self::Artist
+                | Self::Album
+                | Self::NcmMusicId
+                | Self::QqMusicId
+                | Self::SpotifyId
+                | Self::AppleMusicId
+                | Self::Isrc
+                | Self::TtmlAuthorGithub
+                | Self::TtmlAuthorGithubLogin
+        )
     }
 }
 

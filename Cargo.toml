@@ -1,0 +1,6 @@
+[workspace]
+resolver = "3"
+members = [
+    "scripts/ttml_processor",
+    "scripts/rebuild-folder",
+]

@@ -42,7 +42,7 @@ impl MetadataStore {
         // 尝试解析为标准键，如果失败则作为自定义键处理
         let canonical_key = key_str
             .parse::<CanonicalMetadataKey>()
-            .unwrap_or_else(|_| CanonicalMetadataKey::Custom(key_str.to_string()));
+            .unwrap_or_else(|_| CanonicalMetadataKey::Custom(key_str.to_lowercase()));
 
         self.data
             .entry(canonical_key)
@@ -93,23 +93,11 @@ impl MetadataStore {
     }
 
     pub fn to_serializable_map(&self) -> HashMap<String, Vec<String>> {
-        let mut map = HashMap::new();
-        for (key, values) in &self.data {
-            let key_str = match key {
-                CanonicalMetadataKey::Title => "Title".to_string(),
-                CanonicalMetadataKey::Artist => "Artist".to_string(),
-                CanonicalMetadataKey::Album => "Album".to_string(),
-                CanonicalMetadataKey::NcmMusicId => "NcmMusicId".to_string(),
-                CanonicalMetadataKey::QqMusicId => "QqMusicId".to_string(),
-                CanonicalMetadataKey::SpotifyId => "SpotifyId".to_string(),
-                CanonicalMetadataKey::AppleMusicId => "AppleMusicId".to_string(),
-                CanonicalMetadataKey::Isrc => "Isrc".to_string(),
-                CanonicalMetadataKey::TtmlAuthorGithub => "TtmlAuthorGithub".to_string(),
-                CanonicalMetadataKey::TtmlAuthorGithubLogin => "TtmlAuthorGithubLogin".to_string(),
-            };
-            map.insert(key_str, values.clone());
-        }
-        map
+        self.data
+            .iter()
+            .filter(|(key, _values)| key.is_public())
+            .map(|(key, values)| (key.to_string(), values.clone()))
+            .collect()
     }
 
     // /// 清空存储中的所有元数据。
