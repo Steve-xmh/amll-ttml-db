@@ -23,15 +23,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: 缓存 Cargo 依赖
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            scripts/target/
-          key: ${{ runner.os }}-cargo-workspace-${{ hashFiles('scripts/Cargo.lock') }}
+        uses: Swatinem/rust-cache@v2
 
       - name: 编译 Rust 程序
         run: cargo build -p lyric_checker_bot --release --verbose
