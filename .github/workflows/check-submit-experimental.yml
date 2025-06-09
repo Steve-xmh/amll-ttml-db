@@ -29,6 +29,8 @@ jobs:
 
       - name: 缓存 Cargo 依赖
         uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./scripts -> target
 
       - name: 编译 Rust 程序
         run: cargo build -p lyric_checker_bot --release --verbose
