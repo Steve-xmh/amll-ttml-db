@@ -22,6 +22,15 @@ body:
     validations:
       required: true
 
+  - type: checkboxes
+    id: lyric-options
+    attributes:
+      label: 歌词选项
+      description: 选择歌词文件的选项
+      options:
+        - label: 这是逐行歌词
+          required: false
+
   - type: dropdown
     id: upload-reason
     attributes:

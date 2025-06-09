@@ -39,7 +39,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '24.x'
           cache: 'yarn'
           cache-dependency-path: scripts/yarn.lock
       
@@ -52,7 +52,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
-          yarn node ./run-submit-check-rust.js
+          yarn node ./run-submit-check-experimental.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: scripts

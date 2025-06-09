@@ -168,6 +168,15 @@ async function main() {
 				const lyricURL = params["TTML 歌词文件下载直链"];
 				const comment = params["备注"].trim().split("\n");
 
+				// 获取歌词选项
+                const lyricOptions = params["歌词选项"] || "";
+                
+                // 判断复选框是否被勾选
+                const isLineTimedByUser = lyricOptions.includes("[x]");
+                const timingMode = isLineTimedByUser ? "line" : "word";
+
+                console.log(`用户指定的计时模式: ${timingMode}`);
+
 				if (typeof lyricURL !== "string") {
 					console.log(
 						"议题",
@@ -192,7 +201,7 @@ async function main() {
                 try {
                     console.log("正在调用 Rust 处理器...");
                     const rustProcessorPath = './ttml_processor/target/release/ttml_processor';
-                    const command = `${rustProcessorPath} --input ${tempInputFile} --output ${tempProcessedFile} --json-output ${tempMetadataFile}`;
+                    const command = `${rustProcessorPath} --input ${tempInputFile} --output ${tempProcessedFile} --json-output ${tempMetadataFile} --timing-mode ${timingMode}`;
                     execSync(command, { stdio: 'inherit' }); 
                     console.log("Rust 处理器执行成功，文件已验证并生成。");
 
