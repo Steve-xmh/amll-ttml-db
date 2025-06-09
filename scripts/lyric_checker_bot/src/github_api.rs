@@ -18,6 +18,17 @@ use crate::git_utils;
 const EXPERIMENTAL_LABEL: &str = "实验性歌词提交/修正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 
+pub struct PrContext<'a> {
+    pub issue: &'a Issue,
+    pub original_ttml: &'a str,
+    pub compact_ttml: &'a str,
+    pub formatted_ttml: &'a str,
+    pub metadata_store: &'a MetadataStore,
+    pub remarks: &'a str,
+    pub warnings: &'a [String],
+    pub root_path: &'a Path,
+}
+
 #[derive(Clone)]
 pub struct GitHubClient {
     client: Arc<Octocrab>,
@@ -185,21 +196,8 @@ impl GitHubClient {
         Ok(())
     }
 
-    pub async fn post_success_and_create_pr(
-        &self,
-        issue: &Issue,
-        original_ttml: &str,
-        compact_ttml: &str,
-        formatted_ttml: &str,
-        metadata_store: &MetadataStore,
-        remarks: &str,
-        warnings: &[String],
-        root_path: &Path,
-    ) -> Result<()> {
-        let issue_number = issue.number;
-
-        let user_login = &issue.user.login;
-        let user_id = issue.user.id.0;
+    pub async fn post_success_and_create_pr(&self, context: &PrContext<'_>) -> Result<()> {
+        let issue_number = context.issue.number;
 
         let submit_branch = format!("auto-submit-issue-{}", issue_number);
         git_utils::checkout_main_branch().await?;
@@ -210,34 +208,34 @@ impl GitHubClient {
         let new_filename = format!(
             "{}-{}-{}.ttml",
             chrono::Utc::now().timestamp_millis(),
-            user_id,
+            context.issue.user.id.0,
             unique_id
         );
 
-        let raw_lyrics_dir = root_path.join("raw-lyrics");
+        let raw_lyrics_dir = context.root_path.join("raw-lyrics");
         let file_path = raw_lyrics_dir.join(&new_filename);
 
         if !raw_lyrics_dir.exists() {
             fs::create_dir_all(&raw_lyrics_dir).await?;
         }
 
-        fs::write(&file_path, compact_ttml)
+        fs::write(&file_path, context.compact_ttml)
             .await
             .context(format!("写入文件 {:?} 失败", file_path))?;
         log::info!("已将处理后的歌词写入到: {:?}", file_path);
 
-        git_utils::add_path(&raw_lyrics_dir).await?;
+        git_utils::add_path(&file_path).await?;
 
         let commit_message = format!("(实验性) 提交歌曲歌词 {} #{}", new_filename, issue_number);
         git_utils::commit(&commit_message).await?;
         git_utils::push(&submit_branch).await?;
-
         git_utils::checkout_main_branch().await?;
 
         // --- 2. GitHub API 操作 ---
 
         // 构建成功评论
-        let success_comment = self.build_success_comment(original_ttml, formatted_ttml);
+        let success_comment =
+            self.build_success_comment(context.original_ttml, context.formatted_ttml);
         self.client
             .issues(&self.owner, &self.repo)
             .create_comment(issue_number, success_comment)
@@ -246,27 +244,18 @@ impl GitHubClient {
 
         self.client
             .issues(&self.owner, &self.repo)
-            .update(issue.number)
+            .update(issue_number)
             .state(IssueState::Closed)
             .send()
             .await?;
         self.client
             .issues(&self.owner, &self.repo)
-            .lock(issue.number, Some(LockReason::Resolved))
+            .lock(issue_number, Some(LockReason::Resolved))
             .await?;
-        log::info!("已关闭并锁定 Issue #{}", issue.number);
+        log::info!("已关闭并锁定 Issue #{}", issue_number);
 
-        let pr_body = self.build_pr_body(
-            issue.number,
-            user_login,
-            metadata_store,
-            remarks,
-            warnings,
-            compact_ttml,
-            formatted_ttml,
-        );
-
-        let pr_title = self.generate_pr_title(&issue.title, metadata_store);
+        let pr_body = self.build_pr_body(context);
+        let pr_title = self.generate_pr_title(context);
 
         self.client
             .pulls(&self.owner, &self.repo)
@@ -291,7 +280,10 @@ impl GitHubClient {
 
     /// 根据 Issue 标题和元数据生成 Pull Request 的标题。
     /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
-    fn generate_pr_title(&self, issue_title: &str, metadata_store: &MetadataStore) -> String {
+    fn generate_pr_title(&self, context: &PrContext<'_>) -> String {
+        let issue_title = &context.issue.title;
+        let metadata_store = context.metadata_store;
+
         let artists = metadata_store
             .get_multiple_values(&CanonicalMetadataKey::Artist)
             .map(|v| v.join("/"));
@@ -309,17 +301,16 @@ impl GitHubClient {
         issue_title.to_string()
     }
 
-    fn build_pr_body(
-        &self,
-        issue_number: u64,
-        user_login: &str,
-        metadata_store: &MetadataStore,
-        remarks: &str,
-        warnings: &[String],
-        compact_lyric: &str,
-        formatted_lyric: &str,
-    ) -> String {
-        let mut body_parts: Vec<String> = Vec::new();
+    fn build_pr_body(&self, context: &PrContext<'_>) -> String {
+        let issue_number = context.issue.number;
+        let user_login = &context.issue.user.login;
+        let metadata_store = context.metadata_store;
+        let remarks = context.remarks;
+        let warnings = context.warnings;
+        let compact_lyric = context.compact_ttml;
+        let formatted_lyric = context.formatted_ttml;
+
+        let mut body_parts = Vec::new();
 
         body_parts.push(format!("### 歌词议题 (实验性流程)\n#{}", issue_number));
         body_parts.push(format!("### 歌词作者\n@{}", user_login));

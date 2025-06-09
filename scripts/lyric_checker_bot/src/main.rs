@@ -2,25 +2,26 @@ mod git_utils;
 mod github_api;
 
 use anyhow::Result;
+use chrono::Utc;
+use env_logger::Builder;
+use log::LevelFilter;
 use reqwest::Client;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use ttml_processor::{
     MetadataStore, generate_ttml, parse_ttml_content,
     types::{DefaultLanguageOptions, TtmlGenerationOptions, TtmlTimingMode},
     validate_lyrics_and_metadata,
 };
-use chrono::Utc;
-use env_logger::Builder;
-use log::LevelFilter;
-use std::io::Write;
+
+use crate::github_api::PrContext;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    
     Builder::from_default_env()
         .format(|buf, record| {
             let level_style = buf.default_level_style(record.level());
-            
+
             writeln!(
                 buf,
                 "{} [{}{}{:#}] - {}",
@@ -75,7 +76,6 @@ async fn process_issue(
     github: github_api::GitHubClient,
     root_path: &Path,
 ) -> Result<()> {
-
     if github.pr_for_issue_exists(issue.number).await? {
         // 如果 PR 已存在，直接返回，不再处理
         return Ok(());
@@ -180,18 +180,18 @@ async fn process_issue(
     let formatted_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &formatted_gen_opts)?;
 
     log::info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
-    github
-        .post_success_and_create_pr(
-            issue,
-            &original_ttml_content,
-            &compact_ttml,
-            &formatted_ttml,
-            &metadata_store,
-            &remarks,
-            &warnings,
-            root_path,
-        )
-        .await?;
 
+    let pr_context = PrContext {
+        issue,
+        original_ttml: &original_ttml_content,
+        compact_ttml: &compact_ttml,
+        formatted_ttml: &formatted_ttml,
+        metadata_store: &metadata_store,
+        remarks: &remarks,
+        warnings: &warnings,
+        root_path,
+    };
+
+    github.post_success_and_create_pr(&pr_context).await?;
     Ok(())
 }
