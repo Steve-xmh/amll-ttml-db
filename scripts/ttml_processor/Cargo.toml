@@ -3,6 +3,10 @@ name = "ttml_processor"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "ttml_processor"
+path = "src/lib.rs" 
+
 [dependencies]
 clap = {version = "4.5.39", features = ["derive"]}
 env_logger = "0.11.8"

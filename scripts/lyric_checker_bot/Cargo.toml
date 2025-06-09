@@ -1,0 +1,16 @@
+[package]
+name = "lyric_checker_bot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+chrono = "0.4.41"
+env_logger = "0.11.8"
+futures = "0.3.31"
+log = "0.4.27"
+octocrab = "0.44.1"
+rand = "0.9.1"
+reqwest = "0.12.19"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "fs"] }
+ttml_processor = { path = "../ttml_processor" } 

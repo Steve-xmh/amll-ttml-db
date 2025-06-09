@@ -1,4 +1,3 @@
-use clap::ValueEnum;
 use quick_xml::Error as QuickXmlErrorMain;
 use quick_xml::events::attributes::AttrError as QuickXmlAttrError;
 use serde::{Deserialize, Serialize};
@@ -275,7 +274,7 @@ pub struct ParsedSourceData {
 //=============================================================================
 
 /// TTML 生成时的计时模式
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum TtmlTimingMode {
     #[default]
     Word, // 逐字计时
