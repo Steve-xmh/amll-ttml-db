@@ -30,8 +30,24 @@ pub fn generate_ttml(
     options: &TtmlGenerationOptions,
 ) -> Result<String, ConvertError> {
     let mut buffer = Vec::new();
-    let mut writer = Writer::new(Cursor::new(&mut buffer));
+    let result = if options.format {
+        let mut writer = Writer::new_with_indent(Cursor::new(&mut buffer), b' ', 2);
+        generate_ttml_inner(&mut writer, lines, metadata_store, options)
+    } else {
+        let mut writer = Writer::new(Cursor::new(&mut buffer));
+        generate_ttml_inner(&mut writer, lines, metadata_store, options)
+    };
 
+    result?;
+    String::from_utf8(buffer).map_err(ConvertError::FromUtf8)
+}
+
+fn generate_ttml_inner<W: std::io::Write>(
+    writer: &mut Writer<W>,
+    lines: &[LyricLine],
+    metadata_store: &MetadataStore,
+    options: &TtmlGenerationOptions,
+) -> Result<(), ConvertError> {
     let mut tt_attributes: Vec<(&str, String)> = Vec::new();
     tt_attributes.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
     tt_attributes.push((
@@ -85,15 +101,15 @@ pub fn generate_ttml(
     }
     writer.write_event(Event::Start(tt_start_element))?;
 
-    write_ttml_head(&mut writer, metadata_store, lines, options)?;
-    write_ttml_body(&mut writer, lines, metadata_store, options)?;
+    write_ttml_head(writer, metadata_store, lines, options)?;
+    write_ttml_body(writer, lines, metadata_store, options)?;
 
     writer.write_event(Event::End(BytesEnd::new("tt")))?;
-    String::from_utf8(buffer).map_err(ConvertError::FromUtf8)
+    Ok(())
 }
 
-fn write_ttml_head(
-    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+fn write_ttml_head<W: std::io::Write>(
+    writer: &mut Writer<W>,
     metadata_store: &MetadataStore,
     lines: &[LyricLine],
     options: &TtmlGenerationOptions,
@@ -240,8 +256,8 @@ fn write_ttml_head(
     Ok(())
 }
 
-fn write_ttml_body(
-    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+fn write_ttml_body<W: std::io::Write>(
+    writer: &mut Writer<W>,
     lines: &[LyricLine],
     _metadata_store: &MetadataStore,
     options: &TtmlGenerationOptions,
@@ -333,8 +349,8 @@ fn write_ttml_body(
 /// * `default_lang`: 备用的默认语言代码。
 /// * `get_text`: 一个闭包，用于从数据项中获取文本。
 /// * `get_lang`: 一个闭包，用于从数据项中获取语言代码。
-fn write_auxiliary_span<T>(
-    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+fn write_auxiliary_span<T, W: std::io::Write>(
+    writer: &mut Writer<W>,
     entries: &[T],
     role: &str,
     default_lang: &Option<String>,
@@ -366,8 +382,8 @@ fn write_auxiliary_span<T>(
     Ok(())
 }
 
-fn write_p_content(
-    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+fn write_p_content<W: std::io::Write>(
+    writer: &mut Writer<W>,
     line: &LyricLine,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
@@ -448,8 +464,8 @@ fn write_p_content(
 }
 
 /// 写入背景歌词部分
-fn write_background_section(
-    writer: &mut Writer<Cursor<&mut Vec<u8>>>,
+fn write_background_section<W: std::io::Write>(
+    writer: &mut Writer<W>,
     bg_section: &BackgroundSection,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {

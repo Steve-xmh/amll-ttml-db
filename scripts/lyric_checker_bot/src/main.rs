@@ -102,7 +102,6 @@ async fn process_issue(
                 for warning in &data.warnings {
                     log::warn!("解析警告 (Issue #{}): {}", issue.number, warning);
                 }
-                // TODO: 可以在 PR 中附上这些警告信息
             }
             log::info!("文件解析成功。");
             data
@@ -142,18 +141,30 @@ async fn process_issue(
     log::info!("文件验证通过。");
 
     log::info!("正在生成 TTML 文件...");
-    let gen_opts = TtmlGenerationOptions {
+
+    log::info!("正在生成压缩的 TTML...");
+    let compact_gen_opts = TtmlGenerationOptions {
         timing_mode,
+        format: false,
         ..Default::default()
     };
-    let regenerated_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &gen_opts)?;
+    let compact_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &compact_gen_opts)?;
 
-    log::info!("Issue #{} 验证通过，已生成新的 TTML。", issue.number);
+    log::info!("正在生成格式化的 TTML...");
+    let formatted_gen_opts = TtmlGenerationOptions {
+        timing_mode,
+        format: true,
+        ..Default::default()
+    };
+    let formatted_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &formatted_gen_opts)?;
+
+    log::info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
     github
         .post_success_and_create_pr(
             issue,
             &original_ttml_content,
-            &regenerated_ttml,
+            &compact_ttml,
+            &formatted_ttml,
             &metadata_store,
             &remarks,
             &warnings,

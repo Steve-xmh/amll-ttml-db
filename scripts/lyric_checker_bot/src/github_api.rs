@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
-use octocrab::models::IssueState;
-use octocrab::models::issues::Issue;
-use octocrab::models::issues::Comment;
-use octocrab::params::LockReason;
 use octocrab::Octocrab;
+use octocrab::models::IssueState;
+use octocrab::models::issues::Comment;
+use octocrab::models::issues::Issue;
+use octocrab::params::LockReason;
 use rand::distr::Alphanumeric;
 use rand::distr::SampleString;
 use std::collections::HashMap;
@@ -123,15 +123,17 @@ impl GitHubClient {
     }
 
     pub async fn has_bot_commented(&self, issue_number: u64) -> Result<bool> {
-        let comments_page = self.client.issues(&self.owner, &self.repo)
-            .list_comments(issue_number).send().await?;
+        let comments_page = self
+            .client
+            .issues(&self.owner, &self.repo)
+            .list_comments(issue_number)
+            .send()
+            .await?;
 
         let all_comments: Vec<Comment> = self.client.all_pages(comments_page).await?;
-        
+
         for comment in all_comments {
-            let body_matches = comment.body.as_deref()
-                .unwrap_or("")
-                .contains(CHECKED_MARK);
+            let body_matches = comment.body.as_deref().unwrap_or("").contains(CHECKED_MARK);
 
             if body_matches {
                 let user_type_is_bot = comment.user.r#type == "Bot";
@@ -139,8 +141,10 @@ impl GitHubClient {
 
                 if user_type_is_bot || user_id_matches {
                     log::info!(
-                        "发现来自可信机器人 (ID: {}, Type: {}) 的检查标记，将跳过 Issue #{}",
-                        comment.user.id, comment.user.r#type, issue_number
+                        "发现来自机器人 (ID: {}, Type: {}) 的检查标记，将跳过 Issue #{}",
+                        comment.user.id,
+                        comment.user.r#type,
+                        issue_number
                     );
                     return Ok(true);
                 }
@@ -185,7 +189,8 @@ impl GitHubClient {
         &self,
         issue: &Issue,
         original_ttml: &str,
-        new_ttml: &str,
+        compact_ttml: &str,
+        formatted_ttml: &str,
         metadata_store: &MetadataStore,
         remarks: &str,
         warnings: &[String],
@@ -216,7 +221,7 @@ impl GitHubClient {
             fs::create_dir_all(&raw_lyrics_dir).await?;
         }
 
-        fs::write(&file_path, new_ttml)
+        fs::write(&file_path, compact_ttml)
             .await
             .context(format!("写入文件 {:?} 失败", file_path))?;
         log::info!("已将处理后的歌词写入到: {:?}", file_path);
@@ -232,7 +237,7 @@ impl GitHubClient {
         // --- 2. GitHub API 操作 ---
 
         // 构建成功评论
-        let success_comment = self.build_success_comment(original_ttml, new_ttml);
+        let success_comment = self.build_success_comment(original_ttml, formatted_ttml);
         self.client
             .issues(&self.owner, &self.repo)
             .create_comment(issue_number, success_comment)
@@ -258,7 +263,7 @@ impl GitHubClient {
             remarks,
             original_ttml,
             warnings,
-            new_ttml,
+            formatted_ttml,
         );
 
         self.client

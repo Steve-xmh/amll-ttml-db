@@ -289,6 +289,8 @@ pub struct TtmlGenerationOptions {
     pub translation_language: Option<String>,
     pub romanization_language: Option<String>,
     pub use_apple_format_rules: bool,
+    /// 是否输出格式化后的 TTML
+    pub format: bool,
 }
 
 impl Default for TtmlGenerationOptions {
@@ -299,6 +301,7 @@ impl Default for TtmlGenerationOptions {
             translation_language: None,
             romanization_language: None,
             use_apple_format_rules: false,
+            format: false,
         }
     }
 }
