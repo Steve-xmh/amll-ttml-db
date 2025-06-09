@@ -214,79 +214,90 @@ export function normalizeLyricLine(line, lineIndex, logs) {
     const originalWordsString = JSON.stringify(line.words);
     const finalWords = [];
     let hasChanges = false;
+    // 计数前面有多少个空格
+    let pendingSpaces = 0;
 
     /**
      * 日志记录的辅助函数
      * @param {string} message - 日志内容
-     * @param {boolean} [isWarning=false] - 是否为警告日志
      */
-    const logChange = (message, isWarning = false) => {
+    const logChange = (message) => {
         const logMessage = `- **第 ${lineIndex + 1} 行主歌词**: ${message}`;
         if (!logs.includes(logMessage)) {
             logs.push(logMessage);
         }
-        // 只有修复了才算作 hasChanges，纯警告不算
-        if (!isWarning) {
-            hasChanges = true;
-        }
+        hasChanges = true;
     };
 
-    let pendingSpaceObjects = [];
-
     // 辅助函数，用于处理累积的空格
-    const processPendingSpaces = (isTrailing = false) => {
-        if (pendingSpaceObjects.length === 0) return;
-
-        if (isTrailing || finalWords.length === 0) {
-            // 如果是句首或句尾空格，则记录为“移除”
-            logChange(`移除了 ${pendingSpaceObjects.length} 个不规范的首尾空格。`);
-        } else {
-            // 如果是词间空格，则记录为“合并”
-            logChange(`合并了 ${pendingSpaceObjects.length} 个不规范的词间空格。`);
-            finalWords.push({ word: ' ', startTime: 0, endTime: 0 });
+    const processPendingSpaces = () => {
+        if (pendingSpaces === 0) {
+            return;
         }
-        pendingSpaceObjects = [];
+
+        if (finalWords.length > 0) {
+            // 是词间空格
+            finalWords.push({ word: ' ', startTime: 0, endTime: 0 });
+            if (pendingSpaces > 1) {
+                logChange(`合并了 ${pendingSpaces} 处不规范的词间空格。`);
+            }
+        } else {
+            // 是行首空格
+            logChange(`移除了 ${pendingSpaces} 处不规范的首尾空格。`);
+        }
+        pendingSpaces = 0;
     };
 
     for (const wordObj of line.words) {
         if (!wordObj || typeof wordObj.word !== 'string') {
-            logChange(`发现并跳过了一个无效的歌词音节。`, true);
+            logChange(`发现并跳过了一个无效的歌词音节。`);
             continue;
         }
 
-        const isSpace = wordObj.startTime === 0 && wordObj.endTime === 0;
+        // 将分解为前导空格、核心文本和尾随空格
+        const match = wordObj.word.match(/^(\s*)([\s\S]*?)(\s*)$/);
+        const leadingSpace = match[1];
+        const coreText = match[2];
+        const trailingSpace = match[3];
 
-        if (isSpace) {
-             if (wordObj.word.trim() === '') {
-                // 无时间戳的空格
-                pendingSpaceObjects.push(wordObj);
-             } else {
-                // 无时间戳但有内容
-                processPendingSpaces(); // 处理掉前面的空格
-                logChange(`保留了一个无时间戳的音节: \`${wordObj.word}\`。请检查其格式。`, true);
-                finalWords.push(wordObj);
-             }
-        } else {
-            processPendingSpaces();
-
-            const originalText = wordObj.word;
-            const normalizedText = originalText.trim().split(/\s+/).join(' ');
-            let wordToPush = wordObj;
-
-            if (originalText !== normalizedText) {
-                if (normalizedText === '') {
-                     wordToPush = { ...wordObj, word: ' ' };
-                } else {
-                    logChange(`规范化了音节 \`${originalText}\` 内部的空格。`);
-                    wordToPush = { ...wordObj, word: normalizedText };
-                }
+        // 整个音节都由空格组成
+        if (coreText === '') {
+            // 只要有内容，就视为一个空格来源
+            if (wordObj.word.length > 0) {
+                pendingSpaces++;
+                logChange(`发现了一个完全由空格组成的音节 \`${wordObj.word}\``);
             }
-            finalWords.push(wordToPush);
+            continue;
+        }
+
+        // 遇到了一个包含实际文本的音节
+        
+        // 前导空格
+        if (leadingSpace) {
+            pendingSpaces++;
+            logChange(`提取了音节 \`${wordObj.word}\` 的前导空格。`);
+        }
+        
+        // 更新所有在这之前的空格（上个词的尾随空格和这个词的前导空格）
+        processPendingSpaces();
+
+        // 规范化
+        const normalizedCoreText = coreText.split(/\s+/).join(' ');
+        if (coreText !== normalizedCoreText) {
+            logChange(`规范化了音节 \`${coreText}\` 内部的空格。`);
+        }
+        finalWords.push({ ...wordObj, word: normalizedCoreText });
+
+        if (trailingSpace) {
+            pendingSpaces++;
+            logChange(`提取了音节 \`${wordObj.word}\` 的尾随空格。`);
         }
     }
 
     // 处理所有遗留的句尾空格
-    processPendingSpaces(true);
+    if (pendingSpaces > 0) {
+        logChange(`移除了 ${pendingSpaces} 处不规范的首尾空格。`);
+    }
 
     const changed = hasChanges || (JSON.stringify(finalWords) !== originalWordsString);
     const newLine = { ...line, words: finalWords };
