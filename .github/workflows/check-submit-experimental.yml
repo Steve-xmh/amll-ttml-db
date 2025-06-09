@@ -12,6 +12,11 @@ jobs:
   check-submit-rust:
     if: github.event.label.name == '实验性歌词提交/修正'
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: scripts
+
     timeout-minutes: 10
     steps:
       - name: 签出代码
