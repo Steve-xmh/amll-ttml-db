@@ -9,10 +9,31 @@ use ttml_processor::{
     types::{DefaultLanguageOptions, TtmlGenerationOptions, TtmlTimingMode},
     validate_lyrics_and_metadata,
 };
+use chrono::Utc;
+use env_logger::Builder;
+use log::LevelFilter;
+use std::io::Write;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::init();
+    
+    Builder::from_default_env()
+        .format(|buf, record| {
+            let level_style = buf.default_level_style(record.level());
+            
+            writeln!(
+                buf,
+                "{} [{}{}{:#}] - {}",
+                Utc::now().format("%Y-%m-%dT%H:%M:%S"),
+                level_style,
+                record.level(),
+                level_style,
+                record.args()
+            )
+        })
+        .filter(None, LevelFilter::Info)
+        .init();
+
     log::info!("启动实验性歌词提交检查程序...");
 
     let token = std::env::var("GITHUB_TOKEN").expect("未设置 GITHUB_TOKEN");
