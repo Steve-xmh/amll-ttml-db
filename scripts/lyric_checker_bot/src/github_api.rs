@@ -261,14 +261,16 @@ impl GitHubClient {
             user_login,
             metadata_store,
             remarks,
-            original_ttml,
             warnings,
+            compact_ttml,
             formatted_ttml,
         );
 
+        let pr_title = self.generate_pr_title(&issue.title, metadata_store);
+
         self.client
             .pulls(&self.owner, &self.repo)
-            .create(&issue.title, &submit_branch, "main")
+            .create(&pr_title, &submit_branch, "main")
             .body(&pr_body)
             .send()
             .await?;
@@ -287,17 +289,41 @@ impl GitHubClient {
         )
     }
 
+    /// 根据 Issue 标题和元数据生成 Pull Request 的标题。
+    /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
+    fn generate_pr_title(&self, issue_title: &str, metadata_store: &MetadataStore) -> String {
+        let trimmed_title = issue_title.trim();
+        if trimmed_title.is_empty() || trimmed_title == EXPERIMENTAL_LABEL {
+            let artists = metadata_store
+                .get_multiple_values(&CanonicalMetadataKey::Artist)
+                .map(|v| v.join("/"));
+
+            let titles = metadata_store
+                .get_multiple_values(&CanonicalMetadataKey::Title)
+                .map(|v| v.join("/"));
+
+            if let (Some(artist_str), Some(title_str)) = (artists, titles) {
+                if !artist_str.is_empty() && !title_str.is_empty() {
+                    let new_title = format!("{} - {}", artist_str, title_str);
+                    return new_title;
+                }
+            }
+        }
+        
+        issue_title.to_string()
+    }
+
     fn build_pr_body(
         &self,
         issue_number: u64,
         user_login: &str,
         metadata_store: &MetadataStore,
         remarks: &str,
-        original_ttml: &str,
         warnings: &[String],
+        compact_lyric: &str,
         formatted_lyric: &str,
     ) -> String {
-        let mut body_parts = Vec::new();
+        let mut body_parts: Vec<String> = Vec::new();
 
         body_parts.push(format!("### 歌词议题 (实验性流程)\n#{}", issue_number));
         body_parts.push(format!("### 歌词作者\n@{}", user_login));
@@ -333,7 +359,11 @@ impl GitHubClient {
 
         if !remarks.trim().is_empty() {
             body_parts.push("### 备注".to_string());
-            body_parts.push(remarks.to_string());
+            if remarks.trim() == "No response" {
+                body_parts.push("*无*".to_string());
+            } else {
+                body_parts.push(remarks.to_string());
+            }
         }
 
         if !warnings.is_empty() {
@@ -351,11 +381,10 @@ impl GitHubClient {
             body_parts.push(warnings_details);
         }
 
-        let original_lyric_section = format!(
+        body_parts.push(format!(
             "### 歌词文件内容\n```xml\n{}\n```",
-            &original_ttml[..original_ttml.len().min(65535)]
-        );
-        body_parts.push(original_lyric_section);
+            &compact_lyric[..compact_lyric.len().min(65535)]
+        ));
 
         body_parts.push(format!(
             "### 歌词文件内容 (已格式化)\n```xml\n{}\n```",
