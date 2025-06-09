@@ -20,6 +20,7 @@ import {
 } from "./utils.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import os from "os";
 
 const octokit = new Octokit({
   auth: githubToken,
@@ -35,9 +36,11 @@ async function main() {
   });
 
   for (const issue of openingIssues.data) {
-    const tempInputFile = `temp-input-${issue.id}.ttml`;
-    const tempProcessedFile = `temp-processed-${issue.id}.ttml`;
-    const tempMetadataFile = `temp-metadata-${issue.id}.json`;
+    const tempDir = os.tmpdir();
+
+    const tempInputFile = path.join(tempDir, `temp-input-${issue.id}.ttml`);
+    const tempProcessedFile = path.join(tempDir, `temp-processed-${issue.id}.ttml`);
+    const tempMetadataFile = path.join(tempDir, `temp-metadata-${issue.id}.json`);
 
     try {
       console.log("正在检查议题 (实验性流程)", issue.title, "(", issue.id, ")");
