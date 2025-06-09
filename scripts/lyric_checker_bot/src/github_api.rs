@@ -15,7 +15,7 @@ use ttml_processor::types::CanonicalMetadataKey;
 
 use crate::git_utils;
 
-const EXPERIMENTAL_LABEL: &str = "实验性歌词提交/修正";
+const EXPERIMENTAL_LABEL: &str = "[实验性歌词提交/修正]";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 
 #[derive(Clone)]
@@ -359,7 +359,7 @@ impl GitHubClient {
 
         if !remarks.trim().is_empty() {
             body_parts.push("### 备注".to_string());
-            if remarks.trim() == "No response" {
+            if remarks.trim() == "_No response_" {
                 body_parts.push("*无*".to_string());
             } else {
                 body_parts.push(remarks.to_string());
