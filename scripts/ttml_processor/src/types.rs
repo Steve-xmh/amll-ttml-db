@@ -141,6 +141,8 @@ pub struct LyricLine {
     pub background_section: Option<BackgroundSection>,
     /// 可选的歌曲组成部分标记。
     pub song_part: Option<String>,
+    /// 可选的 iTunes Key (如 "L1", "L2")。
+    pub itunes_key: Option<String>,
 }
 
 //=============================================================================

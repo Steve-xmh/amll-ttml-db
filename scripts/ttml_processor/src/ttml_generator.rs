@@ -9,6 +9,8 @@ use quick_xml::writer::Writer;
 use std::collections::{HashMap, HashSet};
 use std::io::Cursor;
 
+/// 将毫秒时间戳格式化为 TTML 标准的时间字符串。
+/// 例如：123456ms -> "2:03.456"
 fn format_ttml_time(ms: u64) -> String {
     let hours = ms / 3_600_000;
     let minutes = (ms % 3_600_000) / 60_000;
@@ -24,12 +26,23 @@ fn format_ttml_time(ms: u64) -> String {
     }
 }
 
+/// TTML 生成的主入口函数。
+///
+/// # 参数
+/// * `lines` - 歌词行数据切片。
+/// * `metadata_store` - 规范化后的元数据存储。
+/// * `options` - TTML 生成选项，控制输出格式和规则。
+///
+/// # 返回
+/// * `Ok(String)` - 成功生成的 TTML 字符串。
+/// * `Err(ConvertError)` - 生成过程中发生错误。
 pub fn generate_ttml(
     lines: &[LyricLine],
     metadata_store: &MetadataStore,
     options: &TtmlGenerationOptions,
 ) -> Result<String, ConvertError> {
     let mut buffer = Vec::new();
+    // 决定是否输出格式化的 TTML
     let result = if options.format {
         let mut writer = Writer::new_with_indent(Cursor::new(&mut buffer), b' ', 2);
         generate_ttml_inner(&mut writer, lines, metadata_store, options)
@@ -42,12 +55,14 @@ pub fn generate_ttml(
     String::from_utf8(buffer).map_err(ConvertError::FromUtf8)
 }
 
+/// TTML 生成的核心内部逻辑。
 fn generate_ttml_inner<W: std::io::Write>(
     writer: &mut Writer<W>,
     lines: &[LyricLine],
     metadata_store: &MetadataStore,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
+    // --- 准备 <tt> 根元素的属性 ---
     let mut tt_attributes: Vec<(&str, String)> = Vec::new();
     tt_attributes.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
     tt_attributes.push((
@@ -59,6 +74,7 @@ fn generate_ttml_inner<W: std::io::Write>(
         "http://music.apple.com/lyric-ttml-internal".to_string(),
     ));
 
+    // 检查是否需要 amll 命名空间
     let amll_keys_to_check_for_namespace = [
         CanonicalMetadataKey::Title,
         CanonicalMetadataKey::Album,
@@ -78,6 +94,7 @@ fn generate_ttml_inner<W: std::io::Write>(
         tt_attributes.push(("xmlns:amll", "http://www.example.com/ns/amll".to_string()));
     }
 
+    // 设置主语言属性
     let lang_to_use = options
         .main_language
         .as_ref()
@@ -88,19 +105,24 @@ fn generate_ttml_inner<W: std::io::Write>(
         }
     }
 
+    // 设置 itunes:timing 属性
     let timing_mode_str = match options.timing_mode {
         TtmlTimingMode::Word => "Word",
         TtmlTimingMode::Line => "Line",
     };
     tt_attributes.push(("itunes:timing", timing_mode_str.to_string()));
+
+    // 属性排序以保证输出稳定
     tt_attributes.sort_by_key(|&(key, _)| key);
 
+    // --- 写入 <tt> 根元素 ---
     let mut tt_start_element = BytesStart::new("tt");
     for (key, value) in &tt_attributes {
         tt_start_element.push_attribute((*key, value.as_str()));
     }
     writer.write_event(Event::Start(tt_start_element))?;
 
+    // --- 写入 <head> 和 <body> ---
     write_ttml_head(writer, metadata_store, lines, options)?;
     write_ttml_body(writer, lines, metadata_store, options)?;
 
@@ -108,6 +130,7 @@ fn generate_ttml_inner<W: std::io::Write>(
     Ok(())
 }
 
+/// 写入 TTML 的 <head> 部分，包含所有元数据。
 fn write_ttml_head<W: std::io::Write>(
     writer: &mut Writer<W>,
     metadata_store: &MetadataStore,
@@ -117,6 +140,7 @@ fn write_ttml_head<W: std::io::Write>(
     writer.write_event(Event::Start(BytesStart::new("head")))?;
     writer.write_event(Event::Start(BytesStart::new("metadata")))?;
 
+    // --- 写入 ttm:agent 元数据 (演唱者信息) ---
     if options.timing_mode == TtmlTimingMode::Line {
         if !lines.is_empty() {
             let mut agent_element = BytesStart::new("ttm:agent");
@@ -125,6 +149,7 @@ fn write_ttml_head<W: std::io::Write>(
             writer.write_event(Event::Empty(agent_element))?;
         }
     } else {
+        // 对于逐字模式，收集所有在歌词行中实际使用到的 agent ID
         let mut agent_ids_in_lines = HashSet::new();
         for line in lines {
             if let Some(agent_id) = &line.agent {
@@ -133,6 +158,7 @@ fn write_ttml_head<W: std::io::Write>(
                 }
             }
         }
+        // 如果没有指定任何 agent，则默认定义一个 "v1"
         if agent_ids_in_lines.is_empty() && !lines.is_empty() {
             let v1_defined_in_meta = metadata_store
                 .get_multiple_values(&CanonicalMetadataKey::Custom("agent".to_string()))
@@ -153,37 +179,25 @@ fn write_ttml_head<W: std::io::Write>(
                 .unwrap_or(u32::MAX)
         });
 
+        // 遍历并写入每个 agent 的定义
         for agent_id_str in sorted_agent_ids {
             let mut agent_element = BytesStart::new("ttm:agent");
-
             let agent_type_key = format!("agent-type-{}", agent_id_str);
             let agent_type = metadata_store
                 .get_single_value(&CanonicalMetadataKey::Custom(agent_type_key))
                 .map(|s| s.as_str())
                 .unwrap_or("person");
-
             agent_element.push_attribute(("type", agent_type));
             agent_element.push_attribute(("xml:id", agent_id_str));
-
-            let mut agent_name: Option<String> = None;
-            if let Some(agent_entries) = metadata_store
+            // 查找 agent 的显示名称
+            let agent_name = metadata_store
                 .get_multiple_values(&CanonicalMetadataKey::Custom("agent".to_string()))
-            {
-                for entry_str in agent_entries {
-                    if let Some((id, name_part)) = entry_str.split_once('=') {
-                        if id.trim() == agent_id_str {
-                            agent_name = Some(name_part.trim().to_string());
-                            break;
-                        }
-                    }
-                }
-            }
-            if agent_name.is_none() {
-                agent_name = metadata_store
-                    .get_single_value(&CanonicalMetadataKey::Custom(agent_id_str.to_string()))
-                    .cloned();
-            }
-
+                .and_then(|vals| {
+                    vals.iter().find_map(|v| {
+                        v.strip_prefix(&format!("{}=", agent_id_str))
+                            .map(str::to_string)
+                    })
+                });
             if let Some(name) = agent_name {
                 if !name.is_empty() {
                     writer.write_event(Event::Start(agent_element))?;
@@ -200,18 +214,67 @@ fn write_ttml_head<W: std::io::Write>(
         }
     }
 
-    if let Some(songwriters_vec) =
-        metadata_store.get_multiple_values(&CanonicalMetadataKey::Songwriter)
-    {
-        let valid_songwriters: Vec<&String> = songwriters_vec
-            .iter()
-            .filter(|s| !s.trim().is_empty())
-            .collect();
+    // --- 处理 Apple Music 特定元数据 (`iTunesMetadata`) ---
+
+    // 1. 如果启用了 Apple 格式规则，则收集所有翻译数据
+    let mut translations_by_lang: HashMap<Option<String>, Vec<(String, String)>> = HashMap::new();
+    if options.use_apple_format_rules {
+        for line in lines {
+            if let Some(key) = &line.itunes_key {
+                // 行必须有 itunes:key
+                if !line.translations.is_empty() {
+                    for translation in &line.translations {
+                        // 按语言对翻译进行分组
+                        translations_by_lang
+                            .entry(translation.lang.clone())
+                            .or_default()
+                            .push((key.clone(), translation.text.clone()));
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. 收集词曲作者信息
+    let valid_songwriters: Vec<&String> = metadata_store
+        .get_multiple_values(&CanonicalMetadataKey::Songwriter)
+        .map(|vec| vec.iter().filter(|s| !s.trim().is_empty()).collect())
+        .unwrap_or_default();
+
+    // 3. 只有在需要写入翻译 或 词曲作者信息时，才创建 <iTunesMetadata> 容器
+    if !translations_by_lang.is_empty() || !valid_songwriters.is_empty() {
+        writer.write_event(Event::Start(BytesStart::from_content(
+            "iTunesMetadata xmlns=\"http://music.apple.com/lyric-ttml-internal\"",
+            "iTunesMetadata".len(),
+        )))?;
+
+        // 3a. 写入 Apple 格式的翻译
+        if !translations_by_lang.is_empty() {
+            writer.write_event(Event::Start(BytesStart::new("translations")))?;
+            for (lang, entries) in translations_by_lang {
+                let mut trans_tag = BytesStart::new("translation");
+                if let Some(lang_code) = lang.filter(|s| !s.is_empty()) {
+                    // 过滤掉空语言代码
+                    trans_tag.push_attribute(("xml:lang", lang_code.as_str()));
+                }
+                writer.write_event(Event::Start(trans_tag))?;
+
+                for (key, text) in entries {
+                    let normalized_text = normalize_text_whitespace(&text);
+                    if !normalized_text.is_empty() {
+                        writer
+                            .create_element("text")
+                            .with_attribute(("for", key.as_str()))
+                            .write_text_content(BytesText::new(&normalized_text))?;
+                    }
+                }
+                writer.write_event(Event::End(BytesEnd::new("translation")))?;
+            }
+            writer.write_event(Event::End(BytesEnd::new("translations")))?;
+        }
+
+        // 3b. 写入词曲作者
         if !valid_songwriters.is_empty() {
-            writer.write_event(Event::Start(BytesStart::from_content(
-                "iTunesMetadata xmlns=\"http://music.apple.com/lyric-ttml-internal\"",
-                "iTunesMetadata".len(),
-            )))?;
             writer.write_event(Event::Start(BytesStart::new("songwriters")))?;
             for sw_name in valid_songwriters {
                 writer
@@ -219,10 +282,11 @@ fn write_ttml_head<W: std::io::Write>(
                     .write_text_content(BytesText::new(sw_name.trim()))?;
             }
             writer.write_event(Event::End(BytesEnd::new("songwriters")))?;
-            writer.write_event(Event::End(BytesEnd::new("iTunesMetadata")))?;
         }
+        writer.write_event(Event::End(BytesEnd::new("iTunesMetadata")))?;
     }
 
+    // --- 写入 amll:meta 自定义元数据 ---
     let amll_meta_keys_to_check = [
         ("album", CanonicalMetadataKey::Album),
         ("isrc", CanonicalMetadataKey::Isrc),
@@ -256,6 +320,7 @@ fn write_ttml_head<W: std::io::Write>(
     Ok(())
 }
 
+/// 写入 TTML 的 <body> 部分，包含所有歌词行。
 fn write_ttml_body<W: std::io::Write>(
     writer: &mut Writer<W>,
     lines: &[LyricLine],
@@ -269,6 +334,7 @@ fn write_ttml_body<W: std::io::Write>(
     }
     writer.write_event(Event::Start(body_start_element))?;
 
+    // 按 song_part (如 "Verse", "Chorus") 对歌词行进行分组，以生成 <div> 结构
     let mut lines_by_song_part: HashMap<Option<String>, Vec<&LyricLine>> = HashMap::new();
     for line in lines {
         lines_by_song_part
@@ -276,11 +342,11 @@ fn write_ttml_body<W: std::io::Write>(
             .or_default()
             .push(line);
     }
+    // 转换为 Vec 并排序，确保 <div> 的输出顺序与歌曲时间线一致
     let mut sorted_parts: Vec<(Option<String>, Vec<&LyricLine>)> = lines_by_song_part
         .into_iter()
         .filter(|(_, part_lines)| !part_lines.is_empty())
         .collect();
-
     sorted_parts.sort_by_key(|(_, part_lines)| {
         part_lines
             .iter()
@@ -289,6 +355,7 @@ fn write_ttml_body<W: std::io::Write>(
             .unwrap_or(u64::MAX)
     });
 
+    // 遍历每一个 part (<div>)
     for (song_part_key, part_lines) in sorted_parts {
         if part_lines.is_empty() {
             continue;
@@ -306,7 +373,9 @@ fn write_ttml_body<W: std::io::Write>(
         }
         writer.write_event(Event::Start(div_start_element))?;
 
+        // p_key_counter 用于生成 `itunes:key="L1", "L2", ...` 属性
         let mut p_key_counter = 0;
+        // 遍历 <div> 内的每一行 (<p>)
         for line in part_lines {
             p_key_counter += 1;
             let mut p_start_element = BytesStart::new("p");
@@ -314,21 +383,14 @@ fn write_ttml_body<W: std::io::Write>(
             p_start_element.push_attribute(("end", format_ttml_time(line.end_ms).as_str()));
             p_start_element.push_attribute(("itunes:key", format!("L{}", p_key_counter).as_str()));
 
+            // 为 <p> 标签设置演唱者 agent
             if options.timing_mode == TtmlTimingMode::Line {
-                if !line.line_text.as_deref().unwrap_or("").trim().is_empty()
-                    || (!options.use_apple_format_rules
-                        && (!line.translations.is_empty() || !line.romanizations.is_empty()))
-                {
-                    p_start_element.push_attribute(("ttm:agent", "v1"));
-                }
-            } else if let Some(agent) = &line.agent {
-                if !agent.is_empty() && agent != "v0" {
-                    p_start_element.push_attribute(("ttm:agent", agent.as_str()));
-                } else if agent.is_empty() || agent == "v0" {
-                    p_start_element.push_attribute(("ttm:agent", "v1"));
-                }
-            } else {
                 p_start_element.push_attribute(("ttm:agent", "v1"));
+            } else if let Some(agent) = line.agent.as_ref().filter(|a| !a.is_empty() && *a != "v0")
+            {
+                p_start_element.push_attribute(("ttm:agent", agent.as_str()));
+            } else {
+                p_start_element.push_attribute(("ttm:agent", "v1")); // 默认或备用 agent
             }
             writer.write_event(Event::Start(p_start_element))?;
             write_p_content(writer, line, options)?;
@@ -360,18 +422,15 @@ fn write_auxiliary_span<T, W: std::io::Write>(
     for entry in entries {
         let text = get_text(entry);
         let normalized_text = normalize_text_whitespace(text);
-
         if !normalized_text.is_empty() {
             let mut span = BytesStart::new("span");
             span.push_attribute(("ttm:role", role));
 
             // 优先使用条目自身的语言，否则使用提供的默认语言
             let lang_code = get_lang(entry).as_ref().or(default_lang.as_ref());
-
             if let Some(lang) = lang_code.filter(|s| !s.is_empty()) {
                 span.push_attribute(("xml:lang", lang.as_str()));
             }
-
             writer.write_event(Event::Start(span))?;
             writer.write_event(Event::Text(BytesText::from_escaped(
                 quick_xml::escape::escape(&normalized_text).as_ref(),
@@ -382,30 +441,27 @@ fn write_auxiliary_span<T, W: std::io::Write>(
     Ok(())
 }
 
+/// 写入 <p> 标签的具体内容，包括主歌词、翻译、罗马音和背景人声。
 fn write_p_content<W: std::io::Write>(
     writer: &mut Writer<W>,
     line: &LyricLine,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
+    // 根据计时模式写入主歌词
     if options.timing_mode == TtmlTimingMode::Line {
-        let mut line_text_to_write = "".to_string();
-        if let Some(lt) = &line.line_text {
-            line_text_to_write = normalize_text_whitespace(lt); // 规范化行文本
-        } else if !line.main_syllables.is_empty() {
-            for (idx, syl) in line.main_syllables.iter().enumerate() {
-                line_text_to_write.push_str(&syl.text); // 音节文本应已规范化
-                if syl.ends_with_space && idx < line.main_syllables.len() - 1 {
-                    line_text_to_write.push(' ');
-                }
-            }
-            line_text_to_write = normalize_text_whitespace(&line_text_to_write); // 再次规范化拼接结果
-        }
+        // 逐行模式直接写入整行文本
+        let line_text_to_write = line
+            .line_text
+            .as_ref()
+            .map(|s| normalize_text_whitespace(s))
+            .unwrap_or_default();
         if !line_text_to_write.is_empty() {
             writer.write_event(Event::Text(BytesText::from_escaped(
                 quick_xml::escape::escape(&line_text_to_write).as_ref(),
             )))?;
         }
     } else {
+        // 逐字模式：为每个音节创建带时间戳的 <span>
         for (syl_idx, syl) in line.main_syllables.iter().enumerate() {
             let mut span_start_element = BytesStart::new("span");
             span_start_element.push_attribute(("begin", format_ttml_time(syl.start_ms).as_str()));
@@ -413,7 +469,6 @@ fn write_p_content<W: std::io::Write>(
                 "end",
                 format_ttml_time(syl.end_ms.max(syl.start_ms)).as_str(),
             ));
-
             writer.write_event(Event::Start(span_start_element))?;
             if !syl.text.is_empty() {
                 writer.write_event(Event::Text(BytesText::from_escaped(
@@ -421,21 +476,17 @@ fn write_p_content<W: std::io::Write>(
                 )))?;
             }
             writer.write_event(Event::End(BytesEnd::new("span")))?;
-
-            if syl.ends_with_space {
-                let is_last_syllable_overall_in_p_content = (syl_idx == line.main_syllables.len() - 1) && // 是最后一个主音节
-                    (options.use_apple_format_rules || (line.translations.is_empty() && line.romanizations.is_empty())) &&
-                    (options.timing_mode == TtmlTimingMode::Line || line.background_section.is_none());
-
-                if !is_last_syllable_overall_in_p_content {
-                    if !options.format {
-                        writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
-                    }
+            // 如果音节后需要空格，并且不是最后一个可见元素，则写入一个空格
+            if syl.ends_with_space && syl_idx < line.main_syllables.len() - 1 {
+                if !options.format {
+                    writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
                 }
             }
         }
     }
 
+    // --- 核心逻辑：条件性地写入内联翻译和罗马音 ---
+    // 仅当不使用 Apple 规则时，才生成内联的 `<span>` 翻译和罗马音
     if !options.use_apple_format_rules {
         write_auxiliary_span(
             writer,
@@ -445,7 +496,6 @@ fn write_p_content<W: std::io::Write>(
             |e: &TranslationEntry| &e.text,
             |e: &TranslationEntry| &e.lang,
         )?;
-
         write_auxiliary_span(
             writer,
             &line.romanizations,
@@ -456,6 +506,7 @@ fn write_p_content<W: std::io::Write>(
         )?;
     }
 
+    // 仅在逐字模式下，才写入背景人声部分
     if options.timing_mode == TtmlTimingMode::Word {
         if let Some(bg_section) = &line.background_section {
             write_background_section(writer, bg_section, options)?;
@@ -465,40 +516,18 @@ fn write_p_content<W: std::io::Write>(
     Ok(())
 }
 
-/// 写入背景歌词部分
+/// 写入背景歌词部分 (`<span ttm:role="x-bg">...</span>`)。
 fn write_background_section<W: std::io::Write>(
     writer: &mut Writer<W>,
     bg_section: &BackgroundSection,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
-    // 逐行歌词直接跳过
-    if options.timing_mode == TtmlTimingMode::Line {
-        return Ok(());
-    }
-
-    // 检查背景部分是否有实际内容，如果没有则提前退出
-    let has_syllables = !bg_section.syllables.is_empty();
-    let has_translations = !options.use_apple_format_rules
-        && bg_section
-            .translations
-            .iter()
-            .any(|t| !normalize_text_whitespace(&t.text).is_empty());
-    let has_romanizations = !options.use_apple_format_rules
-        && bg_section
-            .romanizations
-            .iter()
-            .any(|r| !normalize_text_whitespace(&r.text).is_empty());
-
-    // 如果没有任何音节、翻译、罗马音，并且时间戳无效，则不生成任何内容
-    if !has_syllables
-        && !has_translations
-        && !has_romanizations
-        && bg_section.end_ms <= bg_section.start_ms
+    if options.timing_mode == TtmlTimingMode::Line
+        || (bg_section.syllables.is_empty() && bg_section.end_ms <= bg_section.start_ms)
     {
-        return Ok(());
+        return Ok(()); // 逐行模式或空内容时直接跳过
     }
 
-    // 创建背景歌词的容器 <span> 标签
     let mut bg_container_span = BytesStart::new("span");
     bg_container_span.push_attribute(("ttm:role", "x-bg"));
     bg_container_span.push_attribute(("begin", format_ttml_time(bg_section.start_ms).as_str()));
@@ -509,11 +538,9 @@ fn write_background_section<W: std::io::Write>(
     let num_syls = bg_section.syllables.len();
     for (idx, syl_bg) in bg_section.syllables.iter().enumerate() {
         if !syl_bg.text.is_empty() || (syl_bg.end_ms > syl_bg.start_ms) {
-            // 文本本身就是空格，不加括号
             let text_to_write = if syl_bg.text.trim().is_empty() {
-                syl_bg.text.clone()
+                syl_bg.text.clone() // 如果只是空格，则不加括号
             } else {
-                // 根据音节位置决定如何添加括号
                 match (num_syls, idx) {
                     (1, _) => format!("({})", syl_bg.text), // 只有一个音节
                     (_, 0) => format!("({}", syl_bg.text),  // 第一个音节

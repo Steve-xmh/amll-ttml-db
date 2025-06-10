@@ -173,6 +173,10 @@ struct TtmlParserState {
     default_romanization_lang: Option<String>,
     in_metadata_section: bool,
     in_itunes_metadata: bool,
+    in_am_translations: bool,
+    in_am_translation: bool,
+    current_am_translation_lang: Option<String>,
+    translation_map: HashMap<String, (String, Option<String>)>,
     in_songwriters_tag: bool,
     in_songwriter_tag: bool,
     current_songwriter_name: String,
@@ -205,6 +209,7 @@ struct CurrentPElementData {
     translations_accumulator: Vec<TranslationEntry>,
     romanizations_accumulator: Vec<RomanizationEntry>,
     background_section_accumulator: Option<BackgroundSectionData>,
+    itunes_key: Option<String>,
 }
 
 /// 存储当前处理的 `<span ttm:role="x-bg">` 的临时数据
@@ -332,6 +337,38 @@ pub fn parse_ttml_content(
                     "iTunesMetadata" if state.in_metadata_section => {
                         state.in_itunes_metadata = true
                     }
+                    "translations" if state.in_itunes_metadata => {
+                        state.in_am_translations = true;
+                    }
+                    "translation" if state.in_am_translations => {
+                        state.in_am_translation = true;
+                        state.current_am_translation_lang = None;
+                        for attr in e.attributes().with_checks(false).flatten() {
+                            if attr.key.as_ref() == b"xml:lang" {
+                                state.current_am_translation_lang =
+                                    Some(attr_value_as_string(&attr, &reader)?);
+                                break;
+                            }
+                        }
+                    }
+                    "text" if state.in_am_translation => {
+                        let mut text_for: Option<String> = None;
+                        for attr in e.attributes().with_checks(false).flatten() {
+                            if attr.key.as_ref() == b"for" {
+                                text_for = Some(attr_value_as_string(&attr, &reader)?);
+                                break;
+                            }
+                        }
+                        if let Some(key) = text_for {
+                            let text_content = reader.read_text(e.name())?.to_string();
+                            if !text_content.is_empty() {
+                                state.translation_map.insert(
+                                    key,
+                                    (text_content, state.current_am_translation_lang.clone()),
+                                );
+                            }
+                        }
+                    }
                     "songwriters" if state.in_itunes_metadata => state.in_songwriters_tag = true,
                     "songwriter" if state.in_songwriters_tag => {
                         state.in_songwriter_tag = true;
@@ -399,6 +436,9 @@ pub fn parse_ttml_content(
                                 }
                                 b"itunes:song-part" => {
                                     p_data.song_part = Some(attr_value_as_string(&attr, &reader)?)
+                                }
+                                b"itunes:key" => {
+                                    p_data.itunes_key = Some(attr_value_as_string(&attr, &reader)?);
                                 }
                                 _ => {}
                             }
@@ -570,7 +610,21 @@ pub fn parse_ttml_content(
                         state.current_div_song_part = None;
                     }
                     "p" if state.in_p => {
-                        if let Some(p_data) = state.current_p_element_data.take() {
+                        if let Some(mut p_data) = state.current_p_element_data.take() {
+                            if let Some(key) = &p_data.itunes_key {
+                                if let Some((text, lang)) = state.translation_map.get(key) {
+                                    if p_data
+                                        .translations_accumulator
+                                        .iter()
+                                        .all(|t| &t.text != text)
+                                    {
+                                        p_data.translations_accumulator.push(TranslationEntry {
+                                            text: text.clone(),
+                                            lang: lang.clone(),
+                                        });
+                                    }
+                                }
+                            }
                             finalize_p_element(p_data, &mut lines, &state, &mut warnings);
                         }
                         state.in_p = false;
@@ -578,6 +632,8 @@ pub fn parse_ttml_content(
                         state.last_syllable_info = LastSyllableInfo::None;
                     }
                     "span" if state.in_p => process_span_end(&mut state, &mut warnings)?,
+                    "translations" => state.in_am_translations = false,
+                    "translation" => state.in_am_translation = false,
                     _ => {}
                 }
                 if !(ended_tag_name == "span"
@@ -992,6 +1048,7 @@ fn finalize_p_element(
     let mut final_line = LyricLine {
         start_ms: p_data.start_ms,
         end_ms: p_data.end_ms,
+        itunes_key: p_data.itunes_key,
         agent: p_data.agent.or_else(|| Some("v1".to_string())),
         song_part: p_data.song_part,
         translations: p_data.translations_accumulator,
