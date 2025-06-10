@@ -64,7 +64,7 @@ fn generate_ttml_inner<W: std::io::Write>(
 ) -> Result<(), ConvertError> {
     // --- 准备 <tt> 根元素的属性 ---
     let mut namespace_attrs: Vec<(&str, String)> = Vec::new();
-    let timing_attr;
+    
     let mut lang_attr: Option<(&str, String)> = None;
 
     namespace_attrs.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
@@ -113,7 +113,7 @@ fn generate_ttml_inner<W: std::io::Write>(
         TtmlTimingMode::Word => "Word",
         TtmlTimingMode::Line => "Line",
     };
-    timing_attr = Some(("itunes:timing", timing_mode_str.to_string()));
+    let timing_attr = Some(("itunes:timing", timing_mode_str.to_string()));
 
     // 属性排序以保证输出稳定
     namespace_attrs.sort_by_key(|&(key, _)| key);
@@ -490,10 +490,8 @@ fn write_p_content<W: std::io::Write>(
             }
             writer.write_event(Event::End(BytesEnd::new("span")))?;
             // 如果音节后需要空格，并且不是最后一个可见元素，则写入一个空格
-            if syl.ends_with_space && syl_idx < line.main_syllables.len() - 1 {
-                if !options.format {
-                    writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
-                }
+            if syl.ends_with_space && syl_idx < line.main_syllables.len() - 1 && !options.format {
+                writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
             }
         }
     }
@@ -576,10 +574,8 @@ fn write_background_section<W: std::io::Write>(
             }
             writer.write_event(Event::End(BytesEnd::new("span")))?;
 
-            if syl_bg.ends_with_space && idx < num_syls - 1 {
-                if !options.format {
-                    writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
-                }
+            if syl_bg.ends_with_space && idx < num_syls - 1 && !options.format {
+                writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
             }
         }
     }
