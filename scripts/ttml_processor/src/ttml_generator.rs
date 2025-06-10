@@ -63,13 +63,16 @@ fn generate_ttml_inner<W: std::io::Write>(
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
     // --- 准备 <tt> 根元素的属性 ---
-    let mut tt_attributes: Vec<(&str, String)> = Vec::new();
-    tt_attributes.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
-    tt_attributes.push((
+    let mut namespace_attrs: Vec<(&str, String)> = Vec::new();
+    let timing_attr;
+    let mut lang_attr: Option<(&str, String)> = None;
+
+    namespace_attrs.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
+    namespace_attrs.push((
         "xmlns:ttm",
         "http://www.w3.org/ns/ttml#metadata".to_string(),
     ));
-    tt_attributes.push((
+    namespace_attrs.push((
         "xmlns:itunes",
         "http://music.apple.com/lyric-ttml-internal".to_string(),
     ));
@@ -91,7 +94,7 @@ fn generate_ttml_inner<W: std::io::Write>(
         .iter()
         .any(|key| metadata_store.get_multiple_values(key).is_some())
     {
-        tt_attributes.push(("xmlns:amll", "http://www.example.com/ns/amll".to_string()));
+        namespace_attrs.push(("xmlns:amll", "http://www.example.com/ns/amll".to_string()));
     }
 
     // 设置主语言属性
@@ -101,7 +104,7 @@ fn generate_ttml_inner<W: std::io::Write>(
         .or_else(|| metadata_store.get_single_value(&CanonicalMetadataKey::Language));
     if let Some(lang) = lang_to_use {
         if !lang.is_empty() {
-            tt_attributes.push(("xml:lang", lang.clone()));
+            lang_attr = Some(("xml:lang", lang.clone()));
         }
     }
 
@@ -110,14 +113,23 @@ fn generate_ttml_inner<W: std::io::Write>(
         TtmlTimingMode::Word => "Word",
         TtmlTimingMode::Line => "Line",
     };
-    tt_attributes.push(("itunes:timing", timing_mode_str.to_string()));
+    timing_attr = Some(("itunes:timing", timing_mode_str.to_string()));
 
     // 属性排序以保证输出稳定
-    tt_attributes.sort_by_key(|&(key, _)| key);
+    namespace_attrs.sort_by_key(|&(key, _)| key);
 
     // --- 写入 <tt> 根元素 ---
     let mut tt_start_element = BytesStart::new("tt");
-    for (key, value) in &tt_attributes {
+
+    for (key, value) in &namespace_attrs {
+        tt_start_element.push_attribute((*key, value.as_str()));
+    }
+
+    if let Some((key, value)) = &timing_attr {
+        tt_start_element.push_attribute((*key, value.as_str()));
+    }
+
+    if let Some((key, value)) = &lang_attr {
         tt_start_element.push_attribute((*key, value.as_str()));
     }
     writer.write_event(Event::Start(tt_start_element))?;
@@ -253,6 +265,7 @@ fn write_ttml_head<W: std::io::Write>(
             writer.write_event(Event::Start(BytesStart::new("translations")))?;
             for (lang, entries) in translations_by_lang {
                 let mut trans_tag = BytesStart::new("translation");
+                trans_tag.push_attribute(("type", "subtitle"));
                 if let Some(lang_code) = lang.filter(|s| !s.is_empty()) {
                     // 过滤掉空语言代码
                     trans_tag.push_attribute(("xml:lang", lang_code.as_str()));
