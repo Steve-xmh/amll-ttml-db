@@ -265,7 +265,9 @@ export function normalizeLyricLine(line, lineIndex, logs) {
             // 只要有内容，就视为一个空格来源
             if (wordObj.word.length > 0) {
                 pendingSpaces++;
-                logChange(`发现了一个完全由空格组成的音节 \`${wordObj.word}\``);
+                if (wordObj.isFromSpan) {
+                    logChange(`发现了一个完全由空格组成的音节 \`${wordObj.word}\``);
+                }
             }
             continue;
         }

@@ -19,26 +19,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: 缓存依赖
-        uses: actions/cache@v4
+      - name: 安装稳定版本的 Rust 工具链
+        run: rustup toolchain install stable --profile minimal
+      - name: 准备 Rust 缓存
+        uses: Swatinem/rust-cache@v2
         with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: 缓存构建产物
-        uses: actions/cache@v4
-        with:
-          path: scripts/rebuild-folder/target
-          key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
+          workspaces: scripts/rebuild-folder -> target
       - name: 运行重建程序
         timeout-minutes: 10
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
-          cargo run --release
+          cargo run --release --locked
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: scripts/rebuild-folder

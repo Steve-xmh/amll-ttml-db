@@ -349,7 +349,7 @@ async function main() {
 								lyricFormatted,
 								"```",
 							].join("\n");
-							if (hasNormalizationOccurred) {
+							if (normalizationLogs.length > 0) {
 								const warningHeader = "> [!WARNING]\n";
 								const warningBody = `> 歌词文本已被自动规范化，详情如下：\n>\n` +
 													normalizationLogs.map(log => `> ${log.replace(/\n/g, '\n> ')}`).join('\n');

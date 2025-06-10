@@ -91,6 +91,7 @@ function parseLyricInner(ttmlDoc) {
 					word: word,
 					startTime: word.trim().length > 0 ? line.startTime : 0,
 					endTime: word.trim().length > 0 ? line.endTime : 0,
+					isFromSpan: false,
 				});
 			} else if (wordNode.nodeType === ttmlDoc.ELEMENT_NODE) {
 				const wordEl = wordNode;
@@ -110,6 +111,7 @@ function parseLyricInner(ttmlDoc) {
 						word: wordNode.textContent ?? "",
 						startTime: parseTimespan(wordEl.getAttribute("begin") ?? ""),
 						endTime: parseTimespan(wordEl.getAttribute("end") ?? ""),
+						isFromSpan: true,
 					};
 					const emptyBeat = wordEl.getAttribute("amll:empty-beat");
 					if (emptyBeat) {
