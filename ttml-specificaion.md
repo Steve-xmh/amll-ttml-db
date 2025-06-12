@@ -40,10 +40,17 @@
 * **根元素**: 必须是 `<tt>`。
 * **命名空间**:
     * `xmlns`, `xmlns:ttm` 是标准 TTML 必需的。
-    * `xmlns:itunes` 用于 Apple Music 特定的属性，如 `itunes:timing` 和 `itunes:song-part`。
+    * `xmlns:itunes` 可选，用于 Apple Music 特定的属性，如 `itunes:timing` 和 `itunes:song-part`。
     * `xmlns:amll` 用于 AMLL 的元数据。
-* **`xml:lang`**: 在 `<tt>` 标签上指定歌词的主要语言代码 (例如 `ja` 代表日语, `en` 代表英语)。
-* **`itunes:timing`**: 用于声明逐行或逐字歌词。
+* **`xml:lang`**: 可选，在 `<tt>` 标签上指定歌词的主要语言代码 (例如 `ja` 代表日语, `en` 代表英语)。
+* **`itunes:timing`**: 可选，用于声明逐行或逐字歌词。若不指定该属性，默认为逐字歌词。若 TTML 文件中没有任何逐字音节信息（即所有文本均直接包含在 `<p>` 标签中），会自动判断为逐行歌词。
+* **`body` 元素**: 用于包含所有歌词行 (`<p>`) 和结构块 (`<div>`)。
+    * **`dur`**: **必填**。用于定义歌词内容的总时长。其值应约等于文件中最后一个时间戳的结束时间。所有内部元素的时间码都不得超过此 `dur` 值。
+
+    ```xml
+    <body dur="00:04:15.500">
+        </body>
+    ```
 
 ---
 
@@ -61,19 +68,24 @@
 
 * **演唱者**: 使用 `<ttm:agent>` 定义所有演唱者。
 
-- `type` 属性指明类型: `person` (独唱), `group` (合唱), `other` (其他)。
+    - `type` 属性指明类型: `person` (独唱), `group` (合唱，一般使用 `v1000`), `other` (其他)。
 
-- `xml:id` 为每位演唱者提供一个唯一的引用 ID (建议使用 `v1`, `v2`, `v1000`, ...)。
+    - `xml:id` 为每位演唱者提供一个唯一的引用 ID (建议使用 `v1`, `v2`, `v1000`, ...)。
 
-- `<ttm:name>` 标签内提供演唱者的全名。
+    - `<ttm:name>` 标签内提供可选的演唱者全名。
+
+* **其他 `<ttm:...>` 标签**: 最后会转换为自定义的 AMLL 元数据标签。
+
+    - 例如，`<ttm:copyright>一些版权信息</ttm:copyright>` 会被转换为 `<amll:meta key="copyright" value="一些版权信息"/>`。
 
 #### 3.2. AMLL 元数据
 
-使用 `<amll:meta>` 标签提供歌曲的核心信息。这些是**必填项**。
+使用 `<amll:meta>` 标签提供歌曲的核心信息。
 
-* **歌曲名**: `key="musicName"`
-* **艺人名**: `key="artists"`
-* **专辑名**: `key="album"` (如果是单曲，专辑名应与歌曲名相同)
+* **歌曲名**: `key="musicName"`，**必填**
+* **艺人名**: `key="artists"`，**必填**
+* **专辑名**: `key="album"` (如果是单曲，专辑名应与歌曲名相同)，**必填**
+* **ISRC号码**: `key="isrc"`
 
 为了使歌词能够关联到各大音乐平台，**必须至少提供一个**平台 ID。
 
@@ -81,6 +93,13 @@
 * **QQ 音乐**: `key="qqMusicId"`
 * **Spotify**: `key="spotifyId"`
 * **Apple Music**: `key="appleMusicId"`
+
+可以使用 AMLL 元数据标记歌词作者，例如：
+
+* **逐词歌词作者 Github ID**: `key="ttmlAuthorGithub"`
+* **逐词歌词作者 GitHub 用户名**: `key="ttmlAuthorGithubLogin"`
+
+请参阅 [AMLL Wiki](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE) 了解更多信息。
 
 ```xml
 <head>
@@ -93,6 +112,7 @@
         <ttm:agent type="person" xml:id="v2">
             <ttm:name type="full">艺人B</ttm:name>
         </ttm:agent>
+        <ttm:agent type="group" xml:id="v1000" />
         
         <!-- AMLL 元数据 -->
         <amll:meta key="musicName" value="歌曲名" />
@@ -103,6 +123,8 @@
         <amll:meta key="album" value="可能的第二个专辑名"/>
         <amll:meta key="ncmMusicId" value="123456789"/>
         <amll:meta key="spotifyId" value="123456789"/>
+        <amll:meta key="ttmlAuthorGithub" value="123456789"/>
+        <amll:meta key="ttmlAuthorGithubLogin" value="你的 Github 用户名"/>
     </metadata>
 </head>
 ```
@@ -125,7 +147,7 @@
 
 #### 4.1. 逐字歌词
 
-当 `itunes:timing="Word"` 时（若未指定该属性，默认为逐字歌词）。
+当 `itunes:timing="Word"` 时：
 
 * 每一行歌词在一个 `<p>` 标签内。
 * 每个音节都必须包裹在**带有 `begin` 和 `end` 属性的 `<span>` 标签**中。
@@ -165,7 +187,7 @@
 
 #### 5.1. 歌词组成部分
 
-使用 `<div>` 标签来分割歌曲的不同部分（如主歌、副歌），并通过 `itunes:song-part` 属性来标记。
+使用 `<div>` 标签来分割歌曲的不同部分（如主歌、副歌），并通过 `itunes:song-part` 属性来标记。这是可选的内容。
 
 * `itunes:song-part` 属性可以指定为任意值，但我们建议使用以下值：
     - `Verse` (主歌), 
@@ -195,9 +217,11 @@
 
 * **行 (`<p>`)**: <p> 标签用于放置歌词中的每一行。应使用 `<p>` 分隔歌词行，而不是 `<br>`。
 
-* **字词 (`<span>`)**: 在逐字歌词中，`<span> `用于标记单个字词或音节的时间。
+* **字词 (`<span>`)**: 在逐字歌词中，`<span>` 用于标记单个字词或音节的时间。
 
 * **演唱者 (`ttm:agent`)**: 在 `<p>` 标签上使用 `ttm:agent` 属性，并通过在 `<head>` 中定义的 `xml:id` (如 `v1`) 来指明演唱者。
+
+* **行号 (`itunes:key`)**: 用于标记歌词行的唯一编号。其格式为 `L` 加上从 1 开始的行号 (例如 `L1`, `L2`, ...)。行号**必须**是连续且递增的，即使在不同的 `<div>` 块之间。
 
 > [!WARNING]
 > 即使是单人演唱的歌曲，也应为 `<p>` 标签添加 `ttm:agent="v1"`，并定义 "v1" agent。
@@ -206,9 +230,12 @@
 
 可以在主歌词行内嵌套 `<span>` 来提供翻译、罗马音和背景人声。
 
+> [!CAUTION]
+> AMLL 全系目前还不支持多翻译和多罗马音。不建议现在提交多翻译和多罗马音歌词。
+
 * **翻译**: 使用 `<span ttm:role="x-translation" xml:lang="语言代码">...</span>`。
 * **罗马音**: 使用 `<span ttm:role="x-roman" xml:lang="语言-Latn" xml:scheme="罗马音方案">...</span>`。
-* **背景人声**: 使用 `<span ttm:role="x-bg" begin="..." end="...">...</span>`。背景人声的标签必须始终放在主歌词最后面。
+* **背景人声**: 使用 `<span ttm:role="x-bg" begin="..." end="...">...</span>`。背景人声的标签必须始终放在主歌词最后面。建议使用半角括号将背景人声文本包裹起来。机器人也会自动添加括号（如果没有）。**不要添加两个括号**。
 
 ```xml
 <p begin="00:25.100" end="00:32.500" itunes:key="L1" ttm:agent="v1">
@@ -229,8 +256,8 @@
     <!-- 背景人声 -->
     <span ttm:role="x-bg" begin="00:30.500" end="00:32.500">
         <!-- 背景人声的主歌词 -->
-        <span begin="00:30.500" end="00:31.500">（秘密</span>
-        <span begin="00:31.600" end="00:32.500">だよ）</span>
+        <span begin="00:30.500" end="00:31.500">(秘密</span>
+        <span begin="00:31.600" end="00:32.500">だよ)</span>
         
         <!-- 背景人声的翻译 -->
         <span ttm:role="x-translation" xml:lang="zh-CN">是秘密哦</span>
