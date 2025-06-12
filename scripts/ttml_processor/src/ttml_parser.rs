@@ -896,45 +896,82 @@ fn process_span_end(
                         if let (Some(start_ms), Some(end_ms)) =
                             (ended_span_ctx.start_ms, ended_span_ctx.end_ms)
                         {
-                            if !trimmed_text_for_content_check.is_empty() || end_ms > start_ms {
-                                if start_ms >= end_ms && !trimmed_text_for_content_check.is_empty()
-                                {
-                                    warnings.push(format!("TTML解析警告: 音节 '{}' 的时间戳无效 (start_ms {} >= end_ms {}), 但仍会创建音节。", trimmed_text_for_content_check.escape_debug(), start_ms, end_ms));
+                            // 只要音节有内容或有时长，就应该处理
+                            if !trimmed_text_for_content_check.is_empty() || end_ms >= start_ms {
+                                if start_ms > end_ms {
+                                    warnings.push(format!("TTML解析警告: 音节 '{}' 的时间戳无效 (start_ms {} > end_ms {}), 但仍会创建音节。", trimmed_text_for_content_check.escape_debug(), start_ms, end_ms));
                                 }
 
-                                let syllable_text = if ended_span_was_within_background_container {
-                                    // 如果是背景音节，则清理括号
-                                    clean_parentheses_from_bg_text(trimmed_text_for_content_check)
+                                // 检查这是否是一个只包含空格的、带时长的音节
+                                let is_whitespace_span =
+                                    trimmed_text_for_content_check.is_empty() && end_ms >= start_ms;
+
+                                let syllable_text: String;
+                                let syllable_ends_with_space: bool;
+
+                                if is_whitespace_span {
+                                    // 这是一个有时长的空格
+                                    syllable_text = " ".to_string(); // 规范化为一个空格
+                                    syllable_ends_with_space = false; // 空格不应该再有尾随空格
+
+                                    // 移除前一个音节的后缀空格（如果有）
+                                    let target_syllables =
+                                        if ended_span_was_within_background_container {
+                                            p_data
+                                                .background_section_accumulator
+                                                .as_mut()
+                                                .map(|bs| &mut bs.syllables)
+                                        } else {
+                                            Some(&mut p_data.syllables_accumulator)
+                                        };
+
+                                    if let Some(syllables) = target_syllables {
+                                        if let Some(last_syl) = syllables.last_mut() {
+                                            if last_syl.ends_with_space {
+                                                last_syl.ends_with_space = false;
+                                            }
+                                        }
+                                    }
                                 } else {
-                                    // 否则，使用常规的空白清理
-                                    normalize_text_whitespace(trimmed_text_for_content_check)
-                                };
-
-                                let syllable = LyricSyllable {
-                                    text: syllable_text,
-                                    start_ms,
-                                    end_ms: end_ms.max(start_ms),
-                                    duration_ms: Some(end_ms.saturating_sub(start_ms)),
-                                    ends_with_space: had_trailing_whitespace,
-                                };
-
-                                let was_bg_syllable = if ended_span_was_within_background_container
-                                {
-                                    if let Some(bg_section) =
-                                        p_data.background_section_accumulator.as_mut()
-                                    {
-                                        bg_section.syllables.push(syllable);
-                                        true
+                                    // 这是一个常规音节
+                                    syllable_text = if ended_span_was_within_background_container {
+                                        clean_parentheses_from_bg_text(
+                                            trimmed_text_for_content_check,
+                                        )
                                     } else {
-                                        false
-                                    } // 不应该发生
-                                } else {
-                                    p_data.syllables_accumulator.push(syllable);
-                                    false
-                                };
-                                state.last_syllable_info = LastSyllableInfo::EndedSyllable {
-                                    was_background: was_bg_syllable,
-                                };
+                                        normalize_text_whitespace(trimmed_text_for_content_check)
+                                    };
+                                    syllable_ends_with_space = had_trailing_whitespace;
+                                }
+
+                                // 只有在文本不为空(包括刚刚创建的空格)的情况下才创建音节
+                                if !syllable_text.is_empty() {
+                                    let syllable = LyricSyllable {
+                                        text: syllable_text,
+                                        start_ms,
+                                        end_ms: end_ms.max(start_ms),
+                                        duration_ms: Some(end_ms.saturating_sub(start_ms)),
+                                        ends_with_space: syllable_ends_with_space,
+                                    };
+
+                                    let was_bg_syllable =
+                                        if ended_span_was_within_background_container {
+                                            if let Some(bg_section) =
+                                                p_data.background_section_accumulator.as_mut()
+                                            {
+                                                bg_section.syllables.push(syllable);
+                                                true
+                                            } else {
+                                                false
+                                            }
+                                        } else {
+                                            p_data.syllables_accumulator.push(syllable);
+                                            false
+                                        };
+                                    state.last_syllable_info = LastSyllableInfo::EndedSyllable {
+                                        was_background: was_bg_syllable,
+                                    };
+                                }
                             }
                         } else if !trimmed_text_for_content_check.is_empty() {
                             warnings.push(format!(
@@ -1186,35 +1223,35 @@ fn finalize_p_element(
 
 /// 清理文本两端的括号（单个或成对）
 pub fn clean_parentheses_from_bg_text(text: &str) -> String {
-    if text.is_empty() {
+    // 清理两端的空格
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
         return "".to_string();
     }
 
-    let first_char = text.chars().next();
-    let last_char = text.chars().last();
+    // 找到第一个不是括号的字符的索引
+    let start_index = trimmed
+        .char_indices()
+        .find(|&(_i, c)| c != '(' && c != '（')
+        .map(|(i, _)| i)
+        // 如果所有字符都是开括号，则 find 返回 None
+        // 将起始索引设为字符串末尾，以确保切片为空
+        .unwrap_or_else(|| trimmed.len());
 
-    let has_leading_paren = first_char == Some('(');
-    let has_trailing_paren = last_char == Some(')');
+    // 找到最后一个不是括号的字符，获取其结束位置的索引
+    let end_index = trimmed
+        .char_indices()
+        .rfind(|&(_i, c)| c != ')' && c != '）')
+        .map(|(i, c)| i + c.len_utf8())
+        // 如果所有字符都是闭括号，则 rfind 返回 None
+        // 将结束索引设为0，以确保切片为空
+        .unwrap_or(0);
 
-    let mut start_index = 0;
-    let mut end_index = text.len();
-
-    if has_leading_paren && has_trailing_paren && text.len() >= 2 {
-        // 同时有开头和结尾括号
-        start_index = text.chars().next().unwrap().len_utf8();
-        end_index = text.char_indices().last().unwrap().0;
-    } else if has_leading_paren {
-        // 只有开头括号
-        start_index = text.chars().next().unwrap().len_utf8();
-    } else if has_trailing_paren {
-        // 只有结尾括号
-        end_index = text.char_indices().last().unwrap().0;
+    // 起始索引大于或等于结束索引，说明字符串是空的，或者只包含括号
+    if start_index >= end_index {
+        return "".to_string();
     }
-    let final_content_slice = if start_index >= end_index {
-        ""
-    } else {
-        &text[start_index..end_index]
-    };
 
-    final_content_slice.to_string()
+    // 提取核心文本切片，再次清理
+    trimmed[start_index..end_index].trim().to_string()
 }
