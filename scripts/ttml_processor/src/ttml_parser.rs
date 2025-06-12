@@ -781,11 +781,9 @@ fn process_span_start(
     if role == SpanRole::Background {
         if let Some(p_data) = state.current_p_element_data.as_mut() {
             if p_data.background_section_accumulator.is_none() {
-                let bg_start = start_ms.unwrap_or(p_data.start_ms);
-                let bg_end = end_ms.unwrap_or(p_data.end_ms);
                 p_data.background_section_accumulator = Some(BackgroundSectionData {
-                    start_ms: bg_start,
-                    end_ms: bg_end,
+                    start_ms: start_ms.unwrap_or(0),
+                    end_ms: end_ms.unwrap_or(0),
                     ..Default::default()
                 });
             }
@@ -992,6 +990,20 @@ fn process_span_end(
                     }
                 }
                 SpanRole::Background => {
+                    if let Some(bg_acc) = p_data.background_section_accumulator.as_mut() {
+                        if ended_span_ctx.start_ms.is_none() || ended_span_ctx.end_ms.is_none() {
+                            if !bg_acc.syllables.is_empty() {
+                                let min_start = bg_acc.syllables.iter().map(|s| s.start_ms).min();
+                                let max_end = bg_acc.syllables.iter().map(|s| s.end_ms).max();
+                                
+                                if let (Some(start), Some(end)) = (min_start, max_end) {
+                                    bg_acc.start_ms = start;
+                                    bg_acc.end_ms = end;
+                                }
+                            }
+                        }
+                    }
+
                     if !trimmed_text_for_content_check.is_empty() {
                         warn!(
                             "TTML 解析警告: <span ttm:role='x-bg'> 直接包含文本 '{}'。",
