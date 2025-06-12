@@ -16,15 +16,29 @@ pub fn parse_ttml_time_to_ms(time_str: &str) -> Result<u64, ConvertError> {
     // 例如 "12.3s"
     if let Some(stripped) = time_str.strip_suffix('s') {
         //按秒来解析
-        return stripped
-            .parse::<f64>()
-            .map_err(|e| {
-                ConvertError::InvalidTime(format!(
-                    "无法将秒值 '{}' 从时间戳 '{}' 解析为数字: {}",
-                    stripped, time_str, e
-                ))
-            })
-            .map(|seconds| (seconds * 1000.0).round() as u64);
+        let seconds = stripped.parse::<f64>().map_err(|e| {
+            ConvertError::InvalidTime(format!(
+                "无法将秒值 '{}' 从时间戳 '{}' 解析为数字: {}",
+                stripped, time_str, e
+            ))
+        })?;
+
+        if seconds.is_sign_negative() {
+            return Err(ConvertError::InvalidTime(format!(
+                "时间戳不能为负: '{}'",
+                time_str
+            )));
+        }
+
+        let total_ms = seconds * 1000.0;
+        if total_ms > u64::MAX as f64 {
+             return Err(ConvertError::InvalidTime(format!(
+                "时间戳 '{}' 超出可表示范围",
+                time_str
+            )));
+        }
+
+        return Ok(total_ms.round() as u64);
     }
 
     let colon_parts: Vec<&str> = time_str.split(':').collect(); // 按冒号分割时间字符串
@@ -153,7 +167,7 @@ pub fn parse_ttml_time_to_ms(time_str: &str) -> Result<u64, ConvertError> {
             minutes, time_str
         )));
     }
-    if seconds >= 60 {
+    if (colon_parts.len() > 1) && seconds >= 60 {
         return Err(ConvertError::InvalidTime(format!(
             "秒值 '{}' (应 < 60) 在时间戳 '{}' 中无效",
             seconds, time_str
