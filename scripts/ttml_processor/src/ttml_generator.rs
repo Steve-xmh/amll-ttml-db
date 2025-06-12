@@ -64,7 +64,6 @@ fn generate_ttml_inner<W: std::io::Write>(
 ) -> Result<(), ConvertError> {
     // --- 准备 <tt> 根元素的属性 ---
     let mut namespace_attrs: Vec<(&str, String)> = Vec::new();
-    
     let mut lang_attr: Option<(&str, String)> = None;
 
     namespace_attrs.push(("xmlns", "http://www.w3.org/ns/ttml".to_string()));
