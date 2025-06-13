@@ -51,7 +51,7 @@ Every TTML file must be a valid XML document and include the following basic str
 
   * **`body` Element**: Contains all lyric lines (`<p>`) and structural blocks (`<div>`).
 
-      * **`dur`**: **Required**. Defines the total duration of the lyric content. Its value should be approximately equal to the end time of the last timestamp in the file. The timecodes of all inner elements must not exceed this `dur` value.
+      * **`dur`**: **Required**. Defines the total duration of the lyric content. Its value **must be greater than or equal to** the end time of the last timestamp in the file. The timecodes of all inner elements must not exceed this `dur` value.
 
     ```xml
     <body dur="00:04:15.500">
@@ -70,7 +70,7 @@ For multiple values, a separate tag should be created for **each value**.
 
 Use standard TTML tags to define basic song information and performers.
 
-  * **Song Title**: You can use `<ttm:title>`, which will ultimately be converted to `musicName`.
+  * **Song Title**: You can use `<ttm:title>`, which will ultimately be converted to `musicName`. **Do not** add the same value in both the `<ttm:title>` and `musicName` tags.
 
   * **Performers**: Use `<ttm:agent>` to define all performers.
 
@@ -185,6 +185,60 @@ When `itunes:timing="Line"`, the robot only parses the timestamp of the entire l
 <p begin="00:01.000" end="00:03.500">A line of lyrics</p>
 ```
 
+#### 4.3 Timestamp Format
+
+All time values in this document (e.g., the values of `begin`, `end`, `dur` attributes) **must** follow one of the formats below.
+
+##### **Clock Time**
+
+The recommended format is the clock-based `HH:MM:SS.fff`.
+
+  * **`HH`**: Hours, two digits, optional.
+  * **`MM`**: Minutes, two digits, required if `HH` is present.
+  * **`SS`**: Seconds, two digits, required.
+  * **`.fff`**: Milliseconds, optional, can be 1 to 3 digits after the decimal point.
+
+**Omission Rules for the Format:**
+
+  * The hours part `HH:` can be omitted, making the format `MM:SS.fff`.
+  * Both the hours `HH:` and minutes `MM:` parts can be omitted, making the format `SS.fff`.
+  * The milliseconds part `.fff` can be omitted.
+
+> [!CAUTION]
+> **Regarding the range of minutes and seconds**
+>
+>   * When a timestamp includes a colon (`:`) (i.e., in `HH:MM:SS` or `MM:SS` format), the values for minutes `MM` and seconds `SS` **must be less than 60**. For example, `01:75.000` is an **invalid** format.
+>   * When a timestamp does not include a colon (e.g., `95.000`), the value for seconds can be 60 or greater.
+
+##### **Millisecond Parsing Rules**
+
+The parser will automatically pad the digits after the decimal point for milliseconds:
+
+  * **1 digit**: Represents tenths of a second. For example, `15.1` will be parsed as `15` seconds and `100` milliseconds.
+  * **2 digits**: Represents hundredths of a second. For example, `15.12` will be parsed as `15` seconds and `120` milliseconds.
+  * **3 digits**: Represents milliseconds. For example, `15.123` will be parsed as `15` seconds and `123` milliseconds.
+
+##### **Seconds Value**
+
+You can directly provide a time value in seconds with an `s` suffix. This can be an integer or a floating-point number.
+
+  * **Example**: `12.3s` represents `12300` milliseconds. `90s` represents `90000` milliseconds.
+
+##### **Summary of Valid Formats**
+
+| Category | Format | Example | Parsed Milliseconds |
+| :--- | :--- | :--- | :--- |
+| **Full Format** | `HH:MM:SS.fff` | `00:02:35.500` | `155500` |
+| | `HH:MM:SS.f` | `00:02:35.5` | `155500` |
+| | `HH:MM:SS` | `00:02:35` | `155000` |
+| **Omit Hours** | `MM:SS.ff` | `02:35.55` | `155550` |
+| | `MM:SS` | `02:35` | `155000` |
+| **Seconds Only** | `SS.fff` | `35.123` | `35123` |
+| | `SS` | `35` | `35000` |
+| | `SS` (over 60) | `95` | `95000` |
+| **`s` Suffix Format** | `f.f...s` | `15.8s` | `15800` |
+| | `fs` | `15s` | `15000` |
+
 -----
 
 ### 5. Lyric Content and Structure
@@ -275,9 +329,127 @@ You can nest `<span>` tags within the main lyric line to provide translations, r
 </p>
 ```
 
+#### 5.4 Apple Music Style Translation
+
+In addition to the inline translation method (`ttm:role="x-translation"`) described in `5.3`, the robot is also compatible with Apple Music style translations.
+
+> [!CAUTION]
+> When both formats are present, the robot will use the Apple Music style translation content and ignore the inline translation content.
+
+##### **Structure Explanation**
+
+1.  **Location**: All translation data must be placed inside `<head><metadata>...</metadata></head>`.
+2.  **Main Container**: A `<iTunesMetadata>` tag is required as a container, with its namespace declared: `xmlns="http://music.apple.com/lyric-ttml-internal"`.
+3.  **Translation Block**:
+      * Inside `<iTunesMetadata>`, use the `<translations>` tag to wrap one or more `<translation>` blocks.
+      * Each `<translation>` represents a translation in one language and **must** include the following attributes:
+          * `type="translation-type"`, which can be `subtitle` or `replacement`. `subtitle` is suitable for most translation content, while `replacement` is generally used for conversions between Simplified and Traditional Chinese.
+          * `xml:lang="language-code"` (e.g., `zh-Hans-CN`)
+4.  **Text Linking**:
+      * Inside a `<translation>`, each translated line is carried by a separate `<text>` tag.
+      * The `for` attribute links the translated text to a lyric line, and its value **must** exactly match the `itunes:key` value of the corresponding `<p>` tag in the `<body>`.
+
+##### **Example**
+
+The following example shows how to define a Simplified Chinese translation in the header and link it to the lyric lines in the body.
+
+**Definition in the `<head>` section:**
+
+```xml
+<head>
+    <metadata>
+        <iTunesMetadata xmlns="http://music.apple.com/lyric-ttml-internal">
+            <translations>
+                <translation type="subtitle" xml:lang="zh-Hans-CN">
+                    <text for="L23">黄金首饰 闪亮耀眼</text>
+                    <text for="L24">冰镇草莓香槟</text>
+                    <text for="L25">你走运了 这正是我喜欢的</text>
+                </translation>
+            </translations>
+        </iTunesMetadata>
+    </metadata>
+</head>
+```
+
+**Corresponding lyric lines in the `<body>` section:**
+
+```xml
+<body>
+    ...
+    <div itunes:songPart="Chorus">
+        <p begin="45.404" end="48.709" itunes:key="L23" ttm:agent="v1">
+            <span begin="45.404" end="45.755">Gold</span>
+            <span begin="45.755" end="46.696">jewelry</span>
+            <span begin="46.696" end="47.627">shining</span>
+            <span begin="47.627" end="47.979">so</span>
+            <span begin="47.979" end="48.709">bright</span>
+        </p>
+        <p begin="48.739" end="52.311" itunes:key="L24" ttm:agent="v1">
+            <span begin="48.739" end="50.290">Strawberry</span>
+            <span begin="50.290" end="51.226">champagne</span>
+            <span begin="51.226" end="51.584">on</span>
+            <span begin="51.584" end="52.311">ice</span>
+        </p>
+        <p begin="52.320" end="54.350" itunes:key="L25" ttm:agent="v1">
+            <span begin="52.320" end="52.826">Lucky</span>
+            <span begin="52.826" end="53.090">for</span>
+            <span begin="53.090" end="53.300">you,</span>
+            <span begin="53.300" end="53.484">that's</span>
+            <span begin="53.484" end="53.732">what</span>
+            <span begin="53.732" end="53.918">I</span>
+            <span begin="53.918" end="54.350">like</span>
+        </p>
+    </div>
+    ...
+</body>
+```
+
 -----
 
 ### 6. Whitespace and Formatting Rules
 
   * **Whitespace Handling**: We automatically normalize whitespace in the lyric text. Multiple consecutive spaces (including newlines, tabs, etc.) will be merged into a single standard half-width space, and leading/trailing spaces will be removed. **In word-by-word mode, the space between words is crucial, please be sure to follow the rules in 4.1.1.**
   * **Formatting Prohibited**: It is **absolutely forbidden** to use any XML/HTML formatting tools (like Prettier or built-in IDE formatters) to format the TTML file. **Formatting will add or change the independent space text nodes between `<span>` tags, causing the loss of space information.** The file should maintain a compressed structure, meaning all characters are on a single line.
+
+-----
+
+### 7. Language Code Specification (BCP-47)
+
+All `xml:lang` attributes used in this document to specify a language **must** adhere to the IETF's **BCP-47** standard.
+
+BCP-47 is the international standard for identifying human languages. It typically consists of a series of subtags separated by hyphens (`-`) to indicate language, script, region, and other information.
+
+> [!TIP]
+> You can look up all valid language codes in the [IANA Language Subtag Registry](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry).
+
+#### Common Examples
+
+  * **Primary language subtag**
+
+      * `ja`: Japanese
+      * `en`: English
+      * `ko`: Korean
+
+  * **Language-Script subtag**
+
+      * `zh-Hans`: Simplified Chinese
+      * `zh-Hant`: Traditional Chinese
+      * `ja-Latn`: Japanese, Romanization
+
+  * **Language-Region subtag**
+
+      * `en-US`: English, as used in the United States
+      * `en-GB`: English, as used in the United Kingdom
+
+  * **Language-Script-Region subtag**
+
+      * `zh-Hans-CN`: Simplified Chinese, as used in mainland China
+
+#### Scope of Application
+
+This specification applies to all `xml:lang` attributes found in the file, including but not limited to:
+
+  * **Root element**: `<tt xml:lang="...">`
+  * **Inline translation**: `<span ttm:role="x-translation" xml:lang="...">`
+  * **Inline romanization**: `<span ttm:role="x-roman" xml:lang="...">`
+  * **Header translation**: `<translation type="subtitle" xml:lang="...">`
