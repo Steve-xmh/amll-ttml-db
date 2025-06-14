@@ -111,25 +111,31 @@ impl GitHubClient {
     /// 解析 Issue 的正文
     pub fn parse_issue_body(&self, body: &str) -> HashMap<String, String> {
         let mut params = HashMap::new();
-        let mut current_key = String::new();
+        let mut current_key: Option<String> = None;
+        let mut current_value = String::new();
 
         for line in body.lines() {
-            if let Some(key) = line.strip_prefix("### ") {
-                current_key = key.trim().to_string();
-                params.insert(current_key.clone(), String::new());
-            } else if line.starts_with("```") {
-                continue;
-            } else if let Some(content) = params.get_mut(&current_key) {
-                content.push_str(line);
-                content.push('\n');
+            if line.starts_with("### ") {
+                if let Some(key) = current_key.take() {
+                    params.insert(key, current_value.trim().to_string());
+                }
+                current_key = Some(line.trim_start_matches("### ").trim().to_string());
+                current_value.clear();
+            } else if current_key.is_some() {
+                if let Some(stripped) = line.trim().strip_prefix("- [x] ") {
+                    current_value.push_str(stripped.trim());
+                    current_value.push('\n');
+                } else if line.trim().starts_with("- [ ] ") {
+                    // 什么也不做
+                } else {
+                    current_value.push_str(line.trim());
+                    current_value.push('\n');
+                }
             }
         }
-
-        // 清理每个值的首尾空白
-        for value in params.values_mut() {
-            *value = value.trim().to_string();
+        if let Some(key) = current_key {
+            params.insert(key, current_value.trim().to_string());
         }
-
         params
     }
 

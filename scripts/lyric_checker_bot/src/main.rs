@@ -90,7 +90,8 @@ async fn process_issue(
     }
 
     // 2. 解析 Issue Body
-    let body_params = github.parse_issue_body(issue.body.as_deref().unwrap_or(""));
+    let issue_body = issue.body.as_deref().unwrap_or("");
+    let body_params = github.parse_issue_body(issue_body);
     let ttml_url = match body_params.get("TTML 歌词文件下载直链") {
         Some(url) if !url.is_empty() => url,
         _ => {
@@ -108,7 +109,7 @@ async fn process_issue(
 
     // 解析歌词选项
     let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
-    let timing_mode = if lyric_options.contains("这是逐行歌词") {
+    let timing_mode = if lyric_options.contains("[x] 这是逐行歌词") {
         TtmlTimingMode::Line
     } else {
         TtmlTimingMode::Word
@@ -116,26 +117,25 @@ async fn process_issue(
     log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
 
     let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
-    let enable_smoothing = advanced_toggles.contains("启用平滑优化");
-    let auto_split = advanced_toggles.contains("启用自动分词");
+    let enable_smoothing = advanced_toggles.contains("[x] 启用平滑优化");
+    let auto_split = advanced_toggles.contains("[x] 启用自动分词");
 
     let smoothing_options = if enable_smoothing {
         log::info!("Issue #{} 已启用平滑优化。", issue.number);
-
         let factor = body_params
-            .get("平滑因子")
+            .get("[平滑] 平滑因子")
             .and_then(|s| s.parse().ok())
             .unwrap_or(0.15);
         let duration_threshold = body_params
-            .get("分组时长差异阈值 (毫秒)")
+            .get("[平滑] 分组时长差异阈值 (毫秒)")
             .and_then(|s| s.parse().ok())
             .unwrap_or(50);
         let gap_threshold = body_params
-            .get("分组间隔阈值 (毫秒)")
+            .get("[平滑] 分组间隔阈值 (毫秒)")
             .and_then(|s| s.parse().ok())
             .unwrap_or(100);
         let iterations = body_params
-            .get("迭代次数")
+            .get("[平滑] 迭代次数")
             .and_then(|s| s.parse().ok())
             .unwrap_or(5);
 
@@ -152,7 +152,7 @@ async fn process_issue(
     let punctuation_weight = if auto_split {
         log::info!("Issue #{} 已启用自动分词。", issue.number);
         body_params
-            .get("标点符号权重")
+            .get("[分词] 标点符号权重")
             .and_then(|s| s.parse().ok())
             .unwrap_or(0.3)
     } else {
@@ -186,6 +186,12 @@ async fn process_issue(
 
     parsed_data.lines.sort_by_key(|line| line.start_ms);
 
+    if let Some(options) = smoothing_options {
+        log::info!("正在应用平滑优化...");
+        apply_smoothing(&mut parsed_data.lines, &options);
+        log::info!("平滑优化应用完毕。");
+    }
+
     let warnings = parsed_data.warnings.clone();
     if !warnings.is_empty() {
         log::warn!(
@@ -200,13 +206,6 @@ async fn process_issue(
     metadata_store.load_from_raw(&parsed_data.raw_metadata);
     metadata_store.deduplicate_values();
     log::info!("元数据处理完毕。准备用于验证的内容: {:?}", metadata_store);
-
-    if let Some(options) = smoothing_options {
-        log::info!("正在应用音节时长平滑优化...");
-        apply_smoothing(&mut parsed_data.lines, &options);
-        log::info!("平滑优化应用完毕。");
-    }
-
     log::info!("正在验证歌词数据和元数据...");
     if let Err(errors) = validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store) {
         let err_msg = format!("文件验证失败:\n- {}", errors.join("\n- "));
@@ -249,7 +248,7 @@ async fn process_issue(
         formatted_ttml: &formatted_ttml,
         metadata_store: &metadata_store,
         remarks: &remarks,
-        warnings: &warnings,
+        warnings: &parsed_data.warnings,
         root_path,
     };
 

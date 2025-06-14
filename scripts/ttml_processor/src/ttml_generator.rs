@@ -340,7 +340,6 @@ fn write_div<W: std::io::Write>(
     options: &TtmlGenerationOptions,
     p_key_counter: &mut i32,
 ) -> Result<(), ConvertError> {
-
     if part_lines.is_empty() {
         return Ok(());
     }
