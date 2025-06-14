@@ -109,7 +109,7 @@ async fn process_issue(
 
     // 解析歌词选项
     let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
-    let timing_mode = if lyric_options.contains("[x] 这是逐行歌词") {
+    let timing_mode = if lyric_options.contains("这是逐行歌词") {
         TtmlTimingMode::Line
     } else {
         TtmlTimingMode::Word
@@ -117,33 +117,31 @@ async fn process_issue(
     log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
 
     let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
-    let enable_smoothing = advanced_toggles.contains("[x] 启用平滑优化");
-    let auto_split = advanced_toggles.contains("[x] 启用自动分词");
+    let enable_smoothing = advanced_toggles.contains("启用平滑优化");
+    let auto_split = advanced_toggles.contains("启用自动分词");
 
     let smoothing_options = if enable_smoothing {
         log::info!("Issue #{} 已启用平滑优化。", issue.number);
-        let factor = body_params
-            .get("[平滑] 平滑因子")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0.15);
-        let duration_threshold = body_params
-            .get("[平滑] 分组时长差异阈值 (毫秒)")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(50);
-        let gap_threshold = body_params
-            .get("[平滑] 分组间隔阈值 (毫秒)")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(100);
-        let iterations = body_params
-            .get("[平滑] 迭代次数")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(5);
+        macro_rules! get_param {
+            ($key:expr, $default:expr) => {
+                body_params
+                    .get($key)
+                    .and_then(|s| {
+                        if s.is_empty() || s == "_No response_" {
+                            None
+                        } else {
+                            s.parse().ok()
+                        }
+                    })
+                    .unwrap_or($default)
+            };
+        }
 
         Some(SyllableSmoothingOptions {
-            factor,
-            duration_threshold_ms: duration_threshold,
-            gap_threshold_ms: gap_threshold,
-            smoothing_iterations: iterations,
+            factor: get_param!("[平滑] 平滑因子", 0.15),
+            duration_threshold_ms: get_param!("[平滑] 分组时长差异阈值 (毫秒)", 50),
+            gap_threshold_ms: get_param!("[平滑] 分组间隔阈值 (毫秒)", 100),
+            smoothing_iterations: get_param!("[平滑] 迭代次数", 5),
         })
     } else {
         None
@@ -153,7 +151,13 @@ async fn process_issue(
         log::info!("Issue #{} 已启用自动分词。", issue.number);
         body_params
             .get("[分词] 标点符号权重")
-            .and_then(|s| s.parse().ok())
+            .and_then(|s| {
+                if s.is_empty() || s == "_No response_" {
+                    None
+                } else {
+                    s.parse().ok()
+                }
+            })
             .unwrap_or(0.3)
     } else {
         0.3
