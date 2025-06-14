@@ -1,13 +1,14 @@
 use crate::metadata_processor::MetadataStore;
 use crate::ttml_parser::normalize_text_whitespace;
 use crate::types::{
-    BackgroundSection, CanonicalMetadataKey, ConvertError, LyricLine, RomanizationEntry,
-    TranslationEntry, TtmlGenerationOptions, TtmlTimingMode,
+    BackgroundSection, CanonicalMetadataKey, ConvertError, LyricLine, LyricSyllable,
+    RomanizationEntry, TranslationEntry, TtmlGenerationOptions, TtmlTimingMode,
 };
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::writer::Writer;
 use std::collections::{HashMap, HashSet};
 use std::io::Cursor;
+use unicode_segmentation::UnicodeSegmentation;
 
 /// 将毫秒时间戳格式化为 TTML 标准的时间字符串。
 /// 例如：123456ms -> "2:03.456"
@@ -332,6 +333,57 @@ fn write_ttml_head<W: std::io::Write>(
     Ok(())
 }
 
+/// 将歌词行写入一个 div 块
+fn write_div<W: std::io::Write>(
+    writer: &mut Writer<W>,
+    part_lines: &[&LyricLine],
+    options: &TtmlGenerationOptions,
+    p_key_counter: &mut i32,
+) -> Result<(), ConvertError> {
+
+    if part_lines.is_empty() {
+        return Ok(());
+    }
+
+    let div_start_ms = part_lines.first().unwrap().start_ms;
+    let div_end_ms = part_lines
+        .iter()
+        .map(|l| l.end_ms)
+        .max()
+        .unwrap_or(div_start_ms);
+    let song_part_key = &part_lines.first().unwrap().song_part;
+
+    let mut div_start_element = BytesStart::new("div");
+    div_start_element.push_attribute(("begin", format_ttml_time(div_start_ms).as_str()));
+    div_start_element.push_attribute(("end", format_ttml_time(div_end_ms).as_str()));
+    if let Some(sp_val) = song_part_key {
+        if !sp_val.is_empty() {
+            div_start_element.push_attribute(("itunes:song-part", sp_val.as_str()));
+        }
+    }
+    writer.write_event(Event::Start(div_start_element))?;
+
+    for line in part_lines {
+        *p_key_counter += 1;
+        let mut p_start_element = BytesStart::new("p");
+        p_start_element.push_attribute(("begin", format_ttml_time(line.start_ms).as_str()));
+        p_start_element.push_attribute(("end", format_ttml_time(line.end_ms).as_str()));
+        p_start_element.push_attribute(("itunes:key", format!("L{}", p_key_counter).as_str()));
+
+        if let Some(agent) = line.agent.as_ref().filter(|a| !a.is_empty() && *a != "v0") {
+            p_start_element.push_attribute(("ttm:agent", agent.as_str()));
+        } else {
+            p_start_element.push_attribute(("ttm:agent", "v1"));
+        }
+        writer.write_event(Event::Start(p_start_element))?;
+        write_p_content(writer, line, options)?;
+        writer.write_event(Event::End(BytesEnd::new("p")))?;
+    }
+
+    writer.write_event(Event::End(BytesEnd::new("div")))?;
+    Ok(())
+}
+
 /// 写入 TTML 的 <body> 部分，包含所有歌词行。
 fn write_ttml_body<W: std::io::Write>(
     writer: &mut Writer<W>,
@@ -346,70 +398,33 @@ fn write_ttml_body<W: std::io::Write>(
     }
     writer.write_event(Event::Start(body_start_element))?;
 
-    // 按 song_part (如 "Verse", "Chorus") 对歌词行进行分组，以生成 <div> 结构
-    let mut lines_by_song_part: HashMap<Option<String>, Vec<&LyricLine>> = HashMap::new();
-    for line in lines {
-        lines_by_song_part
-            .entry(line.song_part.clone())
-            .or_default()
-            .push(line);
+    if lines.is_empty() {
+        writer.write_event(Event::End(BytesEnd::new("body")))?;
+        return Ok(());
     }
-    // 转换为 Vec 并排序，确保 <div> 的输出顺序与歌曲时间线一致
-    let mut sorted_parts: Vec<(Option<String>, Vec<&LyricLine>)> = lines_by_song_part
-        .into_iter()
-        .filter(|(_, part_lines)| !part_lines.is_empty())
-        .collect();
-    sorted_parts.sort_by_key(|(_, part_lines)| {
-        part_lines
-            .iter()
-            .map(|l| l.start_ms)
-            .min()
-            .unwrap_or(u64::MAX)
-    });
 
-    // 遍历每一个 part (<div>)
-    for (song_part_key, part_lines) in sorted_parts {
-        if part_lines.is_empty() {
-            continue;
-        }
+    let mut p_key_counter = 0;
+    let mut current_div_lines: Vec<&LyricLine> = Vec::new();
+    for current_line in lines {
+        if current_div_lines.is_empty() {
+            current_div_lines.push(current_line);
+        } else {
+            let prev_line = *current_div_lines.last().unwrap();
 
-        let div_start_ms = part_lines.iter().map(|l| l.start_ms).min().unwrap_or(0);
-        let div_end_ms = part_lines.iter().map(|l| l.end_ms).max().unwrap_or(0);
-        let mut div_start_element = BytesStart::new("div");
-        div_start_element.push_attribute(("begin", format_ttml_time(div_start_ms).as_str()));
-        div_start_element.push_attribute(("end", format_ttml_time(div_end_ms).as_str()));
-        if let Some(sp_val) = &song_part_key {
-            if !sp_val.is_empty() {
-                div_start_element.push_attribute(("itunes:song-part", sp_val.as_str()));
-            }
-        }
-        writer.write_event(Event::Start(div_start_element))?;
-
-        // p_key_counter 用于生成 `itunes:key="L1", "L2", ...` 属性
-        let mut p_key_counter = 0;
-        // 遍历 <div> 内的每一行 (<p>)
-        for line in part_lines {
-            p_key_counter += 1;
-            let mut p_start_element = BytesStart::new("p");
-            p_start_element.push_attribute(("begin", format_ttml_time(line.start_ms).as_str()));
-            p_start_element.push_attribute(("end", format_ttml_time(line.end_ms).as_str()));
-            p_start_element.push_attribute(("itunes:key", format!("L{}", p_key_counter).as_str()));
-
-            // 为 <p> 标签设置演唱者 agent
-            if options.timing_mode == TtmlTimingMode::Line {
-                p_start_element.push_attribute(("ttm:agent", "v1"));
-            } else if let Some(agent) = line.agent.as_ref().filter(|a| !a.is_empty() && *a != "v0")
-            {
-                p_start_element.push_attribute(("ttm:agent", agent.as_str()));
+            if prev_line.song_part != current_line.song_part {
+                write_div(writer, &current_div_lines, options, &mut p_key_counter)?;
+                current_div_lines.clear();
+                current_div_lines.push(current_line);
             } else {
-                p_start_element.push_attribute(("ttm:agent", "v1")); // 默认或备用 agent
+                current_div_lines.push(current_line);
             }
-            writer.write_event(Event::Start(p_start_element))?;
-            write_p_content(writer, line, options)?;
-            writer.write_event(Event::End(BytesEnd::new("p")))?;
         }
-        writer.write_event(Event::End(BytesEnd::new("div")))?;
     }
+
+    if !current_div_lines.is_empty() {
+        write_div(writer, &current_div_lines, options, &mut p_key_counter)?;
+    }
+
     writer.write_event(Event::End(BytesEnd::new("body")))?;
     Ok(())
 }
@@ -453,6 +468,89 @@ fn write_auxiliary_span<T, W: std::io::Write>(
     Ok(())
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum CharType {
+    Cjk,
+    Latin,
+    Numeric,
+    Whitespace,
+    Other,
+}
+
+/// 根据字符判断其类型
+fn get_char_type(c: char) -> CharType {
+    if c.is_whitespace() {
+        CharType::Whitespace
+    } else if c.is_ascii_alphabetic() {
+        CharType::Latin
+    } else if c.is_ascii_digit() {
+        CharType::Numeric
+    } else if (0x4E00..=0x9FFF).contains(&(c as u32)) // 中日韩文字
+        || (0x3040..=0x309F).contains(&(c as u32)) // 平假名
+        || (0x30A0..=0x30FF).contains(&(c as u32)) // 片假名
+        || (0xAC00..=0xD7AF).contains(&(c as u32))
+    // 韩语音节
+    {
+        CharType::Cjk
+    } else {
+        CharType::Other // 标点符号等
+    }
+}
+
+/// 将文本分割成音节
+fn auto_tokenize(text: &str) -> Vec<String> {
+    if text.is_empty() {
+        return Vec::new();
+    }
+    let mut tokens = Vec::new();
+    let mut current_token = String::new();
+    let mut last_char_type: Option<CharType> = None;
+
+    for grapheme in text.graphemes(true) {
+        let first_char = grapheme.chars().next().unwrap_or(' ');
+        let current_char_type = get_char_type(first_char);
+
+        if let Some(last_type) = last_char_type {
+            let should_break = !matches!(
+                (last_type, current_char_type),
+                (CharType::Latin, CharType::Latin) | (CharType::Numeric, CharType::Numeric)
+            );
+
+            if should_break && !current_token.is_empty() {
+                tokens.push(current_token);
+                current_token = String::new();
+            }
+        }
+        current_token.push_str(grapheme);
+        last_char_type = Some(current_char_type);
+    }
+    if !current_token.is_empty() {
+        tokens.push(current_token);
+    }
+    tokens
+}
+
+/// 写入单个音节span
+fn write_single_syllable_span<W: std::io::Write>(
+    writer: &mut Writer<W>,
+    syl: &LyricSyllable,
+) -> Result<(), ConvertError> {
+    let mut span = BytesStart::new("span");
+    span.push_attribute(("begin", format_ttml_time(syl.start_ms).as_str()));
+    span.push_attribute((
+        "end",
+        format_ttml_time(syl.end_ms.max(syl.start_ms)).as_str(),
+    ));
+    writer.write_event(Event::Start(span))?;
+    if !syl.text.is_empty() {
+        writer.write_event(Event::Text(BytesText::from_escaped(
+            quick_xml::escape::escape(&syl.text).as_ref(),
+        )))?;
+    }
+    writer.write_event(Event::End(BytesEnd::new("span")))?;
+    Ok(())
+}
+
 /// 写入 <p> 标签的具体内容，包括主歌词、翻译、罗马音和背景人声。
 fn write_p_content<W: std::io::Write>(
     writer: &mut Writer<W>,
@@ -475,27 +573,86 @@ fn write_p_content<W: std::io::Write>(
     } else {
         // 逐字模式：为每个音节创建带时间戳的 <span>
         for (syl_idx, syl) in line.main_syllables.iter().enumerate() {
-            let mut span_start_element = BytesStart::new("span");
-            span_start_element.push_attribute(("begin", format_ttml_time(syl.start_ms).as_str()));
-            span_start_element.push_attribute((
-                "end",
-                format_ttml_time(syl.end_ms.max(syl.start_ms)).as_str(),
-            ));
-            writer.write_event(Event::Start(span_start_element))?;
-            if !syl.text.is_empty() {
-                writer.write_event(Event::Text(BytesText::from_escaped(
-                    quick_xml::escape::escape(&syl.text).as_ref(),
-                )))?;
+            if options.auto_word_splitting && syl.text.trim().chars().count() > 1 {
+                let tokens = auto_tokenize(&syl.text);
+
+                let last_visible_token_index = tokens.iter().rposition(|token| {
+                    get_char_type(token.chars().next().unwrap_or(' ')) != CharType::Whitespace
+                });
+
+                let total_weight: f64 = tokens
+                    .iter()
+                    .map(|token| {
+                        let first_char = token.chars().next().unwrap_or(' ');
+                        match get_char_type(first_char) {
+                            CharType::Latin | CharType::Numeric | CharType::Cjk => {
+                                token.chars().count() as f64
+                            }
+                            CharType::Other => options.punctuation_weight,
+                            CharType::Whitespace => 0.0,
+                        }
+                    })
+                    .sum();
+
+                if total_weight > 0.0 {
+                    let total_duration = syl.end_ms.saturating_sub(syl.start_ms);
+                    let duration_per_weight = total_duration as f64 / total_weight;
+
+                    let mut current_token_start_ms = syl.start_ms;
+                    let mut accumulated_weight = 0.0;
+
+                    for (token_idx, token) in tokens.iter().enumerate() {
+                        let first_char = token.chars().next().unwrap_or(' ');
+                        let char_type = get_char_type(first_char);
+
+                        if char_type == CharType::Whitespace {
+                            continue;
+                        }
+
+                        let token_weight = match char_type {
+                            CharType::Latin | CharType::Numeric | CharType::Cjk => {
+                                token.chars().count() as f64
+                            }
+                            CharType::Other => options.punctuation_weight,
+                            _ => 0.0,
+                        };
+
+                        accumulated_weight += token_weight;
+
+                        let mut token_end_ms = syl.start_ms
+                            + (accumulated_weight * duration_per_weight).round() as u64;
+
+                        if Some(token_idx) == last_visible_token_index {
+                            token_end_ms = syl.end_ms;
+                        }
+
+                        let mut span = BytesStart::new("span");
+                        span.push_attribute((
+                            "begin",
+                            format_ttml_time(current_token_start_ms).as_str(),
+                        ));
+                        span.push_attribute(("end", format_ttml_time(token_end_ms).as_str()));
+                        writer.write_event(Event::Start(span))?;
+                        writer.write_event(Event::Text(BytesText::from_escaped(
+                            quick_xml::escape::escape(token).as_ref(),
+                        )))?;
+                        writer.write_event(Event::End(BytesEnd::new("span")))?;
+
+                        current_token_start_ms = token_end_ms;
+                    }
+                } else {
+                    write_single_syllable_span(writer, syl)?;
+                }
+            } else {
+                write_single_syllable_span(writer, syl)?;
             }
-            writer.write_event(Event::End(BytesEnd::new("span")))?;
-            // 如果音节后需要空格，并且不是最后一个可见元素，则写入一个空格
+
             if syl.ends_with_space && syl_idx < line.main_syllables.len() - 1 && !options.format {
                 writer.write_event(Event::Text(BytesText::from_escaped(" ")))?;
             }
         }
     }
 
-    // --- 核心逻辑：条件性地写入内联翻译和罗马音 ---
     // 仅当不使用 Apple 规则时，才生成内联的 `<span>` 翻译和罗马音
     if !options.use_apple_format_rules {
         write_auxiliary_span(

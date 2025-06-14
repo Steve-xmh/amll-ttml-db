@@ -32,7 +32,7 @@ pub fn parse_ttml_time_to_ms(time_str: &str) -> Result<u64, ConvertError> {
 
         let total_ms = seconds * 1000.0;
         if total_ms > u64::MAX as f64 {
-             return Err(ConvertError::InvalidTime(format!(
+            return Err(ConvertError::InvalidTime(format!(
                 "时间戳 '{}' 超出可表示范围",
                 time_str
             )));
@@ -1042,15 +1042,15 @@ fn process_span_end(
                 }
                 SpanRole::Background => {
                     if let Some(bg_acc) = p_data.background_section_accumulator.as_mut() {
-                        if ended_span_ctx.start_ms.is_none() || ended_span_ctx.end_ms.is_none() {
-                            if !bg_acc.syllables.is_empty() {
-                                let min_start = bg_acc.syllables.iter().map(|s| s.start_ms).min();
-                                let max_end = bg_acc.syllables.iter().map(|s| s.end_ms).max();
-                                
-                                if let (Some(start), Some(end)) = (min_start, max_end) {
-                                    bg_acc.start_ms = start;
-                                    bg_acc.end_ms = end;
-                                }
+                        if (ended_span_ctx.start_ms.is_none() || ended_span_ctx.end_ms.is_none())
+                            && !bg_acc.syllables.is_empty()
+                        {
+                            let min_start = bg_acc.syllables.iter().map(|s| s.start_ms).min();
+                            let max_end = bg_acc.syllables.iter().map(|s| s.end_ms).max();
+
+                            if let (Some(start), Some(end)) = (min_start, max_end) {
+                                bg_acc.start_ms = start;
+                                bg_acc.end_ms = end;
                             }
                         }
                     }

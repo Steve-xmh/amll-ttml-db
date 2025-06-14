@@ -9,8 +9,10 @@ use reqwest::Client;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use ttml_processor::{
-    MetadataStore, generate_ttml, parse_ttml_content,
-    types::{DefaultLanguageOptions, TtmlGenerationOptions, TtmlTimingMode},
+    MetadataStore, apply_smoothing, generate_ttml, parse_ttml_content,
+    types::{
+        DefaultLanguageOptions, SyllableSmoothingOptions, TtmlGenerationOptions, TtmlTimingMode,
+    },
     validate_lyrics_and_metadata,
 };
 
@@ -103,13 +105,59 @@ async fn process_issue(
         }
     };
     let remarks = body_params.get("备注").cloned().unwrap_or_default();
+
+    // 解析歌词选项
     let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
-    let timing_mode = if lyric_options.contains("[x]") {
+    let timing_mode = if lyric_options.contains("这是逐行歌词") {
         TtmlTimingMode::Line
     } else {
         TtmlTimingMode::Word
     };
     log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
+
+    let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
+    let enable_smoothing = advanced_toggles.contains("启用平滑优化");
+    let auto_split = advanced_toggles.contains("启用自动分词");
+
+    let smoothing_options = if enable_smoothing {
+        log::info!("Issue #{} 已启用平滑优化。", issue.number);
+
+        let factor = body_params
+            .get("平滑因子")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0.15);
+        let duration_threshold = body_params
+            .get("分组时长差异阈值 (毫秒)")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(50);
+        let gap_threshold = body_params
+            .get("分组间隔阈值 (毫秒)")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(100);
+        let iterations = body_params
+            .get("迭代次数")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(5);
+
+        Some(SyllableSmoothingOptions {
+            factor,
+            duration_threshold_ms: duration_threshold,
+            gap_threshold_ms: gap_threshold,
+            smoothing_iterations: iterations,
+        })
+    } else {
+        None
+    };
+
+    let punctuation_weight = if auto_split {
+        log::info!("Issue #{} 已启用自动分词。", issue.number);
+        body_params
+            .get("标点符号权重")
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(0.3)
+    } else {
+        0.3
+    };
 
     // 3. 下载 TTML 文件
     log::info!("正在从 URL 下载 TTML: {}", ttml_url);
@@ -117,7 +165,7 @@ async fn process_issue(
 
     log::info!("开始解析 TTML 文件...");
     let default_langs = DefaultLanguageOptions::default();
-    let parsed_data = match parse_ttml_content(&original_ttml_content, &default_langs) {
+    let mut parsed_data = match parse_ttml_content(&original_ttml_content, &default_langs) {
         Ok(data) => {
             if !data.warnings.is_empty() {
                 for warning in &data.warnings {
@@ -136,6 +184,8 @@ async fn process_issue(
         }
     };
 
+    parsed_data.lines.sort_by_key(|line| line.start_ms);
+
     let warnings = parsed_data.warnings.clone();
     if !warnings.is_empty() {
         log::warn!(
@@ -150,6 +200,12 @@ async fn process_issue(
     metadata_store.load_from_raw(&parsed_data.raw_metadata);
     metadata_store.deduplicate_values();
     log::info!("元数据处理完毕。准备用于验证的内容: {:?}", metadata_store);
+
+    if let Some(options) = smoothing_options {
+        log::info!("正在应用音节时长平滑优化...");
+        apply_smoothing(&mut parsed_data.lines, &options);
+        log::info!("平滑优化应用完毕。");
+    }
 
     log::info!("正在验证歌词数据和元数据...");
     if let Err(errors) = validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store) {
@@ -167,6 +223,8 @@ async fn process_issue(
     let compact_gen_opts = TtmlGenerationOptions {
         timing_mode,
         format: false,
+        auto_word_splitting: auto_split,
+        punctuation_weight,
         ..Default::default()
     };
     let compact_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &compact_gen_opts)?;
@@ -175,8 +233,11 @@ async fn process_issue(
     let formatted_gen_opts = TtmlGenerationOptions {
         timing_mode,
         format: true,
+        auto_word_splitting: auto_split,
+        punctuation_weight,
         ..Default::default()
     };
+
     let formatted_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &formatted_gen_opts)?;
 
     log::info!("Issue #{} 验证通过，已生成 TTML。", issue.number);

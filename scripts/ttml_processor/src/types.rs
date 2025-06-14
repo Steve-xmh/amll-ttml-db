@@ -13,8 +13,8 @@
 //! 6. **配置选项**: 定义了用于控制行为（如TTML生成）的选项结构。
 
 // 引入所需的外部库和标准库模块
-use quick_xml::events::attributes::AttrError as QuickXmlAttrError;
 use quick_xml::Error as QuickXmlErrorMain;
+use quick_xml::events::attributes::AttrError as QuickXmlAttrError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
@@ -342,6 +342,10 @@ pub struct TtmlGenerationOptions {
     pub use_apple_format_rules: bool,
     /// 是否输出带缩进和换行的、易于阅读的 TTML 文件。
     pub format: bool,
+    /// 是否启用自动分词功能。
+    pub auto_word_splitting: bool,
+    /// 自动分词时，一个标点符号所占的权重（一个字符的权重为1.0）。
+    pub punctuation_weight: f64,
 }
 
 impl Default for TtmlGenerationOptions {
@@ -353,6 +357,8 @@ impl Default for TtmlGenerationOptions {
             romanization_language: None,
             use_apple_format_rules: false,
             format: false,
+            auto_word_splitting: false,
+            punctuation_weight: 0.3,
         }
     }
 }
@@ -366,4 +372,32 @@ pub struct DefaultLanguageOptions {
     pub translation: Option<String>,
     /// 默认的罗马音语言。
     pub romanization: Option<String>,
+}
+
+// =============================================================================
+// 7. 歌词优化选项 (Lyric Optimization Options)
+// =============================================================================
+
+/// 控制平滑优化的选项。
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct SyllableSmoothingOptions {
+    /// 用于平滑的因子 (0.0 ~ 0.5)。
+    pub factor: f64,
+    /// 用于分组的时长差异阈值（毫秒）。
+    pub duration_threshold_ms: u64,
+    /// 用于分组的间隔阈值（毫秒）。
+    pub gap_threshold_ms: u64,
+    /// 组内平滑的次数。
+    pub smoothing_iterations: u32,
+}
+
+impl Default for SyllableSmoothingOptions {
+    fn default() -> Self {
+        Self {
+            factor: 0.15,
+            duration_threshold_ms: 50,
+            gap_threshold_ms: 100,
+            smoothing_iterations: 5,
+        }
+    }
 }

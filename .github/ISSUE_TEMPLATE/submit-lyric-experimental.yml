@@ -42,6 +42,73 @@ body:
     validations:
       required: true
 
+  
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### **高级选项**
+        以下为高级处理选项，如果你不确定它们的作用，请保持默认哦
+
+  - type: checkboxes
+    id: advanced-toggles
+    attributes:
+      label: 功能开关
+      description: 选择需要启用的功能
+      options:
+        - label: 启用平滑优化
+        - label: 启用自动分词
+
+  - type: input
+    id: smoothing-factor
+    attributes:
+      label: "[平滑] 平滑因子"
+      description: "控制平滑强度。数值越大，平滑效果越强。范围 0.0 ~ 0.5。默认值: 0.15"
+      placeholder: "0.15"
+    validations:
+      required: false
+  
+  - type: input
+    id: duration-threshold
+    attributes:
+      label: "[平滑] 分组时长差异阈值 (毫秒)"
+      description: "用于判断几个音节时长是否足够相似以便分组。默认值: 50"
+      placeholder: "50"
+    validations:
+      required: false
+
+  - type: input
+    id: gap-threshold
+    attributes:
+      label: "[平滑] 分组间隔阈值 (毫秒)"
+      description: "用于判断音节是否足够连续。默认值: 100"
+      placeholder: "100"
+    validations:
+      required: false
+
+  - type: input
+    id: smoothing-iterations
+    attributes:
+      label: "[平滑] 迭代次数"
+      description: "对每个音节组进行平滑的次数。默认值: 5"
+      placeholder: "5"
+    validations:
+      required: false
+
+  - type: input
+    id: punctuation-weight
+    attributes:
+      label: "[分词] 标点符号权重"
+      description: "设置标点符号的时长权重。一个汉字的权重是 1.0。默认值: 0.3"
+      placeholder: "0.3"
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
   - type: textarea
     id: comment
     attributes:
