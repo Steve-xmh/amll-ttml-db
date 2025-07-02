@@ -10,11 +10,11 @@
 
 依次打开 <kbd>编辑</kbd> -> <kbd>编辑歌词元数据</kbd>，弹出以下界面：
 
-![image-20250702193615365](./img/instruction/image-20250702193615365.png)
+![image-20250702193615365](./img/image-20250702193615365.png)
 
 预设的元数据的获取、添加参考[本篇文章](https://github.com/Steve-xmh/amll-ttml-tool/wiki/歌词元数据)。而对于不在预设中的元数据，可以通过在 <kbd>添加新键值</kbd> 菜单输入中「自定义键名」进行添加：
 
-![image-20250702194644943](./img/instruction/image-20250702194644943.png)
+![image-20250702194644943](./img/image-20250702194644943.png)
 
 #### 1.1.2 填写标准
 
@@ -25,17 +25,17 @@
 <table border="1">
 <tr>
       <td>✅</td>
-      <td><img alt="image-20250702195344395" src="./img/instruction/image-20250702195344395.png"/></td>
+      <td><img alt="image-20250702195344395" src="./img/image-20250702195344395.png"/></td>
 </tr>
 <tr>
       <td>❌</td>
-      <td><img alt="image-20250702195545808" src="./img/instruction/image-20250702195545808.png"/></td>
+      <td><img alt="image-20250702195545808" src="./img/image-20250702195545808.png"/></td>
 </tr>
 </table>
 
 以下为节选自一份带有自定义元数据歌词在 TTML TOOL 中显示的样例：
 
-![image-20250702201505465](./img/instruction/image-20250702201505465.png)
+![image-20250702201505465](./img/image-20250702201505465.png)
 
 ### 1.2 在 TTML 文件中
 
