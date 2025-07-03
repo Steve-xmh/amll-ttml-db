@@ -5,6 +5,10 @@ labels: ["歌词提交/补正"]
 assignees:
   - Steve-xmh
 body:
+  - type: markdown
+    attributes:
+      value: |
+        在上传歌词之前请详细阅读[歌词规范文档](https://github.com/Steve-xmh/amll-ttml-db/blob/main/instruction.md)，并确认上传内容遵守了歌词规范。否则可能会被审核打回修改哦！
   - type: input
     id: ttml-download-url
     attributes:
