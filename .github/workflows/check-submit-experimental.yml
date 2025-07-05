@@ -1,0 +1,45 @@
+name: 检查歌词提交正确性 (实验性 Rust 后端)
+on:
+  workflow_dispatch:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: check-submit-rust
+  cancel-in-progress: true
+
+jobs:
+  check-submit-rust:
+    if: github.event.label.name == '实验性歌词提交/修正'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Rust 环境
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: false
+
+      - name: 缓存 Cargo 依赖
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./scripts -> target
+
+      - name: 编译 Rust 程序
+        run: cargo build -p lyric_checker_bot --release --verbose
+        working-directory: scripts
+      
+      - name: 运行检查程序
+        timeout-minutes: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUST_LOG: info 
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@users.noreply.github.com'
+          ./target/release/lyric_checker_bot
+        working-directory: scripts
