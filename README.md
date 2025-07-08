@@ -14,7 +14,7 @@
 
 ## 歌词要求
 
-歌词审核细则可以参考[ 这个文件 ](./instruction.md)，以下内容为简要基本要求概述。
+歌词审核细则可以参考[ 这个文件 ](./instructions/instruction.md)，以下内容为简要基本要求概述。
 
 ### 歌词内容要求
 
@@ -55,7 +55,7 @@
 
 ### 歌词提交要求
 
-请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `[提交UNIX时间戳]-[提交者GithubID]-[8位随机ID].ttml` 后存放于 `./raw-lyrics` 文件夹后发送 Pull Request 提交歌词即可。
+请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `[提交UNIX时间戳（毫秒）]-[提交者GithubID]-[8位随机ID].ttml` 后存放于 `./raw-lyrics` 文件夹后发送 Pull Request 提交歌词即可。
 
 或者根据议题模板提交模板，Github Action 会自动检查歌词文件格式并为你创建合并请求。
 
