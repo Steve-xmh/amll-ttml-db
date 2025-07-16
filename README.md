@@ -5,16 +5,29 @@
 > This lyric database is for **Chinese language only**!
 > If you wish to upload your lyrics, please keep lyric translation line blank and only include original lyric line and transliteration line. Thank you!
 
+> [!TIP]
+>
+> 如果网络条件不好导致无法获取歌词，可以尝试下面这两个由社区提供的镜像站，感谢 [@cybaka520](https://github.com/cybaka520) 与 `@洛元 (Luorix)`  ！
+> 
+> ▷ [AMLL TTML DB 镜像站](https://amll.bikonoo.com/index.html)  
+> ▷ [AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)
+> 
+> 使用方法请自行在站内查阅。
+
 作者特供给 [AMLL](https://github.com/Steve-xmh/applemusic-like-lyrics) 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
 
 如果需要制作逐词歌词，可以使用 [AMLL TTML Tool](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
-为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
-（感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）
+> [!WARNING]
+> 
+> 为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
+> （感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）  
+>
+> 或者，你也可以在 [AMLL DB 看板](https://docs.qq.com/smartsheet/DY1hHUmxhZ0JISEhk?tab=t00i2h) 中看看大家都在做什么~
 
 ## 歌词要求
 
-歌词审核细则可以参考[ 这个文件 ](./instructions/instruction.md)，以下内容为简要基本要求概述。
+歌词审核细则可以参考 ▷ [这个文件](./instructions/instruction.md) ◁ ，以下内容为简要基本要求概述。
 
 ### 歌词内容要求
 
