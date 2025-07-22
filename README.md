@@ -15,7 +15,8 @@
 > 
 > 使用方法请自行在站内查阅。
 > 
-> 可同时添加多个镜像源，[AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)中设计了[NCM无歌词歌曲统计](https://amll.mirror.dimeta.top/ncm_no_lyrics_view)，可以**自动统计无歌词歌曲**做参考
+> 可同时添加多个镜像源。  
+> 此外，[AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)中设计了[NCM无歌词歌曲统计](https://amll.mirror.dimeta.top/ncm_no_lyrics_view)，可以**自动统计无歌词歌曲**做参考
 
 作者特供给 [AMLL](https://github.com/Steve-xmh/applemusic-like-lyrics) 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
 
@@ -26,7 +27,7 @@
 > 为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
 > （感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）  
 >
-> 或者，你也可以在 [AMLL DB 看板](https://docs.qq.com/smartsheet/DY1hHUmxhZ0JISEhk?tab=t00i2h) 中看看大家都在做什么~
+> 或者，你也可以在 [AMLL TTML 歌词议题墙](https://amlldb.bikonoo.com/) 中看看大家都在做什么~
 
 ## 歌词要求
 
