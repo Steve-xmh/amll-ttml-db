@@ -1,0 +1,73 @@
+name: 歌词请愿-测试模板
+description: 我想要一个歌曲能有 TTML 歌词！
+title: "[歌词请愿] "
+labels: ["歌词请愿"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        在创建 Issue 前，请前往[这里](https://amll.bikonoo.com/index.html)搜索一下确认歌词确实从来没有人提交过哦！
+  - type: input
+    id: song-name
+    attributes:
+      label: 歌曲名称
+    validations:
+      required: true
+  - type: input
+    id: artist
+    attributes:
+      label: 歌手
+    validations:
+      required: true
+  - type: input
+    id: album
+    attributes:
+      label: 专辑
+    validations:
+      required: true
+  - type: input
+    id: NCMID
+    attributes:
+      label: 网易云音乐ID
+      description: |
+        具体获取方式请在[这里](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE)查看。如果找不到或者没有请写“0”.
+    validations:
+      required: true
+  - type: input
+    id: QMID
+    attributes:
+      label: QQ音乐ID
+      description: |
+        具体获取方式请在[这里](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE)查看。如果找不到或者没有请写“0”.
+    validations:
+      required: true
+  - type: input
+    id: SPOID
+    attributes:
+      label: Spotify ID
+      description: |
+        具体获取方式请在[这里](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE)查看。如果找不到或者没有请写“0”.
+    validations:
+      required: true
+  - type: input
+    id: AMID
+    attributes:
+      label: Apple Music ID
+      description: |
+        具体获取方式请在[这里](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE)查看。如果找不到或者没有请写“0”.
+    validations:
+      required: true
+  - type: checkboxes
+    id: others
+    attributes:
+      label: 其他备注
+      description: 如果可以确认其他信息的话也会对歌词制作有所帮助哦
+      options:
+        - label: 这个歌曲在 Apple Music 上有逐词歌词
+  - type: textarea
+    id: comment
+    attributes:
+      label: 备注
+      description: 还有什么需要补充说明的吗？
+    validations:
+      required: false
