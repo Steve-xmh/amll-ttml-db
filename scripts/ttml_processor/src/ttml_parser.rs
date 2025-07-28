@@ -1041,12 +1041,15 @@ fn finalize_p_element(
         itunes_key,
     } = p_data;
 
+    let final_agent_name =
+        agent.and_then(|id| state.metadata_state.agent_id_to_name_map.get(&id).cloned());
+
     // 创建一个初步的 LyricLine
     let mut final_line = LyricLine {
         start_ms,
         end_ms,
         itunes_key,
-        agent: agent.or_else(|| Some("v1".to_string())), // 默认 agent 为 v1
+        agent: final_agent_name,
         song_part,
         translations: translations_accumulator,
         romanizations: romanizations_accumulator,
