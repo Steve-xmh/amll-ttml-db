@@ -8,11 +8,10 @@ use log::LevelFilter;
 use reqwest::Client;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use ttml_processor::types::TtmlParsingOptions;
 use ttml_processor::{
-    MetadataStore, apply_smoothing, generate_ttml, parse_ttml_content,
-    types::{
-        DefaultLanguageOptions, SyllableSmoothingOptions, TtmlGenerationOptions, TtmlTimingMode,
-    },
+    MetadataStore, generate_ttml, parse_ttml,
+    types::{TtmlGenerationOptions, TtmlTimingMode},
     validate_lyrics_and_metadata,
 };
 
@@ -117,37 +116,7 @@ async fn process_issue(
     log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
 
     let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
-    let enable_smoothing = advanced_toggles.contains("[x] 启用平滑优化");
     let auto_split = advanced_toggles.contains("[x] 启用自动分词");
-
-    let smoothing_options = if enable_smoothing {
-        log::info!("Issue #{} 已启用平滑优化。", issue.number);
-        let factor = body_params
-            .get("[平滑] 平滑因子")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0.15);
-        let duration_threshold = body_params
-            .get("[平滑] 分组时长差异阈值 (毫秒)")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(50);
-        let gap_threshold = body_params
-            .get("[平滑] 分组间隔阈值 (毫秒)")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(100);
-        let iterations = body_params
-            .get("[平滑] 迭代次数")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(5);
-
-        Some(SyllableSmoothingOptions {
-            factor,
-            duration_threshold_ms: duration_threshold,
-            gap_threshold_ms: gap_threshold,
-            smoothing_iterations: iterations,
-        })
-    } else {
-        None
-    };
 
     let punctuation_weight = if auto_split {
         log::info!("Issue #{} 已启用自动分词。", issue.number);
@@ -164,8 +133,11 @@ async fn process_issue(
     let original_ttml_content = http_client.get(ttml_url).send().await?.text().await?;
 
     log::info!("开始解析 TTML 文件...");
-    let default_langs = DefaultLanguageOptions::default();
-    let mut parsed_data = match parse_ttml_content(&original_ttml_content, &default_langs) {
+    let parsing_options = TtmlParsingOptions {
+        force_timing_mode: Some(timing_mode),
+        default_languages: Default::default(),
+    };
+    let mut parsed_data = match parse_ttml(&original_ttml_content, &parsing_options) {
         Ok(data) => {
             if !data.warnings.is_empty() {
                 for warning in &data.warnings {
@@ -185,12 +157,6 @@ async fn process_issue(
     };
 
     parsed_data.lines.sort_by_key(|line| line.start_ms);
-
-    if let Some(options) = smoothing_options {
-        log::info!("正在应用平滑优化...");
-        apply_smoothing(&mut parsed_data.lines, &options);
-        log::info!("平滑优化应用完毕。");
-    }
 
     let warnings = parsed_data.warnings.clone();
     if !warnings.is_empty() {
