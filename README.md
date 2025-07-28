@@ -5,16 +5,33 @@
 > This lyric database is for **Chinese language only**!
 > If you wish to upload your lyrics, please keep lyric translation line blank and only include original lyric line and transliteration line. Thank you!
 
+> [!TIP]
+>
+> 如果网络条件不好导致无法获取歌词，可以尝试下面这两个由社区提供的镜像站，感谢 [@cybaka520](https://github.com/cybaka520) 与 [@洛元 (Luorix)](https://github.com/LuorixDev)  ！
+> 
+> ▷ [AMLL TTML DB 镜像站](https://amll.bikonoo.com/index.html)  By cybaka520
+> 
+> ▷ [AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)  By Luorix
+> 
+> 使用方法请自行在站内查阅。
+> 
+> 可同时添加多个镜像源。  
+> 此外，[AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)中设计了[NCM无歌词歌曲统计](https://amll.mirror.dimeta.top/ncm_no_lyrics_view)，可以**自动统计无歌词歌曲**做参考
+
 作者特供给 [AMLL](https://github.com/Steve-xmh/applemusic-like-lyrics) 的 TTML 逐词歌词库，也欢迎大家前来建设本仓库！
 
 如果需要制作逐词歌词，可以使用 [AMLL TTML Tool](https://github.com/Steve-xmh/amll-ttml-tool) 哦！
 
-为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
-（感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）
+> [!WARNING]
+> 
+> 为了避免非修正歌词情况下的歌词撞车问题，请先使用 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/) 来检索你的歌曲是否拥有 TTML 歌词噢！
+> （感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！）  
+>
+> 或者，你也可以在 [AMLL TTML 歌词议题墙](https://amlldb.bikonoo.com/) 中看看大家都在做什么~
 
 ## 歌词要求
 
-歌词审核细则可以参考[ 这个文件 ](./instruction.md)，以下内容为简要基本要求概述。
+歌词审核细则可以参考 ▷ [这个文件](./instructions/instruction.md) ◁ ，以下内容为简要基本要求概述。
 
 ### 歌词内容要求
 
@@ -55,7 +72,7 @@
 
 ### 歌词提交要求
 
-请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `[提交UNIX时间戳]-[提交者GithubID]-[8位随机ID].ttml` 后存放于 `./raw-lyrics` 文件夹后发送 Pull Request 提交歌词即可。
+请提供和 Apple Music 所需 TTML 格式歌词要求一致的歌词文件，如果可以请尽量制作逐词歌词，并命名成 `[提交UNIX时间戳（毫秒）]-[提交者GithubID]-[8位随机ID].ttml` 后存放于 `./raw-lyrics` 文件夹后发送 Pull Request 提交歌词即可。
 
 或者根据议题模板提交模板，Github Action 会自动检查歌词文件格式并为你创建合并请求。
 

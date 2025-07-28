@@ -108,7 +108,7 @@ async fn process_issue(
 
     // 解析歌词选项
     let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
-    let timing_mode = if lyric_options.contains("[x] 这是逐行歌词") {
+    let timing_mode = if lyric_options.contains("这是逐行歌词") {
         TtmlTimingMode::Line
     } else {
         TtmlTimingMode::Word
@@ -122,7 +122,13 @@ async fn process_issue(
         log::info!("Issue #{} 已启用自动分词。", issue.number);
         body_params
             .get("[分词] 标点符号权重")
-            .and_then(|s| s.parse().ok())
+            .and_then(|s| {
+                if s.is_empty() || s == "_No response_" {
+                    None
+                } else {
+                    s.parse().ok()
+                }
+            })
             .unwrap_or(0.3)
     } else {
         0.3
