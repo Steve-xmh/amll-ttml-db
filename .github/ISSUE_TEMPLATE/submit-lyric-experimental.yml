@@ -9,7 +9,7 @@ body:
     attributes:
       value: |
         ## ⚠️ 实验性流程警告
-        您正在使用实验性的歌词处理流程。该流程尚在测试中，可能会遇到未知的 Bug，感谢您的参与和反馈！
+        你正在使用实验性的歌词处理流程。该流程尚在测试中，可能会遇到未知的 Bug，感谢你的参与和反馈！
 
   - type: input
     id: ttml-download-url
@@ -42,7 +42,6 @@ body:
     validations:
       required: true
 
-  
   - type: markdown
     attributes:
       value: |
@@ -56,44 +55,7 @@ body:
       label: 功能开关
       description: 选择需要启用的功能
       options:
-        - label: 启用平滑优化
         - label: 启用自动分词
-
-  - type: input
-    id: smoothing-factor
-    attributes:
-      label: "[平滑] 平滑因子"
-      description: "控制平滑强度。数值越大，平滑效果越强。范围 0.0 ~ 0.5。默认值: 0.15"
-      placeholder: "0.15"
-    validations:
-      required: false
-  
-  - type: input
-    id: duration-threshold
-    attributes:
-      label: "[平滑] 分组时长差异阈值 (毫秒)"
-      description: "用于判断几个音节时长是否足够相似以便分组。默认值: 50"
-      placeholder: "50"
-    validations:
-      required: false
-
-  - type: input
-    id: gap-threshold
-    attributes:
-      label: "[平滑] 分组间隔阈值 (毫秒)"
-      description: "用于判断音节是否足够连续。默认值: 100"
-      placeholder: "100"
-    validations:
-      required: false
-
-  - type: input
-    id: smoothing-iterations
-    attributes:
-      label: "[平滑] 迭代次数"
-      description: "对每个音节组进行平滑的次数。默认值: 5"
-      placeholder: "5"
-    validations:
-      required: false
 
   - type: input
     id: punctuation-weight

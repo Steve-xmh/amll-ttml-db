@@ -12,5 +12,10 @@ log = "0.4.27"
 octocrab = "0.44.1"
 rand = "0.9.1"
 reqwest = "0.12.19"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "fs"] }
-ttml_processor = { path = "../ttml_processor" } 
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "process",
+    "fs",
+] }
+ttml_processor = { path = "../ttml_processor" }
