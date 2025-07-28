@@ -469,6 +469,91 @@ fn write_div<W: std::io::Write>(
     Ok(())
 }
 
+/// 根据选项写入音节，如果启用了自动分词则先进行分词。
+fn write_syllable_with_optional_splitting<W: std::io::Write>(
+    writer: &mut Writer<W>,
+    syl: &LyricSyllable,
+    options: &TtmlGenerationOptions,
+) -> Result<(), ConvertError> {
+    if options.auto_word_splitting && syl.text.trim().chars().count() > 1 {
+        let tokens = auto_tokenize(&syl.text);
+
+        let last_visible_token_index = tokens.iter().rposition(|token| {
+            get_char_type(token.chars().next().unwrap_or(' ')) != CharType::Whitespace
+        });
+
+        let total_weight: f64 = tokens
+            .iter()
+            .map(|token| {
+                let first_char = token.chars().next().unwrap_or(' ');
+                match get_char_type(first_char) {
+                    CharType::Latin | CharType::Numeric | CharType::Cjk => {
+                        token.chars().count() as f64
+                    }
+                    CharType::Other => options.punctuation_weight,
+                    CharType::Whitespace => 0.0,
+                }
+            })
+            .sum();
+
+        if total_weight > 0.0 {
+            let total_duration = syl.end_ms.saturating_sub(syl.start_ms);
+            let duration_per_weight = total_duration as f64 / total_weight;
+
+            let mut current_token_start_ms = syl.start_ms;
+            let mut accumulated_weight = 0.0;
+
+            for (token_idx, token) in tokens.iter().enumerate() {
+                let first_char = token.chars().next().unwrap_or(' ');
+                let char_type = get_char_type(first_char);
+
+                if char_type == CharType::Whitespace {
+                    continue;
+                }
+
+                let token_weight = match char_type {
+                    CharType::Latin | CharType::Numeric | CharType::Cjk => {
+                        token.chars().count() as f64
+                    }
+                    CharType::Other => options.punctuation_weight,
+                    _ => 0.0,
+                };
+
+                accumulated_weight += token_weight;
+
+                let mut token_end_ms =
+                    syl.start_ms + (accumulated_weight * duration_per_weight).round() as u64;
+
+                if Some(token_idx) == last_visible_token_index {
+                    token_end_ms = syl.end_ms;
+                }
+
+                let text_to_write = if options.format
+                    && syl.ends_with_space
+                    && Some(token_idx) == last_visible_token_index
+                {
+                    format!("{} ", token)
+                } else {
+                    token.to_string()
+                };
+
+                writer
+                    .create_element("span")
+                    .with_attribute(("begin", format_ttml_time(current_token_start_ms).as_str()))
+                    .with_attribute(("end", format_ttml_time(token_end_ms).as_str()))
+                    .write_text_content(BytesText::new(&text_to_write))?;
+
+                current_token_start_ms = token_end_ms;
+            }
+        } else {
+            write_single_syllable_span(writer, syl, options)?;
+        }
+    } else {
+        write_single_syllable_span(writer, syl, options)?;
+    }
+    Ok(())
+}
+
 /// 写入 <p> 标签的具体内容，包括主歌词、翻译、罗马音和背景人声。
 fn write_p_content<W: std::io::Write>(
     writer: &mut Writer<W>,
@@ -489,85 +574,7 @@ fn write_p_content<W: std::io::Write>(
     } else {
         // 逐字模式：为每个音节创建带时间戳的 <span>
         for (syl_idx, syl) in line.main_syllables.iter().enumerate() {
-            if options.auto_word_splitting && syl.text.trim().chars().count() > 1 {
-                let tokens = auto_tokenize(&syl.text);
-
-                let last_visible_token_index = tokens.iter().rposition(|token| {
-                    get_char_type(token.chars().next().unwrap_or(' ')) != CharType::Whitespace
-                });
-
-                let total_weight: f64 = tokens
-                    .iter()
-                    .map(|token| {
-                        let first_char = token.chars().next().unwrap_or(' ');
-                        match get_char_type(first_char) {
-                            CharType::Latin | CharType::Numeric | CharType::Cjk => {
-                                token.chars().count() as f64
-                            }
-                            CharType::Other => options.punctuation_weight,
-                            CharType::Whitespace => 0.0,
-                        }
-                    })
-                    .sum();
-
-                if total_weight > 0.0 {
-                    let total_duration = syl.end_ms.saturating_sub(syl.start_ms);
-                    let duration_per_weight = total_duration as f64 / total_weight;
-
-                    let mut current_token_start_ms = syl.start_ms;
-                    let mut accumulated_weight = 0.0;
-
-                    for (token_idx, token) in tokens.iter().enumerate() {
-                        let first_char = token.chars().next().unwrap_or(' ');
-                        let char_type = get_char_type(first_char);
-
-                        if char_type == CharType::Whitespace {
-                            continue;
-                        }
-
-                        let token_weight = match char_type {
-                            CharType::Latin | CharType::Numeric | CharType::Cjk => {
-                                token.chars().count() as f64
-                            }
-                            CharType::Other => options.punctuation_weight,
-                            _ => 0.0,
-                        };
-
-                        accumulated_weight += token_weight;
-
-                        let mut token_end_ms = syl.start_ms
-                            + (accumulated_weight * duration_per_weight).round() as u64;
-
-                        if Some(token_idx) == last_visible_token_index {
-                            token_end_ms = syl.end_ms;
-                        }
-
-                        let text_to_write = if options.format
-                            && syl.ends_with_space
-                            && Some(token_idx) == last_visible_token_index
-                        {
-                            format!("{token} ")
-                        } else {
-                            token.to_string()
-                        };
-
-                        writer
-                            .create_element("span")
-                            .with_attribute((
-                                "begin",
-                                format_ttml_time(current_token_start_ms).as_str(),
-                            ))
-                            .with_attribute(("end", format_ttml_time(token_end_ms).as_str()))
-                            .write_text_content(BytesText::new(&text_to_write))?;
-
-                        current_token_start_ms = token_end_ms;
-                    }
-                } else {
-                    write_single_syllable_span(writer, syl, options)?;
-                }
-            } else {
-                write_single_syllable_span(writer, syl, options)?;
-            }
+            write_syllable_with_optional_splitting(writer, syl, options)?;
 
             if syl.ends_with_space && syl_idx < line.main_syllables.len() - 1 && !options.format {
                 writer.write_event(Event::Text(BytesText::new(" ")))?;
@@ -645,7 +652,7 @@ fn write_background_section<W: std::io::Write>(
                     ..syl_bg.clone()
                 };
 
-                write_single_syllable_span(writer, &temp_syl, options)
+                write_syllable_with_optional_splitting(writer, &temp_syl, options)
                     .map_err(std::io::Error::other)?;
 
                 if syl_bg.ends_with_space && idx < num_syls - 1 && !options.format {
