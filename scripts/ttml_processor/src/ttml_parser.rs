@@ -101,6 +101,8 @@ struct TtmlParserState {
 struct MetadataParseState {
     /// 存储从 `<iTunesMetadata>` 解析出的翻译，key 是 itunes:key。
     translation_map: HashMap<String, (String, Option<String>)>,
+    /// 存储从 Agent ID 到 Agent Name 的映射。
+    agent_id_to_name_map: HashMap<String, String>,
 }
 
 /// 存储 `<body>` 和 `<p>` 区域解析状态的结构体。
@@ -438,7 +440,12 @@ fn handle_global_event<'a>(
                 // 获取 p 标签的各个属性
                 let start_ms = get_time_attribute(e, reader, &[ATTR_BEGIN])?.unwrap_or(0);
                 let end_ms = get_time_attribute(e, reader, &[ATTR_END])?.unwrap_or(0);
-                let agent = get_string_attribute(e, reader, &[ATTR_AGENT, ATTR_AGENT_ALIAS])?;
+
+                let agent_id = get_string_attribute(e, reader, &[ATTR_AGENT, ATTR_AGENT_ALIAS])?;
+
+                let agent_name = agent_id
+                    .and_then(|id| state.metadata_state.agent_id_to_name_map.get(&id).cloned());
+
                 let song_part = get_string_attribute(e, reader, &[ATTR_ITUNES_SONG_PART])?
                     .or(state.body_state.current_div_song_part.clone());
                 let itunes_key = get_string_attribute(e, reader, &[ATTR_ITUNES_KEY])?;
@@ -447,7 +454,7 @@ fn handle_global_event<'a>(
                 state.body_state.current_p_element_data = Some(CurrentPElementData {
                     start_ms,
                     end_ms,
-                    agent,
+                    agent: agent_name,
                     song_part,
                     itunes_key,
                     ..Default::default()
@@ -1370,6 +1377,13 @@ fn process_deserialized_metadata(
     }
 
     for agent in metadata.agents {
+        if let Some(name) = agent.name.as_ref().filter(|n| !n.is_empty()) {
+            state
+                .metadata_state
+                .agent_id_to_name_map
+                .insert(agent.id.clone(), name.clone());
+        }
+
         let agent_display = match agent.name {
             Some(name) if !name.is_empty() => format!("{}={}", agent.id, name),
             _ => agent.id.clone(),
