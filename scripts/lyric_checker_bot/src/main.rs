@@ -116,7 +116,7 @@ async fn process_issue(
     log::info!("Issue #{} 使用计时模式: {:?}", issue.number, timing_mode);
 
     let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
-    let auto_split = advanced_toggles.contains("[x] 启用自动分词");
+    let auto_split = advanced_toggles.contains("启用自动分词");
 
     let punctuation_weight = if auto_split {
         log::info!("Issue #{} 已启用自动分词。", issue.number);
