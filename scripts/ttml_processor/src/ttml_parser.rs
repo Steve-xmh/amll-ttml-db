@@ -16,7 +16,7 @@ use tracing::{error, warn};
 
 use crate::types::{
     BackgroundSection, ConvertError, LyricFormat, LyricLine, LyricSyllable, ParsedSourceData,
-    RomanizationEntry, TranslationEntry, TtmlParsingOptions, TtmlTimingMode,
+    RomanizationEntry, TimedAuxiliaryLine, TranslationEntry, TtmlParsingOptions, TtmlTimingMode,
 };
 
 // =================================================================================
@@ -101,6 +101,10 @@ struct TtmlParserState {
 struct MetadataParseState {
     /// 存储从 `<iTunesMetadata>` 解析出的翻译，key 是 itunes:key。
     translation_map: HashMap<String, (String, Option<String>)>,
+    /// 存储从 `<translations>` 解析出的逐字翻译，key 是 itunes:key。
+    timed_translation_map: HashMap<String, Vec<crate::types::TimedAuxiliaryLine>>,
+    /// 存储从 `<transliterations>` 解析出的逐字音译，key 是 itunes:key。
+    timed_romanization_map: HashMap<String, Vec<crate::types::TimedAuxiliaryLine>>,
     /// 存储从 Agent ID 到 Agent Name 的映射。
     agent_id_to_name_map: HashMap<String, String>,
 }
@@ -139,6 +143,8 @@ struct CurrentPElementData {
     romanizations_accumulator: Vec<RomanizationEntry>,
     /// 用于累积当前行内的背景人声部分。
     background_section_accumulator: Option<BackgroundSectionData>,
+    timed_translations_accumulator: Vec<TimedAuxiliaryLine>,
+    timed_romanizations_accumulator: Vec<TimedAuxiliaryLine>,
 }
 
 /// 存储当前处理的 `<span ttm:role="x-bg">` 临时数据。
@@ -217,11 +223,65 @@ struct Agent {
 }
 
 #[derive(Debug, Deserialize, Default)]
+struct TranslationsContainer {
+    #[serde(rename = "translation", default)]
+    items: Vec<TimedTranslationBlock>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct TransliterationsContainer {
+    #[serde(rename = "transliteration", default)]
+    items: Vec<TimedTransliterationBlock>,
+}
+
+#[derive(Debug, Deserialize, Default)]
 struct ItunesMetadata {
     #[serde(default)]
     songwriters: Songwriters,
-    #[serde(default)]
-    translations: Vec<ItunesTranslation>,
+
+    #[serde(rename = "translations", default)]
+    translations: TranslationsContainer,
+
+    #[serde(rename = "transliterations", default)]
+    transliterations: TransliterationsContainer,
+}
+
+/// 代表一个 <span>...</span> 标签
+#[derive(Debug, Deserialize, Clone)]
+struct SyllableSpan {
+    #[serde(rename = "@begin")]
+    start_str: String,
+    #[serde(rename = "@end")]
+    end_str: String,
+    #[serde(rename = "$text", default)]
+    text: String,
+}
+
+/// 对应 `<text for="...">...</text>` 块
+#[derive(Debug, Deserialize, Clone)]
+struct TimedTextContent {
+    #[serde(rename = "@for")]
+    key: String,
+    #[serde(rename = "span", default)]
+    syllables: Vec<SyllableSpan>,
+}
+
+/// 对应 `<translation ...>...</translation>` 块
+#[derive(Debug, Deserialize)]
+struct TimedTranslationBlock {
+    #[serde(rename = "@xml:lang")]
+    lang: Option<String>,
+    #[serde(rename = "text", default)]
+    lines: Vec<TimedTextContent>,
+}
+
+/// 对应 `<transliteration ...>...</transliteration>` 块
+#[derive(Debug, Deserialize)]
+struct TimedTransliterationBlock {
+    #[serde(rename = "@xml:lang")]
+    lang: Option<String>,
+    #[serde(rename = "text", default)]
+    lines: Vec<TimedTextContent>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -230,20 +290,16 @@ struct Songwriters {
     list: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Default)]
-struct ItunesTranslation {
-    #[serde(rename = "@xml:lang")]
-    lang: Option<String>,
-    #[serde(rename = "text", default)]
-    texts: Vec<ItunesTranslationText>,
-}
-
-#[derive(Debug, Deserialize, Default)]
-struct ItunesTranslationText {
-    #[serde(rename = "@for")]
-    key: String,
-    #[serde(rename = "$text")]
-    text: String,
+fn convert_syllable_span(span: &SyllableSpan) -> Option<LyricSyllable> {
+    let start_ms = parse_ttml_time_to_ms(&span.start_str).ok()?;
+    let end_ms = parse_ttml_time_to_ms(&span.end_str).ok()?;
+    Some(LyricSyllable {
+        text: span.text.clone(),
+        start_ms,
+        end_ms,
+        duration_ms: Some(end_ms.saturating_sub(start_ms)),
+        ends_with_space: false, // metadata spans 无法使用这个信息
+    })
 }
 
 // =================================================================================
@@ -332,11 +388,11 @@ pub fn parse_ttml(
 
         if let Event::Text(e) = &event
             && state.format_detection == FormatDetection::Undetermined
-            && let Ok(text) = e.decode()
-            && text.contains('\n')
-            && text.trim().is_empty()
         {
-            state.whitespace_nodes_with_newline += 1;
+            let bytes = e.as_ref();
+            if bytes.contains(&b'\n') && bytes.iter().all(|&b| b.is_ascii_whitespace()) {
+                state.whitespace_nodes_with_newline += 1;
+            }
         }
 
         if let Event::Start(e) = &event
@@ -846,13 +902,11 @@ fn handle_generic_span_end(
             }
         }
         // 如果 text.is_empty() (例如 <span ...></span>), 则自然忽略
-    } else if !text.trim().is_empty() {
-        if !state.is_line_timing_mode {
-            warnings.push(format!(
-                "逐字模式下，span缺少时间信息，文本 '{}' 被忽略。",
-                text.trim().escape_debug()
-            ));
-        }
+    } else if !text.trim().is_empty() && !state.is_line_timing_mode {
+        warnings.push(format!(
+            "逐字模式下，span缺少时间信息，文本 '{}' 被忽略。",
+            text.trim().escape_debug()
+        ));
     }
 
     Ok(())
@@ -1016,11 +1070,73 @@ fn handle_background_span_end(
 /// 这个函数负责将 `CurrentPElementData` 中的所有累积数据，
 /// 组合成一个完整的 `LyricLine` 对象，并添加到最终结果中。
 fn finalize_p_element(
-    p_data: CurrentPElementData,
+    mut p_data: CurrentPElementData,
     lines: &mut Vec<LyricLine>,
     state: &mut TtmlParserState,
     warnings: &mut Vec<String>,
 ) {
+    if let Some(key) = &p_data.itunes_key {
+        // 回填逐行翻译
+        if let Some((text, lang)) = state.metadata_state.translation_map.get(key)
+            && p_data
+                .translations_accumulator
+                .iter()
+                .all(|t| &t.text != text)
+        {
+            p_data.translations_accumulator.push(TranslationEntry {
+                text: text.clone(),
+                lang: lang.clone(),
+            });
+        }
+
+        // 回填逐字翻译
+        if let Some(timed_lines) = state.metadata_state.timed_translation_map.remove(key) {
+            p_data.timed_translations_accumulator.extend(timed_lines);
+        }
+
+        // 回填逐字音译
+        if let Some(timed_lines) = state.metadata_state.timed_romanization_map.remove(key) {
+            p_data.timed_romanizations_accumulator.extend(timed_lines);
+        }
+    }
+
+    for timed_trans in &p_data.timed_translations_accumulator {
+        if !timed_trans.syllables.is_empty() {
+            let line_text = timed_trans
+                .syllables
+                .iter()
+                .map(|s| s.text.as_str())
+                .collect::<Vec<_>>()
+                .join(" ");
+
+            if !line_text.is_empty() {
+                p_data.translations_accumulator.push(TranslationEntry {
+                    text: line_text,
+                    lang: timed_trans.lang.clone(),
+                });
+            }
+        }
+    }
+
+    for timed_roman in &p_data.timed_romanizations_accumulator {
+        if !timed_roman.syllables.is_empty() {
+            let line_text = timed_roman
+                .syllables
+                .iter()
+                .map(|s| s.text.as_str())
+                .collect::<Vec<_>>()
+                .join(" ");
+
+            if !line_text.is_empty() {
+                p_data.romanizations_accumulator.push(RomanizationEntry {
+                    text: line_text,
+                    lang: timed_roman.lang.clone(),
+                    scheme: None,
+                });
+            }
+        }
+    }
+
     let CurrentPElementData {
         start_ms,
         end_ms,
@@ -1032,6 +1148,8 @@ fn finalize_p_element(
         romanizations_accumulator,
         background_section_accumulator,
         itunes_key,
+        timed_translations_accumulator,
+        timed_romanizations_accumulator,
     } = p_data;
 
     let final_agent_name =
@@ -1046,6 +1164,8 @@ fn finalize_p_element(
         song_part,
         translations: translations_accumulator,
         romanizations: romanizations_accumulator,
+        timed_translations: timed_translations_accumulator,
+        timed_romanizations: timed_romanizations_accumulator,
         ..Default::default()
     };
 
@@ -1111,6 +1231,8 @@ fn finalize_p_element(
         && final_line.translations.is_empty()
         && final_line.romanizations.is_empty()
         && final_line.background_section.is_none()
+        && final_line.timed_translations.is_empty()
+        && final_line.timed_romanizations.is_empty()
         && final_line.end_ms <= final_line.start_ms
     {
         return;
@@ -1409,12 +1531,49 @@ fn process_deserialized_metadata(
             raw_metadata.insert("songwriters".to_string(), itunes.songwriters.list);
         }
 
-        for trans in itunes.translations {
-            for text_entry in trans.texts {
-                state
-                    .metadata_state
-                    .translation_map
-                    .insert(text_entry.key, (text_entry.text, trans.lang.clone()));
+        for block in itunes.translations.items {
+            for line_content in block.lines {
+                let syllables: Vec<LyricSyllable> = line_content
+                    .syllables
+                    .iter()
+                    .filter_map(convert_syllable_span)
+                    .collect();
+
+                if !syllables.is_empty() {
+                    let timed_line = crate::types::TimedAuxiliaryLine {
+                        lang: block.lang.clone(),
+                        syllables,
+                    };
+                    state
+                        .metadata_state
+                        .timed_translation_map
+                        .entry(line_content.key)
+                        .or_default()
+                        .push(timed_line);
+                }
+            }
+        }
+
+        for block in itunes.transliterations.items {
+            for line_content in block.lines {
+                let syllables: Vec<LyricSyllable> = line_content
+                    .syllables
+                    .iter()
+                    .filter_map(convert_syllable_span)
+                    .collect();
+
+                if !syllables.is_empty() {
+                    let timed_line = crate::types::TimedAuxiliaryLine {
+                        lang: block.lang.clone(),
+                        syllables,
+                    };
+                    state
+                        .metadata_state
+                        .timed_romanization_map
+                        .entry(line_content.key)
+                        .or_default()
+                        .push(timed_line);
+                }
             }
         }
     }

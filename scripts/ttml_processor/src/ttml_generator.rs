@@ -16,7 +16,8 @@ use crate::{
     MetadataStore,
     types::{
         BackgroundSection, CanonicalMetadataKey, ConvertError, LyricLine, LyricSyllable,
-        RomanizationEntry, TranslationEntry, TtmlGenerationOptions, TtmlTimingMode,
+        RomanizationEntry, TimedAuxiliaryLine, TranslationEntry, TtmlGenerationOptions,
+        TtmlTimingMode,
     },
     utils::normalize_text_whitespace,
 };
@@ -42,6 +43,74 @@ fn format_ttml_time(ms: u64) -> String {
     } else {
         format!("{seconds}.{millis:03}")
     }
+}
+
+fn write_timed_auxiliary_block<W: std::io::Write>(
+    writer: &mut Writer<W>,
+    lines: &[LyricLine],
+    container_tag_name: &str,
+    item_tag_name: &str,
+    get_data_fn: impl Fn(&LyricLine) -> &Vec<TimedAuxiliaryLine>,
+) -> Result<(), ConvertError> {
+    let mut grouped_by_lang: HashMap<Option<String>, Vec<(&LyricLine, &TimedAuxiliaryLine)>> =
+        HashMap::new();
+
+    for line in lines {
+        for aux_line in get_data_fn(line) {
+            grouped_by_lang
+                .entry(aux_line.lang.clone())
+                .or_default()
+                .push((line, aux_line));
+        }
+    }
+
+    if grouped_by_lang.is_empty() {
+        return Ok(());
+    }
+
+    writer
+        .create_element(container_tag_name)
+        .write_inner_content(|writer| {
+            let mut sorted_groups: Vec<_> = grouped_by_lang.into_iter().collect();
+            sorted_groups.sort_by_key(|(lang, _)| lang.clone());
+
+            for (lang, entries) in sorted_groups {
+                let mut item_builder = writer.create_element(item_tag_name);
+                if let Some(lang_code) = lang.as_ref().filter(|s| !s.is_empty()) {
+                    item_builder = item_builder.with_attribute(("xml:lang", lang_code.as_str()));
+                }
+
+                item_builder.write_inner_content(|writer| {
+                    for (line, aux_line) in entries {
+                        if let Some(key) = &line.itunes_key {
+                            writer
+                                .create_element("text")
+                                .with_attribute(("for", key.as_str()))
+                                .write_inner_content(|writer| {
+                                    for syl in &aux_line.syllables {
+                                        writer
+                                            .create_element("span")
+                                            .with_attribute((
+                                                "begin",
+                                                format_ttml_time(syl.start_ms).as_str(),
+                                            ))
+                                            .with_attribute((
+                                                "end",
+                                                format_ttml_time(syl.end_ms).as_str(),
+                                            ))
+                                            .write_text_content(BytesText::new(&syl.text))?;
+                                    }
+                                    Ok(())
+                                })?;
+                        }
+                    }
+                    Ok(())
+                })?;
+            }
+            Ok(())
+        })?;
+
+    Ok(())
 }
 
 /// TTML 生成的主入口函数。
@@ -262,7 +331,16 @@ fn write_ttml_head<W: std::io::Write>(
                         .map(|vec| vec.iter().filter(|s| !s.trim().is_empty()).collect())
                         .unwrap_or_default();
 
-                    if !translations_by_lang.is_empty() || !valid_songwriters.is_empty() {
+                    let has_timed_translations =
+                        lines.iter().any(|l| !l.timed_translations.is_empty());
+                    let has_timed_romanizations =
+                        lines.iter().any(|l| !l.timed_romanizations.is_empty());
+
+                    if !translations_by_lang.is_empty()
+                        || !valid_songwriters.is_empty()
+                        || has_timed_translations
+                        || has_timed_romanizations
+                    {
                         writer
                             .create_element("iTunesMetadata")
                             .with_attribute(("xmlns", "http://music.apple.com/lyric-ttml-internal"))
@@ -322,6 +400,26 @@ fn write_ttml_head<W: std::io::Write>(
                                         },
                                     )?;
                                 }
+                                let to_io_err = |e: ConvertError| std::io::Error::other(e);
+
+                                write_timed_auxiliary_block(
+                                    writer,
+                                    lines,
+                                    "translations",
+                                    "translation",
+                                    |line| &line.timed_translations,
+                                )
+                                .map_err(to_io_err)?;
+
+                                write_timed_auxiliary_block(
+                                    writer,
+                                    lines,
+                                    "transliterations",
+                                    "transliteration",
+                                    |line| &line.timed_romanizations,
+                                )
+                                .map_err(to_io_err)?;
+
                                 Ok(())
                             })?;
                     }
@@ -532,7 +630,7 @@ fn write_syllable_with_optional_splitting<W: std::io::Write>(
                     && syl.ends_with_space
                     && Some(token_idx) == last_visible_token_index
                 {
-                    format!("{} ", token)
+                    format!("{token} ")
                 } else {
                     token.to_string()
                 };
