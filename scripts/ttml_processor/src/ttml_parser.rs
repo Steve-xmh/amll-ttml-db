@@ -101,6 +101,8 @@ struct TtmlParserState {
 struct MetadataParseState {
     /// 存储从 `<iTunesMetadata>` 解析出的翻译，key 是 itunes:key。
     translation_map: HashMap<String, (String, Option<String>)>,
+    /// 存储从 Agent ID 到 Agent Name 的映射。
+    agent_id_to_name_map: HashMap<String, String>,
 }
 
 /// 存储 `<body>` 和 `<p>` 区域解析状态的结构体。
@@ -438,7 +440,12 @@ fn handle_global_event<'a>(
                 // 获取 p 标签的各个属性
                 let start_ms = get_time_attribute(e, reader, &[ATTR_BEGIN])?.unwrap_or(0);
                 let end_ms = get_time_attribute(e, reader, &[ATTR_END])?.unwrap_or(0);
-                let agent = get_string_attribute(e, reader, &[ATTR_AGENT, ATTR_AGENT_ALIAS])?;
+
+                let agent_id = get_string_attribute(e, reader, &[ATTR_AGENT, ATTR_AGENT_ALIAS])?;
+
+                let agent_name = agent_id
+                    .and_then(|id| state.metadata_state.agent_id_to_name_map.get(&id).cloned());
+
                 let song_part = get_string_attribute(e, reader, &[ATTR_ITUNES_SONG_PART])?
                     .or(state.body_state.current_div_song_part.clone());
                 let itunes_key = get_string_attribute(e, reader, &[ATTR_ITUNES_KEY])?;
@@ -447,7 +454,7 @@ fn handle_global_event<'a>(
                 state.body_state.current_p_element_data = Some(CurrentPElementData {
                     start_ms,
                     end_ms,
-                    agent,
+                    agent: agent_name,
                     song_part,
                     itunes_key,
                     ..Default::default()
@@ -765,14 +772,6 @@ fn handle_generic_span_end(
     text: &str,
     warnings: &mut Vec<String>,
 ) -> Result<(), ConvertError> {
-    // 在逐行模式下，所有 span 的文本都简单地累加到行文本中
-    if state.is_line_timing_mode {
-        if let Some(p_data) = state.body_state.current_p_element_data.as_mut() {
-            p_data.line_text_accumulator.push_str(text);
-        }
-        return Ok(());
-    }
-
     if let (Some(start_ms), Some(end_ms)) = (ctx.start_ms, ctx.end_ms) {
         // 如果 span 内有任何内容（包括纯空格），就处理它
         if !text.is_empty() {
@@ -848,11 +847,12 @@ fn handle_generic_span_end(
         }
         // 如果 text.is_empty() (例如 <span ...></span>), 则自然忽略
     } else if !text.trim().is_empty() {
-        // span 内有文本但没有时间信息，发出警告
-        warnings.push(format!(
-            "逐字模式下，span缺少时间信息，文本 '{}' 被忽略。",
-            text.trim().escape_debug()
-        ));
+        if !state.is_line_timing_mode {
+            warnings.push(format!(
+                "逐字模式下，span缺少时间信息，文本 '{}' 被忽略。",
+                text.trim().escape_debug()
+            ));
+        }
     }
 
     Ok(())
@@ -1034,12 +1034,15 @@ fn finalize_p_element(
         itunes_key,
     } = p_data;
 
+    let final_agent_name =
+        agent.and_then(|id| state.metadata_state.agent_id_to_name_map.get(&id).cloned());
+
     // 创建一个初步的 LyricLine
     let mut final_line = LyricLine {
         start_ms,
         end_ms,
         itunes_key,
-        agent: agent.or_else(|| Some("v1".to_string())), // 默认 agent 为 v1
+        agent: final_agent_name,
         song_part,
         translations: translations_accumulator,
         romanizations: romanizations_accumulator,
@@ -1124,11 +1127,9 @@ fn finalize_p_for_line_mode(
     warnings: &mut Vec<String>,
     text_processing_buffer: &mut String,
 ) {
-    let mut line_text_content = line_text_accumulator.to_string();
+    let line_text_content: String;
 
-    // 兼容处理：如果 p 内没有直接文本，但有带文本的 span，
-    // 则将这些 span 的文本拼接起来作为行文本。
-    if line_text_content.trim().is_empty() && !syllables_accumulator.is_empty() {
+    if !syllables_accumulator.is_empty() {
         line_text_content = syllables_accumulator
             .iter()
             .map(|s| {
@@ -1139,10 +1140,18 @@ fn finalize_p_for_line_mode(
                 }
             })
             .collect::<String>();
-        warnings.push(format!(
-            "逐行段落 ({}ms-{}ms) 的文本来自其内部的逐字结构。",
-            final_line.start_ms, final_line.end_ms
-        ));
+
+        if !line_text_accumulator.trim().is_empty() {
+            warnings.push(format!(
+                "在逐行模式的段落 ({}ms-{}ms) 中，忽略了未被 span 包裹的文本：'{}'",
+                final_line.start_ms,
+                final_line.end_ms,
+                line_text_accumulator.trim()
+            ));
+        }
+    } else {
+        // 如果没有音节，是逐行段落，则回退使用累积的行文本。
+        line_text_content = line_text_accumulator.to_string();
     }
 
     normalize_text_whitespace_into(&line_text_content, text_processing_buffer);
@@ -1370,6 +1379,13 @@ fn process_deserialized_metadata(
     }
 
     for agent in metadata.agents {
+        if let Some(name) = agent.name.as_ref().filter(|n| !n.is_empty()) {
+            state
+                .metadata_state
+                .agent_id_to_name_map
+                .insert(agent.id.clone(), name.clone());
+        }
+
         let agent_display = match agent.name {
             Some(name) if !name.is_empty() => format!("{}={}", agent.id, name),
             _ => agent.id.clone(),
