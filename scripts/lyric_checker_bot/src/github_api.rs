@@ -310,7 +310,7 @@ impl GitHubClient {
 
     fn build_pr_body(&self, context: &PrContext<'_>) -> String {
         const MAX_BODY_LENGTH: usize = 65536;
-        const PLACEHOLDER_TEXT: &str = "[<!-- 因数据过大请自行查看变更 -->]";
+        const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
 
         let issue_number = context.issue.number;
         let user_login = &context.issue.user.login;
@@ -375,8 +375,7 @@ impl GitHubClient {
                 .join("\n");
 
             let warnings_section = format!(
-                "> [!WARNING]\n 
-                 > 解析歌词文件时发现问题，详情如下:\n{}",
+                "> [!WARNING]\n > 解析歌词文件时发现问题，详情如下:\n{}",
                 warnings_list
             );
             body_parts.push(warnings_section);
