@@ -297,17 +297,21 @@ impl GitHubClient {
             .get_multiple_values(&CanonicalMetadataKey::Title)
             .map(|v| v.join("/"));
 
-        if let (Some(artist_str), Some(title_str)) = (artists, titles) {
-            if !artist_str.is_empty() && !title_str.is_empty() {
-                let new_title = format!("[{}] {} - {}", EXPERIMENTAL_LABEL, artist_str, title_str);
-                return new_title;
-            }
+        if let (Some(artist_str), Some(title_str)) = (artists, titles)
+            && !artist_str.is_empty()
+            && !title_str.is_empty()
+        {
+            let new_title = format!("[{}] {} - {}", EXPERIMENTAL_LABEL, artist_str, title_str);
+            return new_title;
         }
 
         issue_title.to_string()
     }
 
     fn build_pr_body(&self, context: &PrContext<'_>) -> String {
+        const MAX_BODY_LENGTH: usize = 65536;
+        const PLACEHOLDER_TEXT: &str = "[<!-- 因数据过大请自行查看变更 -->]";
+
         let issue_number = context.issue.number;
         let user_login = &context.issue.user.login;
         let metadata_store = context.metadata_store;
@@ -322,13 +326,17 @@ impl GitHubClient {
         body_parts.push(format!("### 歌词作者\n@{}", user_login));
 
         let mut add_metadata_section = |title: &str, key: &CanonicalMetadataKey| {
-            if let Some(values) = metadata_store.get_multiple_values(key) {
-                if !values.is_empty() {
-                    body_parts.push(format!("### {}", title));
-                    for value in values {
-                        body_parts.push(format!("- `{}`", value));
-                    }
-                }
+            if let Some(values) = metadata_store.get_multiple_values(key)
+                && !values.is_empty()
+            {
+                body_parts.push(format!("### {}", title));
+                body_parts.push(
+                    values
+                        .iter()
+                        .map(|v| format!("- `{}`", v))
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                );
             }
         };
 
@@ -366,24 +374,48 @@ impl GitHubClient {
                 .collect::<Vec<_>>()
                 .join("\n");
 
-            let warnings_details = format!(
-                "<details>\n<summary>查看 {} 条解析警告</summary>\n\n> [!WARNING]\n{}\n\n</details>",
-                warnings.len(),
+            let warnings_section = format!(
+                "> [!WARNING]\n 
+                 > 解析歌词文件时发现问题，详情如下:\n{}",
                 warnings_list
             );
-            body_parts.push(warnings_details);
+            body_parts.push(warnings_section);
         }
 
-        body_parts.push(format!(
-            "### 歌词文件内容\n```xml\n{}\n```",
-            &compact_lyric[..compact_lyric.len().min(65535)]
-        ));
+        let base_body = body_parts.join("\n\n");
+        let separator = "\n\n";
 
-        body_parts.push(format!(
+        let compact_lyric_section = format!("### 歌词文件内容\n```xml\n{}\n```", compact_lyric);
+        let formatted_lyric_section = format!(
             "### 歌词文件内容 (已格式化)\n```xml\n{}\n```",
-            &formatted_lyric[..formatted_lyric.len().min(65535)]
-        ));
+            formatted_lyric
+        );
 
-        body_parts.join("\n\n")
+        let placeholder_section = format!("### 歌词文件内容\n\n{}", PLACEHOLDER_TEXT);
+        let final_placeholder = "因数据过大，已省略歌词文本。请自行查看变更。".to_string();
+
+        let full_body_len = base_body.len()
+            + separator.len() * 2
+            + compact_lyric_section.len()
+            + formatted_lyric_section.len();
+        if full_body_len <= MAX_BODY_LENGTH {
+            return format!(
+                "{}{}{}{}{}",
+                base_body, separator, compact_lyric_section, separator, formatted_lyric_section
+            );
+        }
+
+        let partial_body_len = base_body.len()
+            + separator.len() * 2
+            + placeholder_section.len()
+            + formatted_lyric_section.len();
+        if partial_body_len <= MAX_BODY_LENGTH {
+            return format!(
+                "{}{}{}{}{}",
+                base_body, separator, placeholder_section, separator, formatted_lyric_section
+            );
+        }
+
+        format!("{}{}{}", base_body, separator, final_placeholder)
     }
 }

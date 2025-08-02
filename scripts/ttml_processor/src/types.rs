@@ -163,6 +163,21 @@ pub struct LyricLine {
     pub song_part: Option<String>,
     /// 可选的 iTunes Key (如 "L1", "L2")。
     pub itunes_key: Option<String>,
+    /// 逐字翻译列表。
+    #[serde(default)]
+    pub timed_translations: Vec<TimedAuxiliaryLine>,
+    /// 逐字音译列表。
+    #[serde(default)]
+    pub timed_romanizations: Vec<TimedAuxiliaryLine>,
+}
+
+/// 一个带时间戳的辅助歌词行（可以是翻译或音译）。
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TimedAuxiliaryLine {
+    /// 语言代码 (BCP 47)。
+    pub lang: Option<String>,
+    /// 组成该行的音节。
+    pub syllables: Vec<LyricSyllable>,
 }
 
 //=============================================================================

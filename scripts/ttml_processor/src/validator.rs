@@ -74,6 +74,28 @@ fn validate_lyric_lines(lines: &[LyricLine], errors: &mut Vec<String>) {
         return;
     }
 
+    // 检查是否所有的时间戳都是 0
+    let has_any_non_zero_timestamp = lines.iter().any(|line| {
+        line.start_ms != 0
+            || line.end_ms != 0
+            || line
+                .main_syllables
+                .iter()
+                .any(|s| s.start_ms != 0 || s.end_ms != 0)
+            || line.background_section.as_ref().is_some_and(|bg| {
+                bg.start_ms != 0
+                    || bg.end_ms != 0
+                    || bg
+                        .syllables
+                        .iter()
+                        .any(|s| s.start_ms != 0 || s.end_ms != 0)
+            })
+    });
+
+    if !has_any_non_zero_timestamp {
+        errors.push("所有歌词的时间戳均为 0。".to_string());
+    }
+
     for (line_idx, line) in lines.iter().enumerate() {
         // 检查该行是否有实际文本内容
         let has_content = line
