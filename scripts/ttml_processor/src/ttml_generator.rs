@@ -15,8 +15,8 @@ use unicode_segmentation::UnicodeSegmentation;
 use crate::{
     MetadataStore,
     types::{
-        CanonicalMetadataKey, ContentType, ConvertError, LyricLine, LyricSyllable, LyricTrack,
-        TrackMetadataKey, TtmlGenerationOptions, TtmlTimingMode,
+        AnnotatedTrack, CanonicalMetadataKey, ContentType, ConvertError, LyricLine, LyricSyllable,
+        LyricTrack, TrackMetadataKey, TtmlGenerationOptions, TtmlTimingMode,
     },
     utils::normalize_text_whitespace,
 };
@@ -686,11 +686,10 @@ fn write_p_content<W: std::io::Write>(
         .iter()
         .filter(|at| at.content_type == ContentType::Main)
         .collect();
-    let background_content_tracks: Vec<_> = line
+    let background_annotated_tracks: Vec<_> = line
         .tracks
         .iter()
         .filter(|at| at.content_type == ContentType::Background)
-        .map(|at| &at.content)
         .collect();
 
     // 1. 处理主内容
@@ -726,8 +725,8 @@ fn write_p_content<W: std::io::Write>(
     }
 
     // 3. 处理背景内容
-    if options.timing_mode == TtmlTimingMode::Word && !background_content_tracks.is_empty() {
-        write_background_tracks(writer, &background_content_tracks, options)?;
+    if options.timing_mode == TtmlTimingMode::Word && !background_annotated_tracks.is_empty() {
+        write_background_tracks(writer, &background_annotated_tracks, options)?;
     }
 
     Ok(())
@@ -804,12 +803,12 @@ fn write_track_as_spans<W: std::io::Write>(
 
 fn write_background_tracks<W: std::io::Write>(
     writer: &mut Writer<W>,
-    bg_tracks: &[&LyricTrack],
+    bg_annotated_tracks: &[&AnnotatedTrack],
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
-    let all_syls: Vec<_> = bg_tracks
+    let all_syls: Vec<_> = bg_annotated_tracks
         .iter()
-        .flat_map(|t| t.words.iter().flat_map(|w| &w.syllables))
+        .flat_map(|at| at.content.words.iter().flat_map(|w| &w.syllables))
         .collect();
     if all_syls.is_empty() {
         return Ok(());
@@ -846,6 +845,16 @@ fn write_background_tracks<W: std::io::Write>(
 
                 if syl_bg.ends_with_space && idx < num_syls - 1 && !options.format {
                     writer.write_event(Event::Text(BytesText::new(" ")))?;
+                }
+            }
+            for at in bg_annotated_tracks {
+                for track in &at.translations {
+                    write_inline_auxiliary_track(writer, track, "x-translation", options)
+                        .map_err(std::io::Error::other)?;
+                }
+                for track in &at.romanizations {
+                    write_inline_auxiliary_track(writer, track, "x-roman", options)
+                        .map_err(std::io::Error::other)?;
                 }
             }
             Ok(())
