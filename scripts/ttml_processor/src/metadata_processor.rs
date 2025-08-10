@@ -152,4 +152,37 @@ impl MetadataStore {
             // 收集成一个新的 HashMap
             .collect()
     }
+
+    /// 根据自定义的字符串键获取多个元数据值。
+    ///
+    /// # 参数
+    /// * `key` - 用于查找的字符串键。
+    ///
+    /// # 返回
+    /// * `Option<&Vec<String>>` - 如果找到，则返回对应的值切片引用。
+    #[must_use]
+    pub fn get_multiple_values_by_key(&self, key: &str) -> Option<&Vec<String>> {
+        let canonical_key = key
+            .parse::<CanonicalMetadataKey>()
+            .unwrap_or_else(|_| CanonicalMetadataKey::Custom(key.to_string()));
+
+        self.data.get(&canonical_key)
+    }
+
+    /// 设置或覆盖一个多值元数据标签。
+    ///
+    /// 类似于 `set_single`，但接受一个值的向量，用于艺术家等可能有多值的场景。
+    ///
+    /// # 参数
+    /// * `key_str` - 原始的元数据键名，例如 "title", "artist"。
+    /// * `values` - 要设置的新值列表。
+    pub fn set_multiple(&mut self, key_str: &str, values: Vec<String>) {
+        let canonical_key = key_str
+            .parse::<CanonicalMetadataKey>()
+            .unwrap_or_else(|_| CanonicalMetadataKey::Custom(key_str.to_string()));
+
+        let cleaned_values = values.into_iter().map(|v| v.trim().to_string()).collect();
+
+        self.data.insert(canonical_key, cleaned_values);
+    }
 }

@@ -175,7 +175,22 @@ async fn process_issue(
 
     log::info!("正在处理元数据...");
     let mut metadata_store = MetadataStore::new();
-    metadata_store.load_from_raw(&parsed_data.raw_metadata);
+
+    if let Some(agent_definitions) = parsed_data.raw_metadata.get("agent")
+        && !agent_definitions.is_empty()
+    {
+        metadata_store.set_multiple("internal::agents", agent_definitions.clone());
+    }
+
+    let other_metadata: std::collections::HashMap<_, _> = parsed_data
+        .raw_metadata
+        .iter()
+        .filter(|(key, _)| key.as_str() != "agent")
+        .map(|(k, v)| (k.clone(), v.clone()))
+        .collect();
+
+    metadata_store.load_from_raw(&other_metadata);
+
     metadata_store.deduplicate_values();
     log::info!("元数据处理完毕。准备用于验证的内容: {:?}", metadata_store);
     log::info!("正在验证歌词数据和元数据...");

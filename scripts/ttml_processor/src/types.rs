@@ -82,6 +82,92 @@ pub enum LyricFormat {
 // 3. 歌词内部表示结构
 //=============================================================================
 
+/// 定义可以被注解的内容轨道类型。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+pub enum ContentType {
+    #[default]
+    /// 主歌词
+    Main,
+    /// 背景人声
+    Background,
+}
+
+/// 定义轨道元数据的规范化键。
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum TrackMetadataKey {
+    /// BCP 47 语言代码
+    Language,
+    /// 罗马音方案名
+    Scheme,
+    /// 自定义元数据键
+    Custom(String),
+}
+
+/// 表示振假名中的一个音节。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FuriganaSyllable {
+    /// 振假名文本内容
+    pub text: String,
+    /// 可选的时间戳 (`start_ms`, `end_ms`)
+    pub timing: Option<(u64, u64)>,
+}
+
+/// 表示一个语义上的"单词"或"词组"，主要为振假名服务。
+///
+/// 目前还没有歌词格式提供词组信息，应将整行直接作为一个词组。
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Word {
+    /// 组成该词的音节列表
+    pub syllables: Vec<LyricSyllable>,
+    /// 可选的振假名信息
+    pub furigana: Option<Vec<FuriganaSyllable>>,
+}
+
+/// 一个通用的歌词轨道。
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LyricTrack {
+    /// 组成该轨道的音节列表。
+    pub words: Vec<Word>,
+    /// 轨道元数据。
+    #[serde(default)]
+    pub metadata: HashMap<TrackMetadataKey, String>,
+}
+
+/// 将一个内容轨道（如主歌词）及其所有注解轨道（如翻译、罗马音）绑定在一起的结构。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct AnnotatedTrack {
+    /// 该内容轨道的类型。
+    pub content_type: ContentType,
+
+    /// 内容轨道本身。
+    pub content: LyricTrack,
+
+    /// 依附于该内容轨道的翻译轨道列表。
+    #[serde(default)]
+    pub translations: Vec<LyricTrack>,
+
+    /// 依附于该内容轨道的罗马音轨道列表。
+    #[serde(default)]
+    pub romanizations: Vec<LyricTrack>,
+}
+
+/// 歌词行结构，作为多个并行带注解轨道的容器。
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LyricLine {
+    /// 该行包含的所有带注解的轨道。
+    pub tracks: Vec<AnnotatedTrack>,
+    /// 行的开始时间，相对于歌曲开始的绝对时间（毫秒）。
+    pub start_ms: u64,
+    /// 行的结束时间，相对于歌曲开始的绝对时间（毫秒）。
+    pub end_ms: u64,
+    /// 可选的演唱者标识。
+    pub agent: Option<String>,
+    /// 可选的歌曲组成部分标记。
+    pub song_part: Option<String>,
+    /// 可选的 iTunes Key (如 "L1", "L2")。
+    pub itunes_key: Option<String>,
+}
+
 /// 通用的歌词音节结构，用于表示逐字歌词中的一个音节。
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LyricSyllable {
@@ -97,87 +183,6 @@ pub struct LyricSyllable {
     pub duration_ms: Option<u64>,
     /// 指示该音节后是否应有空格。
     pub ends_with_space: bool,
-}
-
-/// 表示单个翻译及其语言的结构体。
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TranslationEntry {
-    /// 翻译的文本内容。
-    pub text: String,
-    /// 翻译的语言代码，可选。
-    /// 建议遵循 BCP 47 标准 (例如 "en", "ja", "zh-Hans")。
-    pub lang: Option<String>,
-}
-
-/// 表示单个罗马音及其语言/方案的结构体。
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct RomanizationEntry {
-    /// 罗马音的文本内容。
-    pub text: String,
-    /// 目标音译的语言和脚本代码，可选。
-    /// 例如 "ja-Latn" (日语罗马字), "ko-Latn" (韩语罗马字)。
-    pub lang: Option<String>,
-    /// 可选的特定罗马音方案名称。
-    /// 例如 "Hepburn" (平文式罗马字), "Nihon-shiki" (日本式罗马字), "RevisedRomanization" (韩语罗马字修正案)。
-    pub scheme: Option<String>,
-}
-
-/// 表示歌词行中的背景歌词部分。
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BackgroundSection {
-    /// 背景歌词的开始时间（毫秒）。
-    pub start_ms: u64,
-    /// 背景歌词的结束时间（毫秒）。
-    pub end_ms: u64,
-    /// 背景歌词的音节列表。
-    pub syllables: Vec<LyricSyllable>,
-    /// 背景歌词的翻译。
-    pub translations: Vec<TranslationEntry>,
-    /// 背景歌词的罗马音。
-    pub romanizations: Vec<RomanizationEntry>,
-}
-
-/// 通用的歌词行结构，作为项目内部处理歌词数据的主要表示。
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct LyricLine {
-    /// 行的开始时间，相对于歌曲开始的绝对时间（毫秒）。
-    pub start_ms: u64,
-    /// 行的结束时间，相对于歌曲开始的绝对时间（毫秒）。
-    pub end_ms: u64,
-    /// 可选的整行文本内容。
-    /// 主要用于纯逐行歌词格式（如标准LRC）。
-    pub line_text: Option<String>,
-    /// 主歌词的音节列表。
-    pub main_syllables: Vec<LyricSyllable>,
-    /// 该行的翻译列表。
-    pub translations: Vec<TranslationEntry>,
-    /// 该行的罗马音列表。
-    pub romanizations: Vec<RomanizationEntry>,
-    /// 可选的演唱者标识。
-    /// 通常情况下应确保至少有一个 `v1`。
-    pub agent: Option<String>,
-    /// 可选的背景歌词部分。
-    pub background_section: Option<BackgroundSection>,
-    /// 可选的歌曲组成部分标记。
-    /// 例如 "verse", "chorus", "bridge"。
-    pub song_part: Option<String>,
-    /// 可选的 iTunes Key (如 "L1", "L2")。
-    pub itunes_key: Option<String>,
-    /// 逐字翻译列表。
-    #[serde(default)]
-    pub timed_translations: Vec<TimedAuxiliaryLine>,
-    /// 逐字音译列表。
-    #[serde(default)]
-    pub timed_romanizations: Vec<TimedAuxiliaryLine>,
-}
-
-/// 一个带时间戳的辅助歌词行（可以是翻译或音译）。
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TimedAuxiliaryLine {
-    /// 语言代码 (BCP 47)。
-    pub lang: Option<String>,
-    /// 组成该行的音节。
-    pub syllables: Vec<LyricSyllable>,
 }
 
 //=============================================================================
