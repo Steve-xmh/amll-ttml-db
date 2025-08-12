@@ -17,7 +17,7 @@ async fn run_git_command(args: &[&str]) -> Result<()> {
         Ok(())
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        log::error!("Git 命令执行失败: {}", stderr);
+        log::error!("Git 命令执行失败: {stderr}");
         Err(anyhow!(
             "Git 命令 `git {}` 失败: {}",
             args.join(" "),
@@ -62,11 +62,11 @@ pub async fn add_path(path_to_add: &Path) -> Result<()> {
 
 pub async fn delete_branch_if_exists(branch_name: &str) -> Result<()> {
     match run_git_command(&["branch", "-D", branch_name]).await {
-        Ok(_) => {
-            log::info!("成功删除了分支: {}", branch_name);
+        Ok(()) => {
+            log::info!("成功删除了分支: {branch_name}");
         }
         Err(_) => {
-            log::info!("无法删除分支 '{}'，可能它不存在。", branch_name);
+            log::info!("无法删除分支 '{branch_name}'，可能它不存在。");
         }
     }
     Ok(())
