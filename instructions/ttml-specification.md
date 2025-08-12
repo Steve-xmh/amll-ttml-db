@@ -6,8 +6,8 @@
 
 本文档基于 W3C TTML1 标准，并针对 Apple Music 格式进行了扩展。
 
-> [!CAUTION]
-> 为了确保可读性，下列的 TTML 片段示例经过格式化。但上传 TTML 文件时，**不允许**格式化。
+> [!WARNING]
+> 为了确保可读性，下列的 TTML 片段示例经过格式化。但上传 TTML 文件时，**不建议**格式化。详细信息请参考第 6 节。
 
 > [!CAUTION]
 > 这份规范目前只对实验性提交流程生效。
@@ -44,13 +44,13 @@
     * `xmlns`, `xmlns:ttm` 是标准 TTML 必需的。
     * `xmlns:itunes` 可选，用于 Apple Music 特定的属性，如 `itunes:timing` 和 `itunes:song-part`。
     * `xmlns:amll` 用于 AMLL 的元数据。
-* **`xml:lang`**: 可选，在 `<tt>` 标签上指定歌词的主要语言代码 (例如 `ja` 代表日语, `en` 代表英语)。
+* **`xml:lang`**: 建议填写，在 `<tt>` 标签上指定歌词的主要语言代码 (例如 `ja` 代表日语, `en` 代表英语)。
 * **`itunes:timing`**: 可选，用于声明逐行或逐字歌词。
     * `word`: 逐字歌词。
     * `line`: 逐行歌词。
     若不指定该属性，机器人将根据文件内容自动判断计时模式：如果歌词行 `<p>` 内包含了带时间戳的 `<span>` 标签，则按**逐字歌词**处理；否则，按**逐行歌词**处理。
 * **`body` 元素**: 用于包含所有歌词行 (`<p>`) 和结构块 (`<div>`)。
-    * **`dur`**: **必填**。用于定义歌词内容的总时长。用于定义歌词内容的总时长。其值**必须大于或等于**文件中最后一个时间戳的结束时间。所有内部元素的时间码都不得超过此 `dur` 值。
+    * **`dur`**: **可选，并不会影响时长计算。主要用于参考。**。如果包含，其值**必须大于或等于**文件中最后一个时间戳的结束时间。所有内部元素的时间码都不得超过此 `dur` 值。
 
     ```xml
     <body dur="00:04:15.500">
@@ -110,6 +110,7 @@
 <head>
     <metadata>
         <!-- Apple Music 元数据 -->
+        <!-- 仅作为示例，你不应该添加两个歌曲名标签。 -->
         <ttm:title>歌曲名</ttm:title>
         <ttm:agent type="person" xml:id="v1">
             <ttm:name type="full">艺人A</ttm:name>
@@ -165,17 +166,46 @@
 </p>
 ```
 
-##### 4.1.1. 空格处理规则
+##### 4.1. 空格处理规则
 
 在逐词模式下，单词（音节）之间的空格是**有意义的字符**，必须被显式表示。机器人会识别以下几种表示方式，并以后两种为标准。
 
-| 方法 | 示例 | 规范性 | 说明 |
-| :--- | :--- | :--- | :--- |
-| **空格在 `<span>` 内部** | `<span begin="00:01.0" end="00:02.0">word </span>` | **不规范，会自动修正** | 机器人会自动将音节的前导或尾随空格提取出来。 |
-| **空格在 `<span>` 外部** | `<span begin="00:01.0" end="00:02.0">word</span> ` | **最规范** | 空格作为一个独立的文本节点存在于两个 `<span>` 标签之间。 |
-| **独立的空格 `<span>`** | `<span begin="00:00.000" end="00:00.000"> </span>` | **允许** | 允许为空格创建独立的 `<span>` 标签。建议将其开始和结束时间均设为 `0`。 |
+| 方法                     | 示例                                               | 规范性                         | 说明                                                                                                                  |
+| :----------------------- | :------------------------------------------------- | :----------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| **空格在 `<span>` 内部** | `<span begin="00:01.0" end="00:02.0">word </span>` | **不规范（对于非格式化文件）** | 机器人会自动将音节的前导或尾随空格提取出来。                                                                          |
+| **空格在 `<span>` 外部** | `<span begin="00:01.0" end="00:02.0">word</span> ` | **最规范**                     | 空格作为一个独立的文本节点存在于两个 `<span>` 标签之间。                                                              |
+| **独立的空格 `<span>`**  | `<span begin="00:00.000" end="00:00.000"> </span>` | **允许**                       | 允许为空格创建独立的 `<span>` 标签。建议将其 `begin` 和 `end` 时间设为前一个音节的 `end` 时间，或统一设为 `00:00.000` |
 
-#### 4.2. 逐行歌词
+如果你提交格式化后的 TTML 文件，**强烈建议**将空格直接写入到 `span` 内，这样可以避免一些奇奇怪怪的问题。详情请查看第六节。
+
+##### 4.2. 自动分词
+
+为日语和韩语歌曲打轴时，你可能会将多个字符放进一个音节来打轴（例如拗音等）。自动分词可以帮你平分这些包含了多个字符的音节，将这个长 `<span>` 拆分为多个独立的、每个只包含单个字符的 `<span>`，并按字符数按比例分配时间。
+
+自动分词同样适用于直接从 Apple Music 上获取的歌词（Apple Music 会将多个持续时长相近的 CJK 字符合并为一个音节），只需要添加必要的元数据，再开启自动分词功能即可。
+
+通常建议每个 `<span>` 内只有**一个** CJK 字符。多个 CJK 字符可能会导致不自然的辉光效果。
+
+**输入示例：**
+
+```xml
+<span begin="10.0s" end="12.0s">你好世界</span>
+```
+
+**启用自动分词后的输出结果：**
+
+```xml
+<span begin="10.000" end="10.500">你</span>
+<span begin="10.500" end="11.000">好</span>
+<span begin="11.000" end="11.500">世</span>
+<span begin="11.500" end="12.000">界</span>
+```
+
+自动分词功能还会尝试将一个英文单词按照音节拆分，例如 `analyse` -> `an-a-lyse`。**如果这不是你期望的行为，请不要开启自动分词功能**
+
+**标点符号权重**用来控制拆分标点符号时应该为其分配多少时长，一般情况下不需要修改它，除非你确实希望它持续得更短或更长。
+
+#### 4.3. 逐行歌词
 
 当 `itunes:timing="Line"` 时，机器人只解析整行歌词的时间戳，并忽略内部 `<span>` 的时间戳信息（实际上也不应该有）。
 
@@ -185,7 +215,10 @@
 ```xml
 <p begin="00:01.000" end="00:03.500">一行歌词</p>
 ```
-#### 4.3 时间戳格式
+
+如果要上传逐行歌词，建议开启“**这是逐行歌词**”选项。虽然不开也可以识别，但开启可以确保不会误判为逐字歌词。
+
+#### 4.4. 时间戳格式
 
 本文档中所有的时间值（如 `begin`, `end`, `dur` 属性的值）都**必须**遵循以下格式之一。
 
@@ -226,18 +259,18 @@
 
 ##### **有效格式示例汇总**
 
-| 分类 | 格式 | 示例 | 解析后的毫秒值 |
-| :--- | :--- | :--- | :--- |
-| **完整格式** | `HH:MM:SS.fff` | `00:02:35.500` | `155500` |
-| | `HH:MM:SS.f` | `00:02:35.5` | `155500` |
-| | `HH:MM:SS` | `00:02:35` | `155000` |
-| **省略小时** | `MM:SS.ff` | `02:35.55` | `155550` |
-| | `MM:SS` | `02:35` | `155000` |
-| **仅秒** | `SS.fff` | `35.123` | `35123` |
-| | `SS` | `35` | `35000` |
-| | `SS` (超过60) | `95` | `95000` |
-| **`s` 后缀格式** | `f.f...s` | `15.8s` | `15800` |
-| | `fs` | `15s` | `15000` |
+| 分类             | 格式           | 示例           | 解析后的毫秒值 |
+| :--------------- | :------------- | :------------- | :------------- |
+| **完整格式**     | `HH:MM:SS.fff` | `00:02:35.500` | `155500`       |
+|                  | `HH:MM:SS.f`   | `00:02:35.5`   | `155500`       |
+|                  | `HH:MM:SS`     | `00:02:35`     | `155000`       |
+| **省略小时**     | `MM:SS.ff`     | `02:35.55`     | `155550`       |
+|                  | `MM:SS`        | `02:35`        | `155000`       |
+| **仅秒**         | `SS.fff`       | `35.123`       | `35123`        |
+|                  | `SS`           | `35`           | `35000`        |
+|                  | `SS` (超过60)  | `95`           | `95000`        |
+| **`s` 后缀格式** | `f.f...s`      | `15.8s`        | `15800`        |
+|                  | `fs`           | `15s`          | `15000`        |
 ---
 
 ### 5. 歌词内容和结构
@@ -292,7 +325,7 @@
 
 * **翻译**: 使用 `<span ttm:role="x-translation" xml:lang="语言代码">...</span>`。
 * **罗马音**: 使用 `<span ttm:role="x-roman" xml:lang="语言-Latn" xml:scheme="罗马音方案">...</span>`。
-* **背景人声**: 使用 `<span ttm:role="x-bg" begin="..." end="...">...</span>`。背景人声的标签必须始终放在主歌词最后面。建议使用半角括号将背景人声文本包裹起来。机器人也会自动添加括号（如果没有）。**不要添加两个括号**。
+* **背景人声**: 使用 `<span ttm:role="x-bg" begin="..." end="...">...</span>`。如果背景人声出现在主唱人声之前，建议将 `<span ttm:role="x-bg">` 标签放在主唱人声的 `<span>` 标签之前。否则，请将 `<span ttm:role="x-bg">` 标签放在 `<p>` 标签的末尾。建议使用半角括号将背景人声文本包裹起来。机器人也会自动添加括号（如果没有）。不建议添加两个或更多括号，尽管词库的机器人可以正确处理，但其它解析器不一定。
 
 ```xml
 <p begin="00:25.100" end="00:32.500" itunes:key="L1" ttm:agent="v1">
@@ -329,25 +362,58 @@
 
 #### 5.4 Apple Music 样式翻译
 
-除了在 `5.3` 中描述的内嵌翻译（`ttm:role="x-translation"`）方法外，机器人也兼容 Apple Music 样式的翻译
+除了在 `5.3` 中描述的内嵌辅助歌词（例如 `<span ttm:role="x-translation">...</span>`）外，机器人也兼容在 `<head>` 中定义的 Apple Music 样式翻译和音译。
 
 > [!CAUTION]
-> 当两种格式同时存在时，机器人会使用 Apple Music 样式的翻译内容，并忽略内嵌翻译内容。
+> 当两种格式同时存在时，机器人会从 `<head>` 中获取 Apple Music 样式的翻译，并将其追加到该行歌词的翻译列表中。**这可能会导致双重翻译**。
+> 为避免重复，请确保同一语言的翻译只出现在一种格式中。例如，如果 `<head>` 中定义了 `xml:lang="zh-CN"` 的翻译，则 `<body>` 的对应行内就不应再包含 `xml:lang="zh-CN"` 的翻译 `<span>`。
 
-##### **结构说明**
+#### **结构说明**
 
-1.  **位置**: 所有翻译数据必须置于 `<head><metadata>...</metadata></head>` 内部。
-2.  **主容器**: 需要一个 `<iTunesMetadata>` 标签作为容器，并声明其命名空间：`xmlns="http://music.apple.com/lyric-ttml-internal"`。
-3.  **翻译块**:
-    * 在 `<iTunesMetadata>` 内部，使用 `<translations>` 标签包裹一个或多个 `<translation>` 块。
-    * 每个 `<translation>` 代表一种语言的翻译，且**必须**包含以下属性：
+1.  **位置**: 所有 Apple Music 样式的辅助轨道数据都必须置于 `<head><metadata>...</metadata></head>` 内部。
+2.  **主容器**: 需要一个 `<iTunesMetadata>` 标签作为所有 Apple Music 特定元数据的容器。
+3.  **轨道类型容器**:
+      * **翻译**: 使用 `<translations>` 标签包裹。
+      * **音译**: 使用 `<transliterations>` 标签包裹。
+4.  **语言块**:
+      * 在 `<translations>` 或 `<transliterations>` 内部，每个 `<translation>` 或 `<transliteration>` 块代表一种语言的轨道。
+      * 每个 `<translation>` 代表一种语言的翻译，且**必须**包含以下属性：
         * `type="翻译类型"`，可以为 `subtitle` 或 `replacement`。`subtitle` 适用于大部分翻译内容，`replacement`一般用于简繁中文转换。
         * `xml:lang="语言代码"` (例如: `zh-Hans-CN`)
-4.  **文本链接**:
-    * 在 `<translation>` 内部，每一行译文都由一个独立的 `<text>` 标签承载。
-    * 通过 `for` 属性将译文与歌词行进行关联，其值**必须**与 `<body>` 中对应 `<p>` 标签的 `itunes:key` 值完全一致。
+5.  **文本链接**:
+      * 在每个语言块内部，内容由一个或多个 `<text>` 标签承载。
+      * 通过 `for` 属性将内容与歌词行进行关联，其值**必须**与 `<body>` 中对应 `<p>` 标签的 `itunes:key` 值完全一致 (例如, `for="L1"`)。
 
-##### **示例**
+#### **内容格式**
+
+`<text>` 标签内部的内容可以是以下两种格式之一：
+
+  * **逐行**: 直接包含翻译或音译的纯文本。
+
+    ```xml
+    <text for="L1">This is a line-by-line translation</text>
+    ```
+
+  * **逐字**: 包含一个或多个带 `begin` 和 `end` 属性的 `<span>` 标签。
+
+    ```xml
+    <text for="L2">
+      <span begin="10.0s" end="10.5s">A </span>
+      <span begin="10.5s" end="11.0s">syllable-timed </span>
+      <span begin="11.0s" end="11.8s">translation</span>
+    </text>
+    ```
+
+#### **背景人声**
+
+你可以在 `<text>` 标签内使用 `<span ttm:role="x-bg">` 来给背景人声提供翻译或音译。
+
+  * 对于**逐行**的背景人声辅助歌词，在 `<text>` 内使用带 `ttm:role="x-bg"` 的 `<span>`。
+  * 对于**逐字**的背景人声辅助歌词，在 `ttm:role="x-bg"` 的 `<span>` 内部再嵌套带时轴的 `<span>`。
+
+-----
+
+#### **示例 1：逐行翻译**
 
 以下示例展示了如何在头信息中定义简体中文翻译，并将其链接到正文中的歌词行。
 
@@ -376,25 +442,25 @@
     ...
     <div itunes:songPart="Chorus">
         <p begin="45.404" end="48.709" itunes:key="L23" ttm:agent="v1">
-            <span begin="45.404" end="45.755">Gold</span>
-            <span begin="45.755" end="46.696">jewelry</span>
-            <span begin="46.696" end="47.627">shining</span>
-            <span begin="47.627" end="47.979">so</span>
+            <span begin="45.404" end="45.755">Gold </span>
+            <span begin="45.755" end="46.696">jewelry </span>
+            <span begin="46.696" end="47.627">shining </span>
+            <span begin="47.627" end="47.979">so </span>
             <span begin="47.979" end="48.709">bright</span>
         </p>
         <p begin="48.739" end="52.311" itunes:key="L24" ttm:agent="v1">
-            <span begin="48.739" end="50.290">Strawberry</span>
-            <span begin="50.290" end="51.226">champagne</span>
-            <span begin="51.226" end="51.584">on</span>
+            <span begin="48.739" end="50.290">Strawberry </span>
+            <span begin="50.290" end="51.226">champagne </span>
+            <span begin="51.226" end="51.584">on </span>
             <span begin="51.584" end="52.311">ice</span>
         </p>
         <p begin="52.320" end="54.350" itunes:key="L25" ttm:agent="v1">
-            <span begin="52.320" end="52.826">Lucky</span>
-            <span begin="52.826" end="53.090">for</span>
-            <span begin="53.090" end="53.300">you,</span>
-            <span begin="53.300" end="53.484">that's</span>
-            <span begin="53.484" end="53.732">what</span>
-            <span begin="53.732" end="53.918">I</span>
+            <span begin="52.320" end="52.826">Lucky </span>
+            <span begin="52.826" end="53.090">for </span>
+            <span begin="53.090" end="53.300">you, </span>
+            <span begin="53.300" end="53.484">that's </span>
+            <span begin="53.484" end="53.732">what </span>
+            <span begin="53.732" end="53.918">I </span>
             <span begin="53.918" end="54.350">like</span>
         </p>
     </div>
@@ -402,12 +468,86 @@
 </body>
 ```
 
+-----
+
+#### **示例 2：逐字翻译与音译**
+
+**`<body>` 部分的歌词行:**
+
+```xml
+<body>
+  <p begin="10.0s" end="12.0s" itunes:key="L1">
+      <span begin="10.0s" end="10.8s">두렵지는 않아</span>
+      <span ttm:role="x-bg">
+          <span begin="11.0s" end="11.8s">(흥미로울 뿐)</span>
+      </span>
+  </p>
+</body>
+```
+
+**`<head>` 部分对应的辅助轨道定义:**
+
+```xml
+<head>
+  <metadata>
+    <iTunesMetadata>
+      <translations>
+        <translation xml:lang="en-US">
+          <text for="L1">
+            I'm not afraid
+            <span ttm:role="x-bg">(Just interesting)</span>
+          </text>
+        </translation>
+      </translations>
+      <transliterations>
+        <transliteration xml:lang="ko-Latn">
+          <text for="L1">
+            <span begin="10.0s" end="10.8s">duryeopjineun ana</span>
+            <span ttm:role="x-bg">
+              <span begin="11.0s" end="11.4s">heungmiroul </span>
+              <span begin="11.4s" end="11.8s">ppun</span>
+            </span>
+          </text>
+        </transliteration>
+      </transliterations>
+    </iTunesMetadata>
+  </metadata>
+</head>
+```
+
 ---
 
 ### 6. 空格与格式化规范
 
-* **空格处理**: 我们会自动规范化歌词文本中的空格，将多个连续的空格（包括换行符、制表符等）合并为一个标准的半角空格，并移除首尾的空格。**在逐字模式下，词间的空格至关重要，请务必遵循 4.1.1. 中的规则。**
-* **禁止格式化**: **绝对不允许**使用任何 XML/HTML 格式化工具（如 Prettier 或 IDE 自带的格式化功能）来格式化 TTML 文件。**格式化会增加或改变 `<span>` 标签之间的独立空格文本节点，导致空格信息丢失。** 文件应保持压缩的结构，即所有字符在同一行内。
+#### 6.1 格式化支持
+
+你可以使用格式化工具来格式化 TTML 文件。但 `<span>` 标签后的所有空格均会丢失（只要 `<span>` 标签后包含换行符）。
+
+若要保留这些空格，请将空格直接写入到 `<span>` 标签内。例如：
+
+```xml
+<p begin="45.404" end="48.709" itunes:key="L23" ttm:agent="v1">
+    <span begin="45.404" end="45.755">Gold </span>
+    <span begin="45.755" end="46.696">jewelry </span>
+    <span begin="46.696" end="47.627">shining </span>
+    <span begin="47.627" end="47.979">so </span>
+    <span begin="47.979" end="48.709">bright </span>
+</p>
+```
+
+或者，将两个应该以空格分割的音节写成一行：
+
+```xml
+<span begin="10s" end="11s">word1</span> <span begin="12s" end="13s">word2</span>
+```
+
+使用实验性提交流程生成格式化的 TTML 文件时，默认会将空格直接写入到 `<span>` 标签内。
+
+#### 6.2 空格处理
+
+我们会自动规范化歌词文本中的空格，将多个连续的空格（包括换行符、制表符等）合并为一个标准的半角空格，并移除 `<span>` 内部的空格。
+
+在**逐字模式**下，词间的空格至关重要。尽管格式化是被允许的，但我们依然**强烈建议**遵循 **4.1.1. 空格处理规则** 中定义的最佳实践来表示单词间的空格。
 
 ---
 
@@ -418,7 +558,7 @@
 BCP-47 是用于标识人类语言的国际标准代码。它通常由一系列用连字符 (`-`) 分隔的子标签组成，用以表示语言、文字、地区等信息。
 
 > [!TIP]
-> 你可以通过[IANA 语言子标签注册表](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)查询所有有效的语言代码。
+> 你可以通过 [IANA 语言子标签注册表](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry) 查询所有有效的语言代码。
 
 #### 常见示例
 
