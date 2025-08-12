@@ -5,8 +5,8 @@ use crate::types::{CanonicalMetadataKey, LyricLine};
 ///
 /// # 参数
 ///
-/// * `lines` - 一个 LyricLine 结构体的切片，代表所有歌词行。
-/// * `metadata_store` - 一个 MetadataStore 的引用，包含所有解析出的元数据。
+/// * `lines` - 一个 `LyricLine` 结构体的切片，代表所有歌词行。
+/// * `metadata_store` - 一个 `MetadataStore` 的引用，包含所有解析出的元数据。
 ///
 /// # 返回
 ///
