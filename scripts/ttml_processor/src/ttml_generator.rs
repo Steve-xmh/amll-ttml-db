@@ -13,10 +13,11 @@ use quick_xml::{
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
-    MetadataStore,
+    metadata_processor::MetadataStore,
     types::{
-        AnnotatedTrack, CanonicalMetadataKey, ContentType, ConvertError, LyricLine, LyricSyllable,
-        LyricTrack, TrackMetadataKey, TtmlGenerationOptions, TtmlTimingMode,
+        Agent, AgentStore, AgentType, AnnotatedTrack, CanonicalMetadataKey, ContentType,
+        ConvertError, LyricLine, LyricSyllable, LyricTrack, TrackMetadataKey,
+        TtmlGenerationOptions, TtmlTimingMode,
     },
     utils::normalize_text_whitespace,
 };
@@ -143,6 +144,7 @@ fn write_timed_tracks_to_head<W: std::io::Write>(
 pub fn generate_ttml(
     lines: &[LyricLine],
     metadata_store: &MetadataStore,
+    agent_store: &AgentStore,
     options: &TtmlGenerationOptions,
 ) -> Result<String, ConvertError> {
     let mut buffer = Vec::new();
@@ -153,10 +155,10 @@ pub fn generate_ttml(
     let result = if options.format {
         let mut writer =
             Writer::new_with_indent(Cursor::new(&mut buffer), indent_char, indent_size);
-        generate_ttml_inner(&mut writer, lines, metadata_store, options)
+        generate_ttml_inner(&mut writer, lines, metadata_store, agent_store, options)
     } else {
         let mut writer = Writer::new(Cursor::new(&mut buffer));
-        generate_ttml_inner(&mut writer, lines, metadata_store, options)
+        generate_ttml_inner(&mut writer, lines, metadata_store, agent_store, options)
     };
 
     result?;
@@ -169,6 +171,7 @@ fn generate_ttml_inner<W: std::io::Write>(
     writer: &mut Writer<W>,
     lines: &[LyricLine],
     metadata_store: &MetadataStore,
+    agent_store: &AgentStore,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
     // 准备根元素的属性
@@ -241,12 +244,8 @@ fn generate_ttml_inner<W: std::io::Write>(
     }
 
     element_writer.write_inner_content(|writer| {
-        let to_io_err = |e: ConvertError| std::io::Error::other(e);
-
-        // 写入 <head> 和 <body>
-        write_ttml_head(writer, metadata_store, lines, options).map_err(to_io_err)?;
-        write_ttml_body(writer, lines, options).map_err(to_io_err)?;
-
+        write_ttml_head(writer, metadata_store, lines, agent_store, options)?;
+        write_ttml_body(writer, lines, options)?;
         Ok(())
     })?;
 
@@ -257,6 +256,7 @@ fn write_ttml_head<W: std::io::Write>(
     writer: &mut Writer<W>,
     metadata_store: &MetadataStore,
     lines: &[LyricLine],
+    agent_store: &AgentStore,
     options: &TtmlGenerationOptions,
 ) -> Result<(), ConvertError> {
     writer
@@ -265,44 +265,42 @@ fn write_ttml_head<W: std::io::Write>(
             writer
                 .create_element("metadata")
                 .write_inner_content(|writer| {
-                    if let Some(agent_definitions) =
-                        metadata_store.get_multiple_values_by_key("internal::agents")
-                    {
-                        let mut sorted_defs = agent_definitions.clone();
-                        sorted_defs.sort();
+                    let mut sorted_agents: Vec<_> = agent_store.all_agents().cloned().collect();
 
-                        for def_string in &sorted_defs {
-                            if let Some((id, name)) = def_string.split_once('=') {
-                                // 有名字的 agent
-                                writer
-                                    .create_element("ttm:agent")
-                                    .with_attribute(("type", "person"))
-                                    .with_attribute(("xml:id", id))
-                                    .write_inner_content(|writer| {
-                                        writer
-                                            .create_element("ttm:name")
-                                            .with_attribute(("type", "full"))
-                                            .write_text_content(BytesText::new(name))?;
-                                        Ok(())
-                                    })?;
-                            } else {
-                                // 只有ID的 agent
-                                let id = def_string;
-                                writer
-                                    .create_element("ttm:agent")
-                                    .with_attribute(("type", "person"))
-                                    .with_attribute(("xml:id", id.as_str()))
-                                    .write_empty()?;
-                            }
-                        }
-                    } else if !lines.is_empty() {
-                        // 如果元数据中完全没有 agent 信息，但歌词行存在，
-                        // 至少创建一个默认的 agent 以确保格式有效。
-                        writer
+                    if sorted_agents.is_empty() && !lines.is_empty() {
+                        // 如果没有 agent 但有歌词行，创建一个默认的
+                        sorted_agents.push(Agent {
+                            id: "v1".to_string(),
+                            name: None,
+                            agent_type: AgentType::Person,
+                        });
+                    }
+
+                    sorted_agents.sort_by(|a, b| a.id.cmp(&b.id));
+
+                    for agent in sorted_agents {
+                        let type_str = match agent.agent_type {
+                            AgentType::Person => "person",
+                            AgentType::Group => "group",
+                            AgentType::Other => "other",
+                        };
+
+                        let agent_element = writer
                             .create_element("ttm:agent")
-                            .with_attribute(("type", "person"))
-                            .with_attribute(("xml:id", "v1"))
-                            .write_empty()?;
+                            .with_attribute(("type", type_str))
+                            .with_attribute(("xml:id", agent.id.as_str()));
+
+                        if let Some(name) = &agent.name {
+                            agent_element.write_inner_content(|writer| {
+                                writer
+                                    .create_element("ttm:name")
+                                    .with_attribute(("type", "full"))
+                                    .write_text_content(BytesText::new(name))?;
+                                Ok(())
+                            })?;
+                        } else {
+                            agent_element.write_empty()?;
+                        }
                     }
 
                     if options.use_apple_format_rules {
@@ -655,7 +653,7 @@ fn write_syllable_with_optional_splitting<W: std::io::Write>(
                 {
                     format!("{token} ")
                 } else {
-                    token.to_string()
+                    token.clone()
                 };
 
                 writer
@@ -857,6 +855,7 @@ fn write_background_tracks<W: std::io::Write>(
                         .map_err(std::io::Error::other)?;
                 }
             }
+
             Ok(())
         })?;
     Ok(())
