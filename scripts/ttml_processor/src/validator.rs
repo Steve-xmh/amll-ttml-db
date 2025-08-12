@@ -78,17 +78,12 @@ fn validate_lyric_lines(lines: &[LyricLine], errors: &mut Vec<String>) {
     let has_any_non_zero_timestamp = lines.iter().any(|line| {
         line.start_ms != 0
             || line.end_ms != 0
-            || line
-                .main_syllables
-                .iter()
-                .any(|s| s.start_ms != 0 || s.end_ms != 0)
-            || line.background_section.as_ref().is_some_and(|bg| {
-                bg.start_ms != 0
-                    || bg.end_ms != 0
-                    || bg
-                        .syllables
+            || line.tracks.iter().any(|track| {
+                track.content.words.iter().any(|word| {
+                    word.syllables
                         .iter()
                         .any(|s| s.start_ms != 0 || s.end_ms != 0)
+                })
             })
     });
 
@@ -98,11 +93,13 @@ fn validate_lyric_lines(lines: &[LyricLine], errors: &mut Vec<String>) {
 
     for (line_idx, line) in lines.iter().enumerate() {
         // 检查该行是否有实际文本内容
-        let has_content = line
-            .line_text
-            .as_ref()
-            .is_some_and(|s| !s.trim().is_empty())
-            || !line.main_syllables.is_empty();
+        let has_content = line.tracks.iter().any(|track| {
+            track.content.words.iter().any(|word| {
+                word.syllables
+                    .iter()
+                    .any(|syllable| !syllable.text.trim().is_empty())
+            })
+        });
 
         if !has_content {
             errors.push(format!("第 {} 行歌词内容为空。", line_idx + 1));
@@ -119,49 +116,26 @@ fn validate_lyric_lines(lines: &[LyricLine], errors: &mut Vec<String>) {
             ));
         }
 
-        // 检查音节时间戳
-        if line.main_syllables.len() > 1 {
-            for (syl_idx, syllable) in line.main_syllables.iter().enumerate() {
-                if syllable.text.trim().is_empty() {
-                    continue;
-                }
+        // 检查每个轨道中的音节时间戳
+        for (track_idx, track) in line.tracks.iter().enumerate() {
+            for (word_idx, word) in track.content.words.iter().enumerate() {
+                for (syl_idx, syllable) in word.syllables.iter().enumerate() {
+                    if syllable.text.trim().is_empty() {
+                        continue;
+                    }
 
-                if syllable.end_ms < syllable.start_ms {
-                    errors.push(format!(
-                        "第 {} 行歌词的第 {} 个音节 '{}' 结束时间 ({}) 小于开始时间 ({}).",
-                        line_idx + 1,
-                        syl_idx + 1,
-                        syllable.text,
-                        syllable.end_ms,
-                        syllable.start_ms
-                    ));
-                }
-            }
-        }
-
-        // 检查背景歌词的时间戳
-        if let Some(bg_section) = &line.background_section {
-            if bg_section.end_ms < bg_section.start_ms {
-                errors.push(format!(
-                    "第 {} 行的背景歌词部分结束时间 ({}) 小于开始时间 ({}).",
-                    line_idx + 1,
-                    bg_section.end_ms,
-                    bg_section.start_ms
-                ));
-            }
-            for (syl_idx, syllable) in bg_section.syllables.iter().enumerate() {
-                if syllable.text.trim().is_empty() {
-                    continue;
-                }
-                if syllable.end_ms < syllable.start_ms {
-                    errors.push(format!(
-                        "第 {} 行背景歌词的第 {} 个音节 '{}' 结束时间 ({}) 小于开始时间 ({}).",
-                        line_idx + 1,
-                        syl_idx + 1,
-                        syllable.text,
-                        syllable.end_ms,
-                        syllable.start_ms
-                    ));
+                    if syllable.end_ms < syllable.start_ms {
+                        errors.push(format!(
+                            "第 {} 行第 {} 个轨道第 {} 个词第 {} 个音节 '{}' 结束时间 ({}) 小于开始时间 ({}).",
+                            line_idx + 1,
+                            track_idx + 1,
+                            word_idx + 1,
+                            syl_idx + 1,
+                            syllable.text,
+                            syllable.end_ms,
+                            syllable.start_ms
+                        ));
+                    }
                 }
             }
         }
