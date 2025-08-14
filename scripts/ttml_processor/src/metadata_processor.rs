@@ -13,6 +13,7 @@ pub struct MetadataStore {
 
 impl MetadataStore {
     /// 创建一个新的、空的 `MetadataStore` 实例。
+    #[must_use]
     pub fn new() -> Self {
         Self {
             data: HashMap::new(),
@@ -33,7 +34,7 @@ impl MetadataStore {
     pub fn add(
         &mut self,
         key_str: &str,
-        value: String,
+        value: &str,
     ) -> Result<(), ParseCanonicalMetadataKeyError> {
         let trimmed_value = value.trim();
         if trimmed_value.is_empty() {
@@ -56,16 +57,19 @@ impl MetadataStore {
     /// 获取指定元数据键的单个值。
     ///
     /// 如果一个键有多个值，此方法只返回第一个。
+    #[must_use]
     pub fn get_single_value(&self, key: &CanonicalMetadataKey) -> Option<&String> {
         self.data.get(key).and_then(|values| values.first())
     }
 
     /// 获取指定元数据键的所有值。
+    #[must_use]
     pub fn get_multiple_values(&self, key: &CanonicalMetadataKey) -> Option<&Vec<String>> {
         self.data.get(key)
     }
 
     /// 获取对所有元数据的不可变引用。
+    #[must_use]
     pub fn get_all_data(&self) -> &HashMap<CanonicalMetadataKey, Vec<String>> {
         &self.data
     }
@@ -83,8 +87,10 @@ impl MetadataStore {
     /// 3. 对每个键的值列表进行排序和去重。
     pub fn deduplicate_values(&mut self) {
         let mut keys_to_remove: Vec<CanonicalMetadataKey> = Vec::new();
-        for (key, values) in self.data.iter_mut() {
-            values.iter_mut().for_each(|v| *v = v.trim().to_string());
+        for (key, values) in &mut self.data {
+            for v in values.iter_mut() {
+                *v = v.trim().to_string();
+            }
             values.retain(|v| !v.is_empty());
 
             if values.is_empty() {
@@ -122,13 +128,13 @@ impl MetadataStore {
     ///
     /// # 参数
     ///
-    /// * `raw_metadata` - 一个包含原始键值对的 HashMap 的引用。
+    /// * `raw_metadata` - 一个包含原始键值对的 `HashMap` 的引用。
     pub fn load_from_raw(&mut self, raw_metadata: &HashMap<String, Vec<String>>) {
         for (key, values) in raw_metadata {
             for value in values {
                 // 调用 self.add 来处理每一个键值对，实现规范化
                 // `let _ = ...` 用于表示我们不关心 add 方法的返回值
-                let _ = self.add(key, value.clone());
+                let _ = self.add(key, &value.clone());
             }
         }
     }
@@ -142,6 +148,7 @@ impl MetadataStore {
     /// # 返回
     ///
     /// 返回一个新的 `HashMap<String, Vec<String>>`，其中键是元数据键的字符串表示。
+    #[must_use]
     pub fn to_serializable_map(&self) -> HashMap<String, Vec<String>> {
         self.data
             .iter()

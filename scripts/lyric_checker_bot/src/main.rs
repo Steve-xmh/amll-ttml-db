@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     let (owner, repo_name) = repo_str
         .split_once('/')
         .expect("GITHUB_REPOSITORY 格式无效");
-    log::info!("目标仓库: {}/{}", owner, repo_name);
+    log::info!("目标仓库: {owner}/{repo_name}");
 
     let workspace_root = std::env::var("GITHUB_WORKSPACE")
         .expect("错误：未设置 GITHUB_WORKSPACE 环境变量。此程序应在 GitHub Actions 环境中运行。");
@@ -90,7 +90,7 @@ async fn process_issue(
 
     // 2. 解析 Issue Body
     let issue_body = issue.body.as_deref().unwrap_or("");
-    let body_params = github.parse_issue_body(issue_body);
+    let body_params = crate::github_api::GitHubClient::parse_issue_body(issue_body);
     let ttml_url = match body_params.get("TTML 歌词文件下载直链") {
         Some(url) if !url.is_empty() => url,
         _ => {
@@ -135,13 +135,13 @@ async fn process_issue(
     };
 
     // 3. 下载 TTML 文件
-    log::info!("正在从 URL 下载 TTML: {}", ttml_url);
+    log::info!("正在从 URL 下载 TTML: {ttml_url}");
     let original_ttml_content = http_client.get(ttml_url).send().await?.text().await?;
 
     log::info!("开始解析 TTML 文件...");
     let parsing_options = TtmlParsingOptions {
         force_timing_mode: Some(timing_mode),
-        default_languages: Default::default(),
+        default_languages: ttml_processor::DefaultLanguageOptions::default(),
     };
     let mut parsed_data = match parse_ttml(&original_ttml_content, &parsing_options) {
         Ok(data) => {
@@ -154,7 +154,7 @@ async fn process_issue(
             data
         }
         Err(e) => {
-            let err_msg = format!("解析 TTML 文件失败: `{:?}`", e);
+            let err_msg = format!("解析 TTML 文件失败: `{e:?}`");
             github
                 .post_decline_comment(issue.number, &err_msg, &original_ttml_content)
                 .await?;
@@ -192,7 +192,7 @@ async fn process_issue(
     metadata_store.load_from_raw(&other_metadata);
 
     metadata_store.deduplicate_values();
-    log::info!("元数据处理完毕。准备用于验证的内容: {:?}", metadata_store);
+    log::info!("元数据处理完毕。准备用于验证的内容: {metadata_store:?}");
     log::info!("正在验证歌词数据和元数据...");
     if let Err(errors) = validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store) {
         let err_msg = format!("文件验证失败:\n- {}", errors.join("\n- "));
@@ -202,6 +202,8 @@ async fn process_issue(
         return Ok(());
     }
     log::info!("文件验证通过。");
+
+    let agent_store = ttml_processor::types::AgentStore::from_metadata_store(&metadata_store);
 
     log::info!("正在生成 TTML 文件...");
 
@@ -213,7 +215,12 @@ async fn process_issue(
         punctuation_weight,
         ..Default::default()
     };
-    let compact_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &compact_gen_opts)?;
+    let compact_ttml = generate_ttml(
+        &parsed_data.lines,
+        &metadata_store,
+        &agent_store,
+        &compact_gen_opts,
+    )?;
 
     log::info!("正在生成格式化的 TTML...");
     let formatted_gen_opts = TtmlGenerationOptions {
@@ -224,7 +231,12 @@ async fn process_issue(
         ..Default::default()
     };
 
-    let formatted_ttml = generate_ttml(&parsed_data.lines, &metadata_store, &formatted_gen_opts)?;
+    let formatted_ttml = generate_ttml(
+        &parsed_data.lines,
+        &metadata_store,
+        &agent_store,
+        &formatted_gen_opts,
+    )?;
 
     log::info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
 

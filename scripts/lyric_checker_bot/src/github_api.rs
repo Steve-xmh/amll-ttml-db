@@ -55,7 +55,7 @@ impl GitHubClient {
     /// * `Ok(true)` - 如果已存在一个开放的、由机器人创建的 PR
     /// * `Ok(false)` - 如果不存在
     pub async fn pr_for_issue_exists(&self, issue_number: u64) -> Result<bool> {
-        let head_branch = format!("auto-submit-issue-{}", issue_number);
+        let head_branch = format!("auto-submit-issue-{issue_number}");
         // 构建 GitHub 搜索查询语句
         // repo:{owner}/{repo} -> 限定在当前仓库
         // is:pr -> 只搜索 PR
@@ -66,7 +66,7 @@ impl GitHubClient {
             self.owner, self.repo, head_branch
         );
 
-        log::info!("正在搜索已存在的 PR，查询: '{}'", query);
+        log::info!("正在搜索已存在的 PR，查询: '{query}'");
 
         let search_result = self
             .client
@@ -78,11 +78,7 @@ impl GitHubClient {
         let count = search_result.total_count.unwrap_or(0);
 
         if count > 0 {
-            log::info!(
-                "发现 {} 个与 Issue #{} 关联的已存在 PR，将跳过处理。",
-                count,
-                issue_number
-            );
+            log::info!("发现 {count} 个与 Issue #{issue_number} 关联的已存在 PR，将跳过处理。");
             Ok(true)
         } else {
             Ok(false)
@@ -109,7 +105,7 @@ impl GitHubClient {
     }
 
     /// 解析 Issue 的正文
-    pub fn parse_issue_body(&self, body: &str) -> HashMap<String, String> {
+    pub fn parse_issue_body(body: &str) -> HashMap<String, String> {
         let mut params = HashMap::new();
         let mut current_key: Option<String> = None;
         let mut current_value = String::new();
@@ -154,7 +150,7 @@ impl GitHubClient {
 
             if body_matches {
                 let user_type_is_bot = comment.user.r#type == "Bot";
-                let user_id_matches = comment.user.id.0 == 39523898;
+                let user_id_matches = comment.user.id.0 == 39_523_898;
 
                 if user_type_is_bot || user_id_matches {
                     log::info!(
@@ -198,14 +194,14 @@ impl GitHubClient {
             .send()
             .await?;
 
-        log::info!("已在 Issue #{} 发表拒绝评论并关闭。", issue_number);
+        log::info!("已在 Issue #{issue_number} 发表拒绝评论并关闭。");
         Ok(())
     }
 
     pub async fn post_success_and_create_pr(&self, context: &PrContext<'_>) -> Result<()> {
         let issue_number = context.issue.number;
 
-        let submit_branch = format!("auto-submit-issue-{}", issue_number);
+        let submit_branch = format!("auto-submit-issue-{issue_number}");
         git_utils::checkout_main_branch().await?;
         git_utils::delete_branch_if_exists(&submit_branch).await?;
         git_utils::create_branch(&submit_branch).await?;
@@ -227,12 +223,12 @@ impl GitHubClient {
 
         fs::write(&file_path, context.compact_ttml)
             .await
-            .context(format!("写入文件 {:?} 失败", file_path))?;
-        log::info!("已将处理后的歌词写入到: {:?}", file_path);
+            .context(format!("写入文件 {} 失败", file_path.display()))?;
+        log::info!("已将处理后的歌词写入到: {}", file_path.display());
 
         git_utils::add_path(&file_path).await?;
 
-        let commit_message = format!("(实验性) 提交歌曲歌词 {} #{}", new_filename, issue_number);
+        let commit_message = format!("(实验性) 提交歌曲歌词 {new_filename} #{issue_number}");
         git_utils::commit(&commit_message).await?;
         git_utils::push(&submit_branch).await?;
         git_utils::checkout_main_branch().await?;
@@ -241,12 +237,12 @@ impl GitHubClient {
 
         // 构建成功评论
         let success_comment =
-            self.build_success_comment(context.original_ttml, context.formatted_ttml);
+            Self::build_success_comment(context.original_ttml, context.formatted_ttml);
         self.client
             .issues(&self.owner, &self.repo)
             .create_comment(issue_number, success_comment)
             .await?;
-        log::info!("已在 Issue #{} 发表成功评论。", issue_number);
+        log::info!("已在 Issue #{issue_number} 发表成功评论。");
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -258,10 +254,10 @@ impl GitHubClient {
             .issues(&self.owner, &self.repo)
             .lock(issue_number, Some(LockReason::Resolved))
             .await?;
-        log::info!("已关闭并锁定 Issue #{}", issue_number);
+        log::info!("已关闭并锁定 Issue #{issue_number}");
 
-        let pr_body = self.build_pr_body(context);
-        let pr_title = self.generate_pr_title(context);
+        let pr_body = Self::build_pr_body(context);
+        let pr_title = Self::generate_pr_title(context);
 
         self.client
             .pulls(&self.owner, &self.repo)
@@ -269,13 +265,13 @@ impl GitHubClient {
             .body(&pr_body)
             .send()
             .await?;
-        log::info!("已为 Issue #{} 创建关联的 Pull Request。", issue_number);
+        log::info!("已为 Issue #{issue_number} 创建关联的 Pull Request。");
 
         Ok(())
     }
 
     // 构建成功评论的辅助函数
-    fn build_success_comment(&self, original_lyric: &str, processed_lyric: &str) -> String {
+    fn build_success_comment(original_lyric: &str, processed_lyric: &str) -> String {
         format!(
             "{}\n\n歌词提交议题检查完毕！歌词文件没有异常！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！\n\n**原始歌词数据:**\n```xml\n{}\n```\n\n**转存歌词数据:**\n```xml\n{}\n```",
             CHECKED_MARK,
@@ -286,7 +282,7 @@ impl GitHubClient {
 
     /// 根据 Issue 标题和元数据生成 Pull Request 的标题。
     /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
-    fn generate_pr_title(&self, context: &PrContext<'_>) -> String {
+    fn generate_pr_title(context: &PrContext<'_>) -> String {
         let issue_title = &context.issue.title;
         let metadata_store = context.metadata_store;
 
@@ -301,14 +297,14 @@ impl GitHubClient {
             && !artist_str.is_empty()
             && !title_str.is_empty()
         {
-            let new_title = format!("[{}] {} - {}", EXPERIMENTAL_LABEL, artist_str, title_str);
+            let new_title = format!("[{EXPERIMENTAL_LABEL}] {artist_str} - {title_str}");
             return new_title;
         }
 
-        issue_title.to_string()
+        issue_title.clone()
     }
 
-    fn build_pr_body(&self, context: &PrContext<'_>) -> String {
+    fn build_pr_body(context: &PrContext<'_>) -> String {
         const MAX_BODY_LENGTH: usize = 65536;
         const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
 
@@ -322,18 +318,18 @@ impl GitHubClient {
 
         let mut body_parts = Vec::new();
 
-        body_parts.push(format!("### 歌词议题 (实验性流程)\n#{}", issue_number));
-        body_parts.push(format!("### 歌词作者\n@{}", user_login));
+        body_parts.push(format!("### 歌词议题 (实验性流程)\n#{issue_number}"));
+        body_parts.push(format!("### 歌词作者\n@{user_login}"));
 
         let mut add_metadata_section = |title: &str, key: &CanonicalMetadataKey| {
             if let Some(values) = metadata_store.get_multiple_values(key)
                 && !values.is_empty()
             {
-                body_parts.push(format!("### {}", title));
+                body_parts.push(format!("### {title}"));
                 body_parts.push(
                     values
                         .iter()
-                        .map(|v| format!("- `{}`", v))
+                        .map(|v| format!("- `{v}`"))
                         .collect::<Vec<_>>()
                         .join("\n"),
                 );
@@ -370,27 +366,23 @@ impl GitHubClient {
         if !warnings.is_empty() {
             let warnings_list = warnings
                 .iter()
-                .map(|w| format!("> - {}", w))
+                .map(|w| format!("> - {w}"))
                 .collect::<Vec<_>>()
                 .join("\n");
 
-            let warnings_section = format!(
-                "> [!WARNING]\n > 解析歌词文件时发现问题，详情如下:\n{}",
-                warnings_list
-            );
+            let warnings_section =
+                format!("> [!WARNING]\n > 解析歌词文件时发现问题，详情如下:\n{warnings_list}");
             body_parts.push(warnings_section);
         }
 
         let base_body = body_parts.join("\n\n");
         let separator = "\n\n";
 
-        let compact_lyric_section = format!("### 歌词文件内容\n```xml\n{}\n```", compact_lyric);
-        let formatted_lyric_section = format!(
-            "### 歌词文件内容 (已格式化)\n```xml\n{}\n```",
-            formatted_lyric
-        );
+        let compact_lyric_section = format!("### 歌词文件内容\n```xml\n{compact_lyric}\n```");
+        let formatted_lyric_section =
+            format!("### 歌词文件内容 (已格式化)\n```xml\n{formatted_lyric}\n```");
 
-        let placeholder_section = format!("### 歌词文件内容\n\n{}", PLACEHOLDER_TEXT);
+        let placeholder_section = format!("### 歌词文件内容\n\n{PLACEHOLDER_TEXT}");
         let final_placeholder = "因数据过大，已省略歌词文本。请自行查看变更。".to_string();
 
         let full_body_len = base_body.len()
@@ -399,8 +391,7 @@ impl GitHubClient {
             + formatted_lyric_section.len();
         if full_body_len <= MAX_BODY_LENGTH {
             return format!(
-                "{}{}{}{}{}",
-                base_body, separator, compact_lyric_section, separator, formatted_lyric_section
+                "{base_body}{separator}{compact_lyric_section}{separator}{formatted_lyric_section}"
             );
         }
 
@@ -410,11 +401,10 @@ impl GitHubClient {
             + formatted_lyric_section.len();
         if partial_body_len <= MAX_BODY_LENGTH {
             return format!(
-                "{}{}{}{}{}",
-                base_body, separator, placeholder_section, separator, formatted_lyric_section
+                "{base_body}{separator}{placeholder_section}{separator}{formatted_lyric_section}"
             );
         }
 
-        format!("{}{}{}", base_body, separator, final_placeholder)
+        format!("{base_body}{separator}{final_placeholder}")
     }
 }
