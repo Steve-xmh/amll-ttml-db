@@ -1,6 +1,3 @@
 [workspace]
 resolver = "3"
-members = [
-    "ttml_processor",
-    "rebuild-folder", "lyric_checker_bot",
-]
+members = ["rebuild-folder", "lyric_checker_bot"]
