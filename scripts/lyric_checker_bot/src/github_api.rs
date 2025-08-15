@@ -6,6 +6,7 @@ use octocrab::models::IssueState;
 use octocrab::models::issues::Comment;
 use octocrab::models::issues::Issue;
 use octocrab::params::LockReason;
+use octocrab::params::repos::Reference;
 use rand::distr::Alphanumeric;
 use rand::distr::SampleString;
 use std::collections::HashMap;
@@ -409,5 +410,101 @@ impl GitHubClient {
         }
 
         format!("{base_body}{separator}{final_placeholder}")
+    }
+
+    pub async fn close_pr_for_user(
+        &self,
+        pr_number: u64,
+        requester: &str,
+        reason: Option<&str>,
+    ) -> Result<()> {
+        log::info!(
+            "正在处理来自 @{} 的关闭 PR #{} 请求...",
+            requester,
+            pr_number
+        );
+
+        let pr = self
+            .client
+            .pulls(&self.owner, &self.repo)
+            .get(pr_number)
+            .await?;
+
+        let original_issue_number = Self::parse_issue_number_from_pr_body(pr.body.as_deref());
+
+        if let Some(issue_number) = original_issue_number {
+            let original_issue = self
+                .client
+                .issues(&self.owner, &self.repo)
+                .get(issue_number)
+                .await?;
+            let original_author = &original_issue.user.login;
+
+            if requester != original_author {
+                log::warn!(
+                    "@{} 尝试关闭 PR #{}，但 PR 的原始作者是 @{}",
+                    requester,
+                    pr_number,
+                    original_author
+                );
+                let error_comment = format!(
+                    "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 才能关闭此 PR。"
+                );
+                self.client
+                    .issues(&self.owner, &self.repo)
+                    .create_comment(pr_number, error_comment)
+                    .await?;
+                return Ok(());
+            }
+        } else {
+            log::warn!("无法从 PR #{} 的正文中解析出原始 Issue 编号", pr_number);
+        }
+
+        let branch_name = pr.head.ref_field;
+
+        let reason_text = reason.unwrap_or("无");
+        let comment_body = format!(
+            "应用户 @{} 的请求，此 PR 已关闭。\n\n**原因**: {}",
+            requester, reason_text
+        );
+        self.client
+            .issues(&self.owner, &self.repo)
+            .create_comment(pr_number, comment_body)
+            .await?;
+        log::info!("已在 PR #{} 发表关闭评论。", pr_number);
+
+        self.client
+            .issues(&self.owner, &self.repo)
+            .update(pr_number)
+            .state(IssueState::Closed)
+            .send()
+            .await?;
+        log::info!("已关闭 PR #{}", pr_number);
+
+        let branch_ref = Reference::Branch(branch_name.to_string());
+
+        match (*self.client)
+            .repos(&self.owner, &self.repo)
+            .delete_ref(&branch_ref)
+            .await
+        {
+            Ok(_) => log::info!("成功删除分支: {}", branch_name),
+            Err(e) => log::warn!("删除分支 {} 失败: {:?}", branch_name, e),
+        }
+
+        Ok(())
+    }
+
+    /// 从 PR 的正文中解析出关联的 Issue 编号
+    fn parse_issue_number_from_pr_body(body: Option<&str>) -> Option<u64> {
+        let body = body?;
+        for line in body.lines() {
+            if let Some(stripped) = line.trim().strip_prefix('#')
+                && let Ok(number) = stripped.parse::<u64>()
+            {
+                return Some(number);
+            }
+        }
+        None
     }
 }
