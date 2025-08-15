@@ -1,19 +1,19 @@
 mod git_utils;
 mod github_api;
+mod validator;
 
 use anyhow::Result;
 use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
+use lyrics_helper_core::{
+    DefaultLanguageOptions, MetadataStore, TtmlGenerationOptions, TtmlParsingOptions,
+    TtmlTimingMode,
+};
 use reqwest::Client;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use ttml_processor::types::TtmlParsingOptions;
-use ttml_processor::{
-    MetadataStore, generate_ttml, parse_ttml,
-    types::{TtmlGenerationOptions, TtmlTimingMode},
-    validate_lyrics_and_metadata,
-};
+use ttml_processor::{generate_ttml, parse_ttml};
 
 use crate::github_api::PrContext;
 
@@ -141,7 +141,7 @@ async fn process_issue(
     log::info!("开始解析 TTML 文件...");
     let parsing_options = TtmlParsingOptions {
         force_timing_mode: Some(timing_mode),
-        default_languages: ttml_processor::DefaultLanguageOptions::default(),
+        default_languages: DefaultLanguageOptions::default(),
     };
     let mut parsed_data = match parse_ttml(&original_ttml_content, &parsing_options) {
         Ok(data) => {
@@ -174,27 +174,13 @@ async fn process_issue(
     }
 
     log::info!("正在处理元数据...");
-    let mut metadata_store = MetadataStore::new();
+    let metadata_store = MetadataStore::from(&parsed_data);
 
-    if let Some(agent_definitions) = parsed_data.raw_metadata.get("agent")
-        && !agent_definitions.is_empty()
-    {
-        metadata_store.set_multiple("internal::agents", agent_definitions.clone());
-    }
-
-    let other_metadata: std::collections::HashMap<_, _> = parsed_data
-        .raw_metadata
-        .iter()
-        .filter(|(key, _)| key.as_str() != "agent")
-        .map(|(k, v)| (k.clone(), v.clone()))
-        .collect();
-
-    metadata_store.load_from_raw(&other_metadata);
-
-    metadata_store.deduplicate_values();
     log::info!("元数据处理完毕。准备用于验证的内容: {metadata_store:?}");
     log::info!("正在验证歌词数据和元数据...");
-    if let Err(errors) = validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store) {
+    if let Err(errors) =
+        validator::validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store)
+    {
         let err_msg = format!("文件验证失败:\n- {}", errors.join("\n- "));
         github
             .post_decline_comment(issue.number, &err_msg, &original_ttml_content)
@@ -203,7 +189,11 @@ async fn process_issue(
     }
     log::info!("文件验证通过。");
 
-    let agent_store = ttml_processor::types::AgentStore::from_metadata_store(&metadata_store);
+    let agent_store = if parsed_data.agents.agents_by_id.is_empty() {
+        MetadataStore::to_agent_store(&metadata_store)
+    } else {
+        parsed_data.agents.clone()
+    };
 
     log::info!("正在生成 TTML 文件...");
 

@@ -1,4 +1,6 @@
 use anyhow::{Context, Result};
+use lyrics_helper_core::CanonicalMetadataKey;
+use lyrics_helper_core::MetadataStore;
 use octocrab::Octocrab;
 use octocrab::models::IssueState;
 use octocrab::models::issues::Comment;
@@ -10,8 +12,6 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::fs;
-use ttml_processor::MetadataStore;
-use ttml_processor::types::CanonicalMetadataKey;
 
 use crate::git_utils;
 
