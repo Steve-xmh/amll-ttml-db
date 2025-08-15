@@ -2,7 +2,7 @@ mod git_utils;
 mod github_api;
 mod validator;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::Utc;
 use env_logger::Builder;
 use log::LevelFilter;
@@ -11,11 +11,37 @@ use lyrics_helper_core::{
     TtmlTimingMode,
 };
 use reqwest::Client;
+use serde::Deserialize;
+use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use ttml_processor::{generate_ttml, parse_ttml};
 
 use crate::github_api::PrContext;
+
+#[derive(Deserialize, Debug)]
+struct CommentEventPayload {
+    comment: Comment,
+    issue: Issue,
+}
+
+#[derive(Deserialize, Debug)]
+struct Comment {
+    body: String,
+    user: User,
+}
+
+#[derive(Deserialize, Debug)]
+struct Issue {
+    number: u64,
+    #[serde(rename = "pull_request")]
+    pull_request: Option<serde_json::Value>, // 仅用于判断是否存在
+}
+
+#[derive(Deserialize, Debug)]
+struct User {
+    login: String,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -52,6 +78,76 @@ async fn main() -> Result<()> {
     let http_client = Client::new();
     let github = github_api::GitHubClient::new(token, owner.to_string(), repo_name.to_string())?;
 
+    let event_name = std::env::var("GITHUB_EVENT_NAME").unwrap_or_default();
+    if event_name == "issue_comment" {
+        log::info!("开始处理命令...");
+        if let Err(e) = handle_command(&github, &http_client, &root_path).await {
+            log::error!("处理命令失败: {:?}", e);
+        }
+    } else {
+        log::info!("开始处理新的 Issues...");
+        if let Err(e) = handle_scheduled_run(github, http_client, root_path).await {
+            log::error!("处理计划任务失败: {:?}", e);
+        }
+    }
+
+    log::info!("任务处理完毕。");
+    Ok(())
+}
+
+/// 处理由 issue_comment 事件触发的命令
+async fn handle_command(
+    github: &github_api::GitHubClient,
+    _http_client: &Client,
+    _root_path: &Path,
+) -> Result<()> {
+    let event_path =
+        std::env::var("GITHUB_EVENT_PATH").context("未找到 GITHUB_EVENT_PATH，无法读取事件内容")?;
+    let event_content =
+        fs::read_to_string(event_path).context("无法读取 GITHUB_EVENT_PATH 指定的文件")?;
+
+    let payload: CommentEventPayload =
+        serde_json::from_str(&event_content).context("解析评论事件 JSON 失败")?;
+
+    if payload.issue.pull_request.is_none() {
+        log::info!("评论不在 Pull Request 中，已忽略。");
+        return Ok(());
+    }
+
+    let pr_number = payload.issue.number;
+    let commenter = &payload.comment.user.login;
+    let body = payload.comment.body.trim();
+
+    log::info!(
+        "在 PR #{} 中收到来自 @{} 的评论: '{}'",
+        pr_number,
+        commenter,
+        body
+    );
+
+    if let Some(reason) = body.strip_prefix("/close") {
+        github
+            .close_pr_for_user(
+                pr_number,
+                commenter,
+                Some(reason.trim()).filter(|s| !s.is_empty()),
+            )
+            .await?;
+    } else if body.starts_with("/update") {
+        // TODO: 实现更新文件逻辑
+    } else {
+        log::info!("评论不包含已知命令，已忽略。");
+    }
+
+    Ok(())
+}
+
+/// 按计划执行，检查所有待处理的 Issues
+async fn handle_scheduled_run(
+    github: github_api::GitHubClient,
+    http_client: Client,
+    root_path: PathBuf,
+) -> Result<()> {
     log::info!("正在获取带 '实验性歌词提交/修正' 标签的 Issue...");
     let issues = github.list_experimental_issues().await?;
 

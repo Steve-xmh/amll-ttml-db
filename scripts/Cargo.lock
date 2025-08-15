@@ -1151,6 +1151,8 @@ dependencies = [
  "octocrab",
  "rand",
  "reqwest",
+ "serde",
+ "serde_json",
  "tokio",
  "ttml_processor",
 ]
