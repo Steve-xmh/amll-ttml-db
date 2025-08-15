@@ -284,21 +284,24 @@ impl GitHubClient {
     /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
     fn generate_pr_title(context: &PrContext<'_>) -> String {
         let issue_title = &context.issue.title;
-        let metadata_store = context.metadata_store;
+        let placeholder_title = format!("[{EXPERIMENTAL_LABEL}]");
 
-        let artists = metadata_store
-            .get_multiple_values(&CanonicalMetadataKey::Artist)
-            .map(|v| v.join("/"));
-        let titles = metadata_store
-            .get_multiple_values(&CanonicalMetadataKey::Title)
-            .map(|v| v.join("/"));
+        let trimmed_title = issue_title.trim();
+        if trimmed_title.is_empty() || trimmed_title == placeholder_title {
+            let metadata_store = context.metadata_store;
+            let artists = metadata_store
+                .get_multiple_values(&CanonicalMetadataKey::Artist)
+                .map(|v| v.join(", "));
+            let titles = metadata_store
+                .get_multiple_values(&CanonicalMetadataKey::Title)
+                .map(|v| v.join(", "));
 
-        if let (Some(artist_str), Some(title_str)) = (artists, titles)
-            && !artist_str.is_empty()
-            && !title_str.is_empty()
-        {
-            let new_title = format!("[{EXPERIMENTAL_LABEL}] {artist_str} - {title_str}");
-            return new_title;
+            if let (Some(artist_str), Some(title_str)) = (artists, titles)
+                && !artist_str.is_empty()
+                && !title_str.is_empty()
+            {
+                return format!("[{EXPERIMENTAL_LABEL}] {artist_str} - {title_str}");
+            }
         }
 
         issue_title.clone()
