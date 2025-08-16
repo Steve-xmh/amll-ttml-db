@@ -30,6 +30,22 @@ pub struct PrContext<'a> {
     pub root_path: &'a Path,
 }
 
+pub struct PrUpdateContext<'a> {
+    pub pr_number: u64,
+    pub original_ttml: &'a str,
+    pub compact_ttml: &'a str,
+    pub formatted_ttml: &'a str,
+    pub warnings: &'a [String],
+    pub root_path: &'a Path,
+    pub requester: &'a str,
+}
+
+pub struct OriginalIssueOptions {
+    pub lyric_options: String,
+    pub advanced_toggles: String,
+    pub punctuation_weight_str: Option<String>,
+}
+
 #[derive(Clone)]
 pub struct GitHubClient {
     client: Arc<Octocrab>,
@@ -176,12 +192,12 @@ impl GitHubClient {
         reason: &str,
         ttml_content: &str,
     ) -> Result<()> {
-        let body = format!(
-            "{}\n\n**歌词提交议题检查失败**\n\n原因: {}\n\n```xml\n{}\n```",
-            CHECKED_MARK,
-            reason,
-            &ttml_content[..ttml_content.len().min(65535)]
+        let base_text = format!(
+            "{}\n\n**歌词提交议题检查失败**\n\n原因: {}",
+            CHECKED_MARK, reason
         );
+
+        let body = Self::build_body(&base_text, Some(ttml_content), None, 65535);
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -237,8 +253,12 @@ impl GitHubClient {
         // --- 2. GitHub API 操作 ---
 
         // 构建成功评论
-        let success_comment =
-            Self::build_success_comment(context.original_ttml, context.formatted_ttml);
+        let success_comment = Self::build_issue_success_comment(
+            context.original_ttml,
+            context.formatted_ttml,
+            context.warnings,
+        );
+
         self.client
             .issues(&self.owner, &self.repo)
             .create_comment(issue_number, success_comment)
@@ -269,16 +289,6 @@ impl GitHubClient {
         log::info!("已为 Issue #{issue_number} 创建关联的 Pull Request。");
 
         Ok(())
-    }
-
-    // 构建成功评论的辅助函数
-    fn build_success_comment(original_lyric: &str, processed_lyric: &str) -> String {
-        format!(
-            "{}\n\n歌词提交议题检查完毕！歌词文件没有异常！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！\n\n**原始歌词数据:**\n```xml\n{}\n```\n\n**转存歌词数据:**\n```xml\n{}\n```",
-            CHECKED_MARK,
-            &original_lyric[..original_lyric.len().min(65535)],
-            &processed_lyric[..processed_lyric.len().min(65535)]
-        )
     }
 
     /// 根据 Issue 标题和元数据生成 Pull Request 的标题。
@@ -424,41 +434,10 @@ impl GitHubClient {
             pr_number
         );
 
-        let pr = self
-            .client
-            .pulls(&self.owner, &self.repo)
-            .get(pr_number)
-            .await?;
-
-        let original_issue_number = Self::parse_issue_number_from_pr_body(pr.body.as_deref());
-
-        if let Some(issue_number) = original_issue_number {
-            let original_issue = self
-                .client
-                .issues(&self.owner, &self.repo)
-                .get(issue_number)
-                .await?;
-            let original_author = &original_issue.user.login;
-
-            if requester != original_author {
-                log::warn!(
-                    "@{} 尝试关闭 PR #{}，但 PR 的原始作者是 @{}",
-                    requester,
-                    pr_number,
-                    original_author
-                );
-                let error_comment = format!(
-                    "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 才能关闭此 PR。"
-                );
-                self.client
-                    .issues(&self.owner, &self.repo)
-                    .create_comment(pr_number, error_comment)
-                    .await?;
-                return Ok(());
-            }
-        } else {
-            log::warn!("无法从 PR #{} 的正文中解析出原始 Issue 编号", pr_number);
-        }
+        let pr = match self.verify_pr_permission(pr_number, requester).await? {
+            Some(pr) => pr,
+            None => return Ok(()),
+        };
 
         let branch_name = pr.head.ref_field;
 
@@ -506,5 +485,344 @@ impl GitHubClient {
             }
         }
         None
+    }
+
+    pub async fn update_pr(&self, context: &PrUpdateContext<'_>) -> Result<()> {
+        log::info!(
+            "正在处理来自 @{} 的更新 PR #{} 请求...",
+            context.requester,
+            context.pr_number
+        );
+
+        // 权限检查
+        let pr = match self
+            .verify_pr_permission(context.pr_number, context.requester)
+            .await?
+        {
+            Some(pr) => pr,
+            None => return Ok(()),
+        };
+
+        // 找到要更新的文件
+        let files = self
+            .client
+            .pulls(&self.owner, &self.repo)
+            .list_files(context.pr_number)
+            .await?
+            .items;
+        let ttml_file = files
+            .iter()
+            .find(|f| f.filename.ends_with(".ttml") && f.filename.starts_with("raw-lyrics/"));
+
+        let file_to_update = match ttml_file {
+            Some(file) => context.root_path.join(&file.filename),
+            None => {
+                log::error!("在 PR #{} 中未找到 .ttml 文件", context.pr_number);
+                let error_comment = format!(
+                    "抱歉，@{requester}，无法在此 PR 中找到需要更新的 TTML 文件。",
+                    requester = context.requester
+                );
+                self.client
+                    .issues(&self.owner, &self.repo)
+                    .create_comment(context.pr_number, error_comment)
+                    .await?;
+                return Ok(());
+            }
+        };
+        log::info!(
+            "将在 PR #{} 中更新文件: {}",
+            context.pr_number,
+            file_to_update.display()
+        );
+
+        // Git 操作
+        let branch_name = &pr.head.ref_field;
+        git_utils::checkout_main_branch().await?;
+        git_utils::checkout_branch(branch_name).await?;
+        git_utils::pull_branch(branch_name)
+            .await
+            .context("拉取分支失败")?;
+
+        fs::write(&file_to_update, context.compact_ttml)
+            .await
+            .context(format!("写入文件 {} 失败", file_to_update.display()))?;
+        log::info!("已将更新后的歌词写入到: {}", file_to_update.display());
+
+        git_utils::add_path(&file_to_update).await?;
+
+        if !git_utils::has_staged_changes().await? {
+            let no_change_comment = format!(
+                "@{requester}，你提供的新歌词文件与当前版本完全相同，无需更新。",
+                requester = context.requester
+            );
+            self.post_comment(context.pr_number, &no_change_comment)
+                .await?;
+            git_utils::checkout_main_branch().await?;
+            return Ok(());
+        }
+
+        let commit_message = format!(
+            "(实验性) 更新歌词文件内容\n\n由 @{} 请求更新。",
+            context.requester
+        );
+        git_utils::commit(&commit_message).await?;
+        git_utils::force_push(branch_name).await?;
+        git_utils::checkout_main_branch().await?;
+
+        // 发表评论
+        let mut base_text = format!(
+            "@{requester}，歌词文件已根据你的请求更新！",
+            requester = context.requester
+        );
+        if !context.warnings.is_empty() {
+            let warnings_list = context
+                .warnings
+                .iter()
+                .map(|w| format!("> - {w}"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            let warnings_section =
+                format!("\n\n> [!WARNING]\n> 解析歌词文件时发现以下问题:\n{warnings_list}");
+            base_text.push_str(&warnings_section);
+        }
+
+        let update_comment = Self::build_body(
+            &base_text,
+            Some(context.original_ttml),
+            Some(context.formatted_ttml),
+            65535,
+        );
+
+        self.post_comment(context.pr_number, &update_comment)
+            .await?;
+
+        log::info!("成功更新 PR #{} 并发表了评论。", context.pr_number);
+
+        Ok(())
+    }
+
+    /// 发表评论
+    pub async fn post_comment(&self, issue_or_pr_number: u64, body: &str) -> Result<()> {
+        self.client
+            .issues(&self.owner, &self.repo)
+            .create_comment(issue_or_pr_number, body)
+            .await?;
+        Ok(())
+    }
+
+    /// 从 PR 关联的原始 Issue 中获取解析选项
+    pub async fn get_options_from_original_issue(
+        &self,
+        pr_number: u64,
+    ) -> Result<Option<OriginalIssueOptions>> {
+        let pr = self
+            .client
+            .pulls(&self.owner, &self.repo)
+            .get(pr_number)
+            .await?;
+
+        if let Some(issue_number) = Self::parse_issue_number_from_pr_body(pr.body.as_deref()) {
+            let issue = self
+                .client
+                .issues(&self.owner, &self.repo)
+                .get(issue_number)
+                .await?;
+            let body_params = Self::parse_issue_body(issue.body.as_deref().unwrap_or(""));
+            let options = Self::extract_options_from_body(&body_params);
+            return Ok(Some(options));
+        }
+
+        Ok(None)
+    }
+
+    /// 验证用户是否是原始 Issue 作者
+    async fn verify_pr_permission(
+        &self,
+        pr_number: u64,
+        requester: &str,
+    ) -> Result<Option<octocrab::models::pulls::PullRequest>> {
+        let pr = self
+            .client
+            .pulls(&self.owner, &self.repo)
+            .get(pr_number)
+            .await?;
+
+        if let Some(issue_number) = Self::parse_issue_number_from_pr_body(pr.body.as_deref()) {
+            let original_issue = self
+                .client
+                .issues(&self.owner, &self.repo)
+                .get(issue_number)
+                .await?;
+            let original_author = &original_issue.user.login;
+
+            if requester != original_author {
+                log::warn!(
+                    "@{} 尝试操作 PR #{}，但 PR 的原始作者是 @{}",
+                    requester,
+                    pr_number,
+                    original_author
+                );
+                let error_comment = format!(
+                    "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 才能操作此 PR。"
+                );
+                self.post_comment(pr_number, &error_comment).await?;
+                return Ok(None);
+            }
+        } else {
+            log::error!("无法从 PR #{} 的正文中解析出原始 Issue 编号。", pr_number);
+            let error_comment = format!(
+                "@{requester}，操作失败。\n无法从此 PR 追溯到原始的歌词提交议题，因此无法验证你的权限。"
+            );
+            self.post_comment(pr_number, &error_comment).await?;
+            return Ok(None);
+        }
+
+        Ok(Some(pr))
+    }
+
+    /// 从解析后的 Issue 正文参数中提取歌词处理选项
+    pub fn extract_options_from_body(
+        body_params: &HashMap<String, String>,
+    ) -> OriginalIssueOptions {
+        let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
+        let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
+        let punctuation_weight_str = body_params
+            .get("[分词] 标点符号权重")
+            .cloned()
+            .filter(|s| !s.is_empty() && s != "_No response_");
+
+        OriginalIssueOptions {
+            lyric_options,
+            advanced_toggles,
+            punctuation_weight_str,
+        }
+    }
+
+    pub async fn post_pr_failure_comment(
+        &self,
+        pr_number: u64,
+        requester: &str,
+        reason: &str,
+        ttml_content: &str,
+    ) -> Result<()> {
+        let base_text = format!(
+            "@{requester}，你提交的歌词文件更新失败。\n\n**原因**: {reason}",
+            requester = requester,
+            reason = reason
+        );
+
+        let failure_comment = Self::build_body(&base_text, Some(ttml_content), None, 65535);
+
+        self.post_comment(pr_number, &failure_comment).await
+    }
+
+    fn build_body(
+        base_text: &str,
+        original_lyric: Option<&str>,
+        processed_lyric: Option<&str>,
+        max_len: usize,
+    ) -> String {
+        const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
+        let separator = "\n\n";
+
+        let original_section_title = "**原始歌词数据:**";
+        let processed_section_title = "**转存歌词数据:**";
+
+        // 尝试包含所有内容
+        let body = base_text.to_string();
+        let original_section = original_lyric.map(|s| {
+            format!(
+                "{}{}{}\n```xml\n{}\n```",
+                separator, original_section_title, separator, s
+            )
+        });
+        let processed_section = processed_lyric.map(|s| {
+            format!(
+                "{}{}{}\n```xml\n{}\n```",
+                separator, processed_section_title, separator, s
+            )
+        });
+
+        let mut final_body = body.clone();
+        if let Some(ref section) = original_section {
+            final_body.push_str(section);
+        }
+        if let Some(ref section) = processed_section {
+            final_body.push_str(section);
+        }
+
+        if final_body.len() <= max_len {
+            return final_body;
+        }
+
+        // 如果超长，尝试只包含处理后的歌词
+        if let Some(ref section) = processed_section {
+            let mut final_body = body.clone();
+            let placeholder_original = format!(
+                "{}{}{}{}",
+                separator, original_section_title, separator, PLACEHOLDER_TEXT
+            );
+
+            final_body.push_str(&placeholder_original);
+            final_body.push_str(section);
+            if final_body.len() <= max_len {
+                return final_body;
+            }
+        }
+
+        // 如果仍然超长，对所有歌词都使用占位符
+        let mut final_body = body.clone();
+        if original_lyric.is_some() {
+            let placeholder_original = format!(
+                "{}{}{}{}",
+                separator, original_section_title, separator, PLACEHOLDER_TEXT
+            );
+
+            final_body.push_str(&placeholder_original);
+        }
+        if processed_lyric.is_some() {
+            let placeholder_processed = format!(
+                "{}{}{}",
+                separator, processed_section_title, PLACEHOLDER_TEXT
+            );
+            final_body.push_str(&placeholder_processed);
+        }
+
+        // 如果连占位符都放不下，就只返回基础文本
+        if final_body.len() <= max_len {
+            final_body
+        } else {
+            body
+        }
+    }
+
+    // 构建在 Issue 中发表的成功评论
+    fn build_issue_success_comment(
+        original_lyric: &str,
+        processed_lyric: &str,
+        warnings: &[String],
+    ) -> String {
+        let mut base_text = format!(
+            "{}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！",
+            CHECKED_MARK
+        );
+
+        if !warnings.is_empty() {
+            let warnings_list = warnings
+                .iter()
+                .map(|w| format!("> - {w}"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            let warnings_section =
+                format!("\n\n> [!WARNING]\n> 解析歌词文件时发现以下问题:\n{warnings_list}");
+            base_text.push_str(&warnings_section);
+        }
+
+        Self::build_body(
+            &base_text,
+            Some(original_lyric),
+            Some(processed_lyric),
+            65535,
+        )
     }
 }

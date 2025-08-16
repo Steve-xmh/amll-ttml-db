@@ -19,7 +19,7 @@ jobs:
   check-submit-rust:
     if: |
       (github.event_name == 'issues' && github.event.label.name == '实验性歌词提交/修正') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.sender.type != 'Bot')
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.sender.type != 'Bot' && startsWith(github.event.comment.body, '/'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
