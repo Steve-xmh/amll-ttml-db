@@ -71,3 +71,35 @@ pub async fn delete_branch_if_exists(branch_name: &str) -> Result<()> {
     }
     Ok(())
 }
+
+pub async fn checkout_branch(branch_name: &str) -> Result<()> {
+    run_git_command(&["checkout", branch_name]).await
+}
+
+pub async fn pull_branch(branch_name: &str) -> Result<()> {
+    run_git_command(&["pull", "origin", branch_name]).await
+}
+
+pub async fn force_push(branch_name: &str) -> Result<()> {
+    run_git_command(&["push", "--force", "origin", branch_name]).await
+}
+
+pub async fn has_staged_changes() -> Result<bool> {
+    let output = Command::new("git")
+        .args(["diff", "--cached", "--quiet"])
+        .output()
+        .await?;
+
+    match output.status.code() {
+        Some(0) => Ok(false),
+        Some(1) => Ok(true),
+        _ => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            log::error!("检查暂存区变更时出错: {}", stderr);
+            Err(anyhow!(
+                "Git 命令 `git diff --cached --quiet` 失败: {}",
+                stderr
+            ))
+        }
+    }
+}
