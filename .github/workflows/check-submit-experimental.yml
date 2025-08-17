@@ -3,14 +3,23 @@ on:
   workflow_dispatch:
   issues:
     types: [labeled]
+  issue_comment:
+    types: [created]
 
 concurrency:
   group: check-submit-rust
   cancel-in-progress: true
 
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+
 jobs:
   check-submit-rust:
-    if: github.event.label.name == '实验性歌词提交/修正'
+    if: |
+      (github.event_name == 'issues' && github.event.label.name == '实验性歌词提交/修正') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.sender.type != 'Bot' && startsWith(github.event.comment.body, '/'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -37,9 +46,11 @@ jobs:
         timeout-minutes: 10
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUST_LOG: info 
+          RUST_LOG: info
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@users.noreply.github.com'
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           ./target/release/lyric_checker_bot
         working-directory: scripts
