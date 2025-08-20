@@ -9,7 +9,7 @@
 >
 > 如果网络条件不好导致无法获取歌词，可以尝试下面这两个由社区提供的镜像站，感谢 [@cybaka520](https://github.com/cybaka520) 与 [@洛元 (Luorix)](https://github.com/LuorixDev)  ！
 > 
-> ▷ [AMLL TTML DB 镜像站](https://amll.bikonoo.com/index.html)  By cybaka520
+> ▷ [AMLL TTML DB 镜像站](https://amlldb.bikonoo.com/mirror.html)  By cybaka520
 > 
 > ▷ [AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/)  By Luorix
 > 
