@@ -1,13 +1,16 @@
-# 【非必要情况下不要在一个单词内添加多个文字】  
-# 【非必要情况下不要在一个单词内添加多个文字】  
-# 【非必要情况下不要在一个单词内添加多个文字】  
+# 【非必要情况下不要在一个单词内添加多个文字】
+
+# 【非必要情况下不要在一个单词内添加多个文字】
+
+# 【非必要情况下不要在一个单词内添加多个文字】
+
 ###### 重要的事情先说三遍，不要问为什么
 
 ## 1. 元数据
 
 > [!IMPORTANT]
 >
-> 请尽量使用 TTML TOOL 添加元数据，除非你已经阅读并充分理解了 TTML 文件的[具体格式规范](./ttml-specification.md)。
+> 请尽量使用 TTML TOOL 添加元数据，除非你已经阅读并充分理解了 TTML 文件的[具体格式规范](https://help.apple.com/itc/videoaudioassetguide/#/itc0f14fecdd)。
 
 ### 1.1 在 TTML TOOL 中
 
@@ -37,6 +40,7 @@
       <td><img alt="image-20250702195545808" src="./img/image-20250702195545808.png"/></td>
 </tr>
 </table>
+
 
 以下为节选自一份带有自定义元数据歌词在 TTML TOOL 中显示的样例：
 
@@ -73,7 +77,7 @@
 
 #### 1.2.2 关于 `value`
 
-- 元数据的值应当**只有**对应平台的 ID 或对应个人/组合的名称（即便是自定义` key` 也请尽量遵守）
+- 元数据的值应当**只有**对应平台的 ID 或对应个人/组合的名称（即便是自定义 `key` 也请尽量遵守）
 - 一个键能填写多个值，但是请勿重复填写内容相同的值
 - 元数据应尽量做到**准确**、**全面**
 
@@ -160,8 +164,18 @@
 - 合理使用对唱/背景视图：
   - 背景人声的歌词应单独为一行，放在主唱人声歌词的下一行并标记为背景行；
     - （非强制要求）不应因背景行而延长主行时间轴的持续时间；
-  - 如果不确定何时换行或分段，请参考以下划分依据： [[来源]](https://help.apple.com/itc/musicstyleguide/#/itc3ae5d4dea)
-    - 明确的 chorus（副歌）、verse（主歌）、intro（前奏）、bridge（桥段）或 Hook
+  - 如果不确定何时换行或分段，请参考以下划分依据： [[来源 1]](https://help.apple.com/itc/musicstyleguide/#/itc3ae5d4dea)[[来源 2]](https://help.apple.com/itc/musicstyleguide/#/itc3ae5d4dea)
+    - Apple Music 所建议的组成部分
+    
+      > - Verse（主歌）
+      > - Chorus（副歌）
+      > - PreChorus（预副歌）
+      > - Bridge（桥段）
+      > - Intro（前奏）
+      > - Outro（尾奏）
+      > - Refrain（叠句）
+      > - Instrumental（器乐）
+      > - Hook（钩子）
     - 歌曲节拍速度发生变化
     - 艺人对歌词的演绎方式发生变化（例如，从歌唱切换成说唱）
 - 一般不允许多行歌词的时间轴重叠，但在不影响歌词准确的情况下，下面这些情况是例外：
@@ -236,6 +250,30 @@
     - 英语区。
 - 必须是逐字歌词（如果是英文则应当精细到音节）；
 - 必须适配艺人演唱时的各类效果。
+
+> **关于查找不同区的元数据**
+>
+> Apple Music 可以通过 AME 插件切换分区查找：
+>
+> ![image-20250821184933745](./img/image-20250821184933745.png)
+>
+> - 简中区：China mainland
+> - 繁中区：Hong Kong
+> - 韩语区：Korea, Republic of
+> - 日语区：Japan
+> - 英语区：United States
+>
+> 但是这种方式只适用于**同一专辑在各个分区有着不同信息**的情况，而 HOYO-MiX 更倾向于在每个区发一份独占专辑，因此就需要访问各区的链接进行搜索：
+>
+> - 简中区：https://music.apple.com/cn/search
+> - 繁中区：https://music.apple.com/hk/search
+> - 韩语区：https://music.apple.com/kr/search
+> - 日语区：https://music.apple.com/jp/search
+> - 英语区：https://music.apple.com/us/search
+>
+> Spotify 可以使用 Lyricify 4 的搜索工具进行换区搜索：
+>
+> ![image-20250728160546661](./img/image-20250728160546661.png)
 
 ## 6. 其他
 
