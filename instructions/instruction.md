@@ -242,12 +242,12 @@
 ## 5. HOYO-MiX
 
 - 在以上要求的基础之上，要求将尽可能多地区的元数据添加到文件中；
-  - 当前，Apple 和 Spotify 分为下面这些分区，请按照这些分区逐一查找并添加元数据：
+  - 当前，Apple 和 Spotify 分为下面这些分区，请按照这些分区逐一查找并添加元数据：[参考](https://github.com/Steve-xmh/amll-ttml-db/issues/3366)
     - 简中区（Spotify 无简中区）；
     - 繁中区；
     - 韩语区；
     - 日语区；
-    - 英语区。
+    - 其它区（除了以上地区以外的其它地区，语言为英语）。
 - 必须是逐字歌词（如果是英文则应当精细到音节）；
 - 必须适配艺人演唱时的各类效果。
 
@@ -257,19 +257,21 @@
 >
 > ![image-20250821184933745](./img/image-20250821184933745.png)
 >
-> - 简中区：China mainland
-> - 繁中区：Hong Kong
+> - 简中区：Chinese Mainland
+> - 繁中区：Hong Kong SAR, Macao SAR, Taiwan Province, People's Republic of China
 > - 韩语区：Korea, Republic of
 > - 日语区：Japan
-> - 英语区：United States
+> - 其它区：United States、Russia、France、Vietnam、Brazil, etc.
 >
 > 但是这种方式只适用于**同一专辑在各个分区有着不同信息**的情况，而 HOYO-MiX 更倾向于在每个区发一份独占专辑，因此就需要访问各区的链接进行搜索：
 >
-> - 简中区：https://music.apple.com/cn/search
-> - 繁中区：https://music.apple.com/hk/search
-> - 韩语区：https://music.apple.com/kr/search
-> - 日语区：https://music.apple.com/jp/search
-> - 英语区：https://music.apple.com/us/search
+> - 简中区：https://beta.music.apple.com/cn/search
+> - 繁中区：https://beta.music.apple.com/hk/search （三选一即可）
+> - &emsp;&emsp;&emsp;&emsp;https://beta.music.apple.com/mo/search （三选一即可）
+> - &emsp;&emsp;&emsp;&emsp;https://beta.music.apple.com/tw/search （三选一即可）
+> - 韩语区：https://beta.music.apple.com/kr/search
+> - 日语区：https://beta.music.apple.com/jp/search
+> - 其它区：https://beta.music.apple.com/us/search
 >
 > Spotify 可以使用 Lyricify 4 的搜索工具进行换区搜索：
 >
