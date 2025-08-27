@@ -190,6 +190,9 @@ AMLL Player 已内置歌词库搜索功能，导入本地歌曲后编辑歌词�
 
 # 鸣谢
 
+感谢各位对 AMLL 生态作品感兴趣的用户，也欢迎加入 AMLL 亲友团 QQ 群 `719423243` 参与讨论。
+
 感谢所有为建设本仓库提供歌词的贡献者们！
 
 [![贡献者头像画廊，点击可查阅](https://amll-ttml-db.stevexmh.net/contributors.png)](./CONTRIBUTORS.md)
+
