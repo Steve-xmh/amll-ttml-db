@@ -32,7 +32,7 @@ If you wish to upload your lyrics, please keep lyric translation line blank and 
 
 ### 在 SearchInAMLLDB 中检索是否有已提交歌词
 
-请访问 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb/search) ，在最上方点击 `更新数据库` 按钮拉取数据，输入您要提交歌词的歌曲名称并点击 `查询` ，如无任何结果，则该歌曲暂无 TTML 歌词，欢迎您的提交。
+请访问 [SearchInAMLLDB](https://steamfinder.github.io/search-in-amlldb) ，在最上方点击 `更新数据库` 按钮拉取数据，输入您要提交歌词的歌曲名称并点击 `查询` ，如无任何结果，则该歌曲暂无 TTML 歌词，欢迎您的提交。
 
 > 感谢 [@SteamFinder](https://github.com/SteamFinder) 建立的检索站！
 
@@ -139,7 +139,7 @@ Apple Music-like Lyrics for BetterNCM 已内置本仓库歌词源，无需手动
 
 您也可以尝试由社区提供的镜像源，具体使用方法请自行在站内查阅，感谢 [@HelloZGY](https://github.com/cybaka520) 与 [@Luorix](https://github.com/LuorixDev) ！
 
-[AMLL TTML DB 镜像站](https://amll.bikonoo.com/index.html) By [@HelloZGY](https://github.com/cybaka520)
+[AMLL TTML DB 镜像站](https://amlldb.bikonoo.com/mirror.html) By [@HelloZGY](https://github.com/cybaka520)
 
 [AMLL-TTML-DB 自动镜像站](https://amll.mirror.dimeta.top/) By [@Luorix](https://github.com/LuorixDev)
 
