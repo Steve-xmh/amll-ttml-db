@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        在创建 Issue 前，请前往[这里](https://amll.bikonoo.com/index.html)搜索一下确认歌词确实从来没有人提交过哦！
+        在创建 Issue 前，请前往[这里](https://amlldb.bikonoo.com/search.html)搜索一下确认歌词确实从来没有人提交过哦！
   - type: input
     id: song-name
     attributes:
