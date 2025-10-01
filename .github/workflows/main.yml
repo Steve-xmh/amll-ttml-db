@@ -1,0 +1,20 @@
+name: 通知镜像站同步
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - 'raw-lyrics/**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 调用镜像站同步接口
+        run: |
+          curl -X GET \
+            -H "User-Agent: GitHub-Actions" \
+            -f \
+            https://amlldb.bokonoo.com/api/synchronous-lyrics
