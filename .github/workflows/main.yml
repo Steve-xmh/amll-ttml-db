@@ -17,4 +17,4 @@ jobs:
           curl -X GET \
             -H "User-Agent: GitHub-Actions" \
             -f \
-            https://amlldb.bokonoo.com/api/synchronous-lyrics
+            https://amlldb.bikonoo.com/api/synchronous-lyrics
