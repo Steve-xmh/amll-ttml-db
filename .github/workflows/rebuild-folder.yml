@@ -1,11 +1,13 @@
-name: 重建歌词文件夹
+name: 重建歌词文件夹并通知镜像站同步
+
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
-    paths: 
+    paths:
       - 'scripts/**'
       - 'raw-lyrics/**'
+
 concurrency:
   group: check-submit
   cancel-in-progress: true
@@ -16,21 +18,31 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: 签出代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: 安装稳定版本的 Rust 工具链
         run: rustup toolchain install stable --profile minimal
+
       - name: 准备 Rust 缓存
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: scripts/rebuild-folder -> target
+
       - name: 运行重建程序
         timeout-minutes: 10
+        working-directory: scripts/rebuild-folder
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
           cargo run --release --locked
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: scripts/rebuild-folder
+
+      - name: 通知镜像站同步
+        run: |
+          curl -X GET \
+            -H "User-Agent: GitHub-Actions" \
+            -f \
+            https://amlldb.bikonoo.com/synchronous-lyrics.html
