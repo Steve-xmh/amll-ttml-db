@@ -42,7 +42,8 @@ jobs:
 
       - name: 通知镜像站同步
         run: |
-          curl -X GET \
-            -H "User-Agent: GitHub-Actions" \
-            -f \
-            https://amlldb.bikonoo.com/synchronous-lyrics.html
+          curl -X POST https://amlldb.bikonoo.com/api/synchronous-lyrics \
+          -H 'Content-Type: application/json' \
+          -d '{"from":"github-actions"}'
+  
+
