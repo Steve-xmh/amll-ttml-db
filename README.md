@@ -40,6 +40,15 @@ If you wish to upload your lyrics, please keep lyric translation line blank and 
 
 若您准备提交某首歌曲的歌词，创建 `歌词制作占位` 议题则代表您接手了该歌曲的歌词提交工作，以避免他人同时提交导致撞车。
 
+> [!WARNING]
+>
+> 发布占位议题的投稿者，在发布议题后 7 日内提交的投稿将会被优先审核，无论这期间是否有其他人提交了相同的投稿。  
+> 如果超出了这个时间范围，我们仍然按照投稿顺序进行审核。
+>
+> 时间范围以 `发布占位议题时系统显示的日期` 及 `PR被自动创建时系统显示的日期` 为准。
+>
+> 如果你发布了占位议题并提交了投稿，我们建议在备注中引用你的议题，以减少可能的疑义。
+
 请访问 [此仓库/issue](https://github.com/Steve-xmh/amll-ttml-db/issues) ，搜索您要提交歌词的歌曲名称，如无 Open 的 issue ，则该歌曲的歌词提交工作尚未被接手，欢迎您的提交。
 
 您也可以访问 [AMLL TTML 歌词议题墙](https://amlldb.bikonoo.com/) 检索。
