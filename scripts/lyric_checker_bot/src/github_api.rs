@@ -5,6 +5,7 @@ use octocrab::Octocrab;
 use octocrab::models::IssueState;
 use octocrab::models::issues::Comment;
 use octocrab::models::issues::Issue;
+use octocrab::models::reactions::ReactionContent;
 use octocrab::params::LockReason;
 use octocrab::params::repos::Reference;
 use rand::distr::Alphanumeric;
@@ -422,6 +423,40 @@ impl GitHubClient {
         format!("{base_body}{separator}{final_placeholder}")
     }
 
+    pub async fn add_labels_to_pr(
+        &self,
+        pr_number: u64,
+        requester: &str,
+        labels_str: &str,
+        comment_id: u64,
+    ) -> Result<()> {
+        if self
+            .verify_pr_permission(pr_number, requester)
+            .await?
+            .is_none()
+        {
+            return Ok(());
+        }
+
+        let labels: Vec<String> = labels_str.split_whitespace().map(String::from).collect();
+
+        if labels.is_empty() {
+            return Ok(());
+        }
+
+        self.client
+            .issues(&self.owner, &self.repo)
+            .add_labels(pr_number, &labels)
+            .await?;
+
+        self.client
+            .issues(&self.owner, &self.repo)
+            .create_comment_reaction(comment_id, ReactionContent::PlusOne)
+            .await?;
+
+        Ok(())
+    }
+
     pub async fn close_pr_for_user(
         &self,
         pr_number: u64,
@@ -641,11 +676,22 @@ impl GitHubClient {
         pr_number: u64,
         requester: &str,
     ) -> Result<Option<octocrab::models::pulls::PullRequest>> {
+        let is_collaborator = self
+            .client
+            .repos(&self.owner, &self.repo)
+            .is_collaborator(requester)
+            .await
+            .unwrap_or(false);
+
         let pr = self
             .client
             .pulls(&self.owner, &self.repo)
             .get(pr_number)
             .await?;
+
+        if is_collaborator {
+            return Ok(Some(pr));
+        }
 
         if let Some(issue_number) = Self::parse_issue_number_from_pr_body(pr.body.as_deref()) {
             let original_issue = self
@@ -663,7 +709,7 @@ impl GitHubClient {
                     original_author
                 );
                 let error_comment = format!(
-                    "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 才能操作此 PR。"
+                    "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 或仓库协作者才能操作此 PR。"
                 );
                 self.post_comment(pr_number, &error_comment).await?;
                 return Ok(None);

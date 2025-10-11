@@ -143,6 +143,7 @@ struct CommentEventPayload {
 
 #[derive(Deserialize, Debug)]
 struct Comment {
+    id: u64,
     body: String,
     user: User,
 }
@@ -233,6 +234,7 @@ async fn handle_command(
     let pr_number = payload.issue.number;
     let commenter = &payload.comment.user.login;
     let body = payload.comment.body.trim();
+    let comment_id = payload.comment.id;
 
     log::info!(
         "在 PR #{} 中收到来自 @{} 的评论: '{}'",
@@ -248,6 +250,10 @@ async fn handle_command(
                 commenter,
                 Some(reason.trim()).filter(|s| !s.is_empty()),
             )
+            .await
+    } else if let Some(labels_str) = body.strip_prefix("/label") {
+        github
+            .add_labels_to_pr(pr_number, commenter, labels_str.trim(), comment_id)
             .await
     } else if let Some(url) = body
         .strip_prefix("/update")
