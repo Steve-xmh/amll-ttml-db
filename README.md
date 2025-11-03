@@ -15,7 +15,7 @@
 ***
 
 > [!Important]
-> This lyrics database is primarily used by native **Chinese speakers**. If you need to upload lyrics translated into languages other than Chinese, please mark the language of the translation in the `x-lang` section of the lyrics translation line. If there are already Chinese or other language translations available, please retain multiple translations simultaneously. Thank you!
+> This database is mainly for Chinese speakers. If you're translating lyrics into other languages, please mark it out at the "x-lang" attribute. If Chinese (or other language) version already exists, please DO NOT rewrite and keep both.
 >
 > **Example:**
 >
