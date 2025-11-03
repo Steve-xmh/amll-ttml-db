@@ -19,7 +19,7 @@
 >
 > This database is mainly for Chinese speakers. However, if you're translating lyrics into other languages, please specify it using the "xml:lang" attribute. If Chinese (or other language) version already exists, just keep all.
 >
-> Besides, ONLY experimental GitHub Actions supports multilingual translations, so please submit your lyric with**「[提交/修正歌词 (实验性)](https://github.com/Steve-xmh/amll-ttml-db/issues/new?template=submit-lyric-experimental.yml)」issue template** or **Pull Requests**.
+> Besides, ONLY experimental GitHub Actions supports multilingual translations, so please submit your lyric with **「[提交/修正歌词 (实验性)](https://github.com/Steve-xmh/amll-ttml-db/issues/new?template=submit-lyric-experimental.yml)」issue template** or **Pull Requests**.
 >
 > Since AMLL series software currently does not support multilingual translations, users should get single-language-translated lyric by third-party tools (e.g. [ranhengzhang/ttml-trans-filter](https://github.com/ranhengzhang/ttml-trans-filter)) before using.
 >
