@@ -20,7 +20,8 @@
 > **Example:**
 >
 > ```xml
-> <p begin="00:21.400" end="00:23.870" ttm:agent="v1" itunes:key="L1"><span begin="00:21.400" end="00:22.010">低</span><span begin="00:22.200" end="00:23.010">等</span><span begin="00:23.010" end="00:23.210">动</span><span begin="00:23.210" end="00:23.870">物</span><span ttm:role="x-translation" xml:lang="en-US">Lower beings</span><span ttm:role="x-translation" xml:lang="ja-JP">劣等な生物たちよ</span></p>
+> <span ttm:role="x-translation" xml:lang="en-US">Lower beings</span>
+> <span ttm:role="x-translation" xml:lang="ja-JP">劣等な生物たちよ</span>
 > ```
 
 ***
