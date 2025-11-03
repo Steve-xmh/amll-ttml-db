@@ -15,14 +15,26 @@
 ***
 
 > [!Important]
-> This database is mainly for Chinese speakers. If you're translating lyrics into other languages, please mark it out at the "x-lang" attribute. If Chinese (or other language) version already exists, please DO NOT rewrite and keep both.
+> A note for non-Chinese contributors:
 >
-> **Example:**
+> This database is mainly for Chinese speakers. However, if you're translating lyrics into other languages, please specify it using the "xml:lang" attribute. If Chinese (or other language) version already exists, just keep all.
+>
+> Besides, ONLY experimental GitHub Actions supports multilingual translations, so please submit your lyric with**「[提交/修正歌词 (实验性)](https://github.com/Steve-xmh/amll-ttml-db/issues/new?template=submit-lyric-experimental.yml)」issue template** or with **Pull Requests**.
+>
+> Since AMLL series software currently does not support multilingual translations, users should get single-language-translated lyric by third-party tools (e.g. [ranhengzhang/ttml-trans-filter](https://github.com/ranhengzhang/ttml-trans-filter)) before using.
+>
+> Looking for more details? 👉[TTML Specification (Section 5.3)](https://github.com/Steve-xmh/amll-ttml-db/blob/main/instructions/ttml-specification-en.md#53-multi-language-and-background-support).
+>
+> **Example Code:**
 >
 > ```xml
 > <span ttm:role="x-translation" xml:lang="en-US">Lower beings</span>
 > <span ttm:role="x-translation" xml:lang="ja-JP">劣等な生物たちよ</span>
 > ```
+>
+> **Example File:**
+>
+> [HOYOMiX/YMIR - 耀斑](https://github.com/Steve-xmh/amll-ttml-db/blob/main/raw-lyrics/1752080938784-68000793-8355bb14.ttml)
 
 ***
 
