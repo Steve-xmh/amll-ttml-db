@@ -15,8 +15,13 @@
 ***
 
 > [!Important]
-This lyric database is for **Chinese language only**!
-If you wish to upload your lyrics, please keep lyric translation line blank and only include original lyric line and transliteration line. Thank you!
+> This lyrics database is primarily used by native **Chinese speakers**. If you need to upload lyrics translated into languages other than Chinese, please mark the language of the translation in the `x-lang` section of the lyrics translation line. If there are already Chinese or other language translations available, please retain multiple translations simultaneously. Thank you!
+>
+> **Example:**
+>
+> ```xml
+> <p begin="00:21.400" end="00:23.870" ttm:agent="v1" itunes:key="L1"><span begin="00:21.400" end="00:22.010">低</span><span begin="00:22.200" end="00:23.010">等</span><span begin="00:23.010" end="00:23.210">动</span><span begin="00:23.210" end="00:23.870">物</span><span ttm:role="x-translation" xml:lang="en-US">Lower beings</span><span ttm:role="x-translation" xml:lang="ja-JP">劣等な生物たちよ</span></p>
+> ```
 
 ***
 
