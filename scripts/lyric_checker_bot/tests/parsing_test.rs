@@ -11,20 +11,17 @@ fn test_parse_and_generate_ttml() -> Result<()> {
 
     let metadata_store = MetadataStore::from(&parsed_data);
 
-    let agent_store = if parsed_data.agents.agents_by_id.is_empty() {
-        MetadataStore::to_agent_store(&metadata_store)
-    } else {
-        parsed_data.agents.clone()
-    };
+    let agent_store = &parsed_data.agents;
 
     let generation_options = TtmlGenerationOptions {
         format: true,
+        use_apple_format_rules: false,
         ..Default::default()
     };
     let generated_ttml = generate_ttml(
         &parsed_data.lines,
         &metadata_store,
-        &agent_store,
+        agent_store,
         &generation_options,
     )?;
 

@@ -1,19 +1,19 @@
+use std::{collections::HashMap, path::Path, sync::Arc};
+
 use anyhow::{Context, Result};
-use lyrics_helper_core::CanonicalMetadataKey;
-use lyrics_helper_core::MetadataStore;
-use octocrab::Octocrab;
-use octocrab::models::IssueState;
-use octocrab::models::issues::Comment;
-use octocrab::models::issues::Issue;
-use octocrab::models::reactions::ReactionContent;
-use octocrab::params::LockReason;
-use octocrab::params::repos::Reference;
-use rand::distr::Alphanumeric;
-use rand::distr::SampleString;
-use std::collections::HashMap;
-use std::path::Path;
-use std::sync::Arc;
+use lyrics_helper_core::{CanonicalMetadataKey, MetadataStore};
+use octocrab::{
+    Octocrab,
+    models::{
+        IssueState,
+        issues::{Comment, Issue},
+        reactions::ReactionContent,
+    },
+    params::{LockReason, repos::Reference},
+};
+use rand::distr::{Alphanumeric, SampleString};
 use tokio::fs;
+use tracing::{error, info, warn};
 
 use crate::git_utils;
 
@@ -84,7 +84,7 @@ impl GitHubClient {
             self.owner, self.repo, head_branch
         );
 
-        log::info!("正在搜索已存在的 PR，查询: '{query}'");
+        info!("正在搜索已存在的 PR，查询: '{query}'");
 
         let search_result = self
             .client
@@ -96,7 +96,7 @@ impl GitHubClient {
         let count = search_result.total_count.unwrap_or(0);
 
         if count > 0 {
-            log::info!("发现 {count} 个与 Issue #{issue_number} 关联的已存在 PR，将跳过处理。");
+            info!("发现 {count} 个与 Issue #{issue_number} 关联的已存在 PR，将跳过处理。");
             Ok(true)
         } else {
             Ok(false)
@@ -105,7 +105,7 @@ impl GitHubClient {
 
     /// 获取所有带 "实验性歌词提交/修正" 标签的 Issue
     pub async fn list_experimental_issues(&self) -> Result<Vec<Issue>> {
-        log::info!("正在请求 Issue 列表...");
+        info!("正在请求 Issue 列表...");
 
         let first_page = self
             .client
@@ -118,7 +118,7 @@ impl GitHubClient {
 
         let all_issues: Vec<Issue> = self.client.all_pages(first_page).await?;
 
-        log::info!("获取到 {} 个待处理的 Issue。", all_issues.len());
+        info!("获取到 {} 个待处理的 Issue。", all_issues.len());
         Ok(all_issues)
     }
 
@@ -171,11 +171,9 @@ impl GitHubClient {
                 let user_id_matches = comment.user.id.0 == 39_523_898;
 
                 if user_type_is_bot || user_id_matches {
-                    log::info!(
+                    info!(
                         "发现来自机器人 (ID: {}, Type: {}) 的检查标记，将跳过 Issue #{}",
-                        comment.user.id,
-                        comment.user.r#type,
-                        issue_number
+                        comment.user.id, comment.user.r#type, issue_number
                     );
                     return Ok(true);
                 }
@@ -193,10 +191,7 @@ impl GitHubClient {
         reason: &str,
         ttml_content: &str,
     ) -> Result<()> {
-        let base_text = format!(
-            "{}\n\n**歌词提交议题检查失败**\n\n原因: {}",
-            CHECKED_MARK, reason
-        );
+        let base_text = format!("{CHECKED_MARK}\n\n**歌词提交议题检查失败**\n\n原因: {reason}");
 
         let body = Self::build_body(&base_text, Some(ttml_content), None, 65535);
 
@@ -212,7 +207,7 @@ impl GitHubClient {
             .send()
             .await?;
 
-        log::info!("已在 Issue #{issue_number} 发表拒绝评论并关闭。");
+        info!("已在 Issue #{issue_number} 发表拒绝评论并关闭。");
         Ok(())
     }
 
@@ -242,7 +237,7 @@ impl GitHubClient {
         fs::write(&file_path, context.compact_ttml)
             .await
             .context(format!("写入文件 {} 失败", file_path.display()))?;
-        log::info!("已将处理后的歌词写入到: {}", file_path.display());
+        info!("已将处理后的歌词写入到: {}", file_path.display());
 
         git_utils::add_path(&file_path).await?;
 
@@ -264,7 +259,7 @@ impl GitHubClient {
             .issues(&self.owner, &self.repo)
             .create_comment(issue_number, success_comment)
             .await?;
-        log::info!("已在 Issue #{issue_number} 发表成功评论。");
+        info!("已在 Issue #{issue_number} 发表成功评论。");
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -276,7 +271,7 @@ impl GitHubClient {
             .issues(&self.owner, &self.repo)
             .lock(issue_number, Some(LockReason::Resolved))
             .await?;
-        log::info!("已关闭并锁定 Issue #{issue_number}");
+        info!("已关闭并锁定 Issue #{issue_number}");
 
         let pr_body = Self::build_pr_body(context);
         let pr_title = Self::generate_pr_title(context);
@@ -287,7 +282,7 @@ impl GitHubClient {
             .body(&pr_body)
             .send()
             .await?;
-        log::info!("已为 Issue #{issue_number} 创建关联的 Pull Request。");
+        info!("已为 Issue #{issue_number} 创建关联的 Pull Request。");
 
         Ok(())
     }
@@ -369,13 +364,10 @@ impl GitHubClient {
             add_metadata_section(title, &key);
         }
 
-        if !remarks.trim().is_empty() {
+        let trimmed_remarks = remarks.trim();
+        if !trimmed_remarks.is_empty() && trimmed_remarks != "_No response_" {
             body_parts.push("### 备注".to_string());
-            if remarks.trim() == "_No response_" {
-                body_parts.push("*无*".to_string());
-            } else {
-                body_parts.push(remarks.to_string());
-            }
+            body_parts.push(remarks.to_string());
         }
 
         if !warnings.is_empty() {
@@ -463,29 +455,22 @@ impl GitHubClient {
         requester: &str,
         reason: Option<&str>,
     ) -> Result<()> {
-        log::info!(
-            "正在处理来自 @{} 的关闭 PR #{} 请求...",
-            requester,
-            pr_number
-        );
+        info!("正在处理来自 @{requester} 的关闭 PR #{pr_number} 请求...");
 
-        let pr = match self.verify_pr_permission(pr_number, requester).await? {
-            Some(pr) => pr,
-            None => return Ok(()),
+        let Some(pr) = self.verify_pr_permission(pr_number, requester).await? else {
+            return Ok(());
         };
 
         let branch_name = pr.head.ref_field;
 
         let reason_text = reason.unwrap_or("无");
-        let comment_body = format!(
-            "应用户 @{} 的请求，此 PR 已关闭。\n\n**原因**: {}",
-            requester, reason_text
-        );
+        let comment_body =
+            format!("应用户 @{requester} 的请求，此 PR 已关闭。\n\n**原因**: {reason_text}");
         self.client
             .issues(&self.owner, &self.repo)
             .create_comment(pr_number, comment_body)
             .await?;
-        log::info!("已在 PR #{} 发表关闭评论。", pr_number);
+        info!("已在 PR #{pr_number} 发表关闭评论。");
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -493,17 +478,17 @@ impl GitHubClient {
             .state(IssueState::Closed)
             .send()
             .await?;
-        log::info!("已关闭 PR #{}", pr_number);
+        info!("已关闭 PR #{}", pr_number);
 
-        let branch_ref = Reference::Branch(branch_name.to_string());
+        let branch_ref = Reference::Branch(branch_name.clone());
 
         match (*self.client)
             .repos(&self.owner, &self.repo)
             .delete_ref(&branch_ref)
             .await
         {
-            Ok(_) => log::info!("成功删除分支: {}", branch_name),
-            Err(e) => log::warn!("删除分支 {} 失败: {:?}", branch_name, e),
+            Ok(()) => info!("成功删除分支: {branch_name}"),
+            Err(e) => warn!("删除分支 {branch_name} 失败: {e:?}"),
         }
 
         Ok(())
@@ -523,19 +508,17 @@ impl GitHubClient {
     }
 
     pub async fn update_pr(&self, context: &PrUpdateContext<'_>) -> Result<()> {
-        log::info!(
+        info!(
             "正在处理来自 @{} 的更新 PR #{} 请求...",
-            context.requester,
-            context.pr_number
+            context.requester, context.pr_number
         );
 
         // 权限检查
-        let pr = match self
+        let Some(pr) = self
             .verify_pr_permission(context.pr_number, context.requester)
             .await?
-        {
-            Some(pr) => pr,
-            None => return Ok(()),
+        else {
+            return Ok(());
         };
 
         // 找到要更新的文件
@@ -545,26 +528,28 @@ impl GitHubClient {
             .list_files(context.pr_number)
             .await?
             .items;
-        let ttml_file = files
-            .iter()
-            .find(|f| f.filename.ends_with(".ttml") && f.filename.starts_with("raw-lyrics/"));
+        let ttml_file = files.iter().find(|f| {
+            std::path::Path::new(&f.filename)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("ttml"))
+                && f.filename.starts_with("raw-lyrics/")
+        });
 
-        let file_to_update = match ttml_file {
-            Some(file) => context.root_path.join(&file.filename),
-            None => {
-                log::error!("在 PR #{} 中未找到 .ttml 文件", context.pr_number);
-                let error_comment = format!(
-                    "抱歉，@{requester}，无法在此 PR 中找到需要更新的 TTML 文件。",
-                    requester = context.requester
-                );
-                self.client
-                    .issues(&self.owner, &self.repo)
-                    .create_comment(context.pr_number, error_comment)
-                    .await?;
-                return Ok(());
-            }
+        let file_to_update = if let Some(file) = ttml_file {
+            context.root_path.join(&file.filename)
+        } else {
+            error!("在 PR #{} 中未找到 .ttml 文件", context.pr_number);
+            let error_comment = format!(
+                "抱歉，@{requester}，无法在此 PR 中找到需要更新的 TTML 文件。",
+                requester = context.requester
+            );
+            self.client
+                .issues(&self.owner, &self.repo)
+                .create_comment(context.pr_number, error_comment)
+                .await?;
+            return Ok(());
         };
-        log::info!(
+        info!(
             "将在 PR #{} 中更新文件: {}",
             context.pr_number,
             file_to_update.display()
@@ -581,7 +566,7 @@ impl GitHubClient {
         fs::write(&file_to_update, context.compact_ttml)
             .await
             .context(format!("写入文件 {} 失败", file_to_update.display()))?;
-        log::info!("已将更新后的歌词写入到: {}", file_to_update.display());
+        info!("已将更新后的歌词写入到: {}", file_to_update.display());
 
         git_utils::add_path(&file_to_update).await?;
 
@@ -631,7 +616,7 @@ impl GitHubClient {
         self.post_comment(context.pr_number, &update_comment)
             .await?;
 
-        log::info!("成功更新 PR #{} 并发表了评论。", context.pr_number);
+        info!("成功更新 PR #{} 并发表了评论。", context.pr_number);
 
         Ok(())
     }
@@ -702,11 +687,8 @@ impl GitHubClient {
             let original_author = &original_issue.user.login;
 
             if requester != original_author {
-                log::warn!(
-                    "@{} 尝试操作 PR #{}，但 PR 的原始作者是 @{}",
-                    requester,
-                    pr_number,
-                    original_author
+                warn!(
+                    "@{requester} 尝试操作 PR #{pr_number}，但 PR 的原始作者是 @{original_author}"
                 );
                 let error_comment = format!(
                     "@{requester}，你没有权限执行此操作。\n只有这个歌词提交的原始作者 (@{original_author}) 或仓库协作者才能操作此 PR。"
@@ -715,7 +697,7 @@ impl GitHubClient {
                 return Ok(None);
             }
         } else {
-            log::error!("无法从 PR #{} 的正文中解析出原始 Issue 编号。", pr_number);
+            error!("无法从 PR #{} 的正文中解析出原始 Issue 编号。", pr_number);
             let error_comment = format!(
                 "@{requester}，操作失败。\n无法从此 PR 追溯到原始的歌词提交议题，因此无法验证你的权限。"
             );
@@ -751,11 +733,7 @@ impl GitHubClient {
         reason: &str,
         ttml_content: &str,
     ) -> Result<()> {
-        let base_text = format!(
-            "@{requester}，你提交的歌词文件更新失败。\n\n**原因**: {reason}",
-            requester = requester,
-            reason = reason
-        );
+        let base_text = format!("@{requester}，你提交的歌词文件更新失败。\n\n**原因**: {reason}");
 
         let failure_comment = Self::build_body(&base_text, Some(ttml_content), None, 65535);
 
@@ -776,18 +754,10 @@ impl GitHubClient {
 
         // 尝试包含所有内容
         let body = base_text.to_string();
-        let original_section = original_lyric.map(|s| {
-            format!(
-                "{}{}{}\n```xml\n{}\n```",
-                separator, original_section_title, separator, s
-            )
-        });
-        let processed_section = processed_lyric.map(|s| {
-            format!(
-                "{}{}{}\n```xml\n{}\n```",
-                separator, processed_section_title, separator, s
-            )
-        });
+        let original_section = original_lyric
+            .map(|s| format!("{separator}{original_section_title}{separator}\n```xml\n{s}\n```"));
+        let processed_section = processed_lyric
+            .map(|s| format!("{separator}{processed_section_title}{separator}\n```xml\n{s}\n```"));
 
         let mut final_body = body.clone();
         if let Some(ref section) = original_section {
@@ -804,10 +774,8 @@ impl GitHubClient {
         // 如果超长，尝试只包含处理后的歌词
         if let Some(ref section) = processed_section {
             let mut final_body = body.clone();
-            let placeholder_original = format!(
-                "{}{}{}{}",
-                separator, original_section_title, separator, PLACEHOLDER_TEXT
-            );
+            let placeholder_original =
+                format!("{separator}{original_section_title}{separator}{PLACEHOLDER_TEXT}");
 
             final_body.push_str(&placeholder_original);
             final_body.push_str(section);
@@ -819,18 +787,14 @@ impl GitHubClient {
         // 如果仍然超长，对所有歌词都使用占位符
         let mut final_body = body.clone();
         if original_lyric.is_some() {
-            let placeholder_original = format!(
-                "{}{}{}{}",
-                separator, original_section_title, separator, PLACEHOLDER_TEXT
-            );
+            let placeholder_original =
+                format!("{separator}{original_section_title}{separator}{PLACEHOLDER_TEXT}");
 
             final_body.push_str(&placeholder_original);
         }
         if processed_lyric.is_some() {
-            let placeholder_processed = format!(
-                "{}{}{}",
-                separator, processed_section_title, PLACEHOLDER_TEXT
-            );
+            let placeholder_processed =
+                format!("{separator}{processed_section_title}{PLACEHOLDER_TEXT}");
             final_body.push_str(&placeholder_processed);
         }
 
@@ -849,8 +813,7 @@ impl GitHubClient {
         warnings: &[String],
     ) -> String {
         let mut base_text = format!(
-            "{}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！",
-            CHECKED_MARK
+            "{CHECKED_MARK}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！"
         );
 
         if !warnings.is_empty() {
