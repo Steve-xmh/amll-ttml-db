@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: 签出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -39,18 +39,17 @@ jobs:
           workspaces: ./scripts -> target
 
       - name: 编译 Rust 程序
-        run: cargo build -p lyric_checker_bot --release --verbose
+        run: cargo build -p lyric_checker_bot
         working-directory: scripts
-      
+
       - name: 运行检查程序
         timeout-minutes: 10
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUST_LOG: info
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          ./target/release/lyric_checker_bot
+          ./target/debug/lyric_checker_bot
         working-directory: scripts
