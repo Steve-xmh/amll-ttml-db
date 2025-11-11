@@ -1,7 +1,7 @@
 # 0. 开始之前
 欢迎加入AMLL TTML审核团，感谢你为本项目做出的额外贡献！
 # 1. 你需要做什么？
-- 按照[内容指南](https://github.com/Steve-xmh/amll-ttml-db/blob/main/instruction.md)审核大家的投稿
+- 按照[内容指南](instruction.md)审核大家的投稿
 - 提出修改建议
 - 在**有额外精力**的条件下对仓库进行日常查看和维护
 # 2. 具体怎么做？
@@ -43,6 +43,7 @@
 
 _Created at 2025/6/5 18:40_  
 _Last edited at 2025/11/11 18:08_
+
 
 
 
