@@ -218,8 +218,13 @@ fn main() -> anyhow::Result<()> {
 
         let mut old_metadata = Vec::new();
         for (k, v) in parsed_source_data.raw_metadata {
-            old_metadata.push((Cow::Owned(k), v.into_iter().map(Cow::Owned).collect()));
+            old_metadata.push((
+                Cow::<str>::Owned(k),
+                v.into_iter().map(Cow::Owned).collect(),
+            ));
         }
+
+        old_metadata.sort_by(|a, b| a.0.cmp(&b.0));
 
         let lyric_data = TTMLLyric {
             lines: old_lines,
