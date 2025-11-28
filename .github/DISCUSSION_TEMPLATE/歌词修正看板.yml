@@ -1,0 +1,25 @@
+title: "[歌词修正请愿/占位]"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎您提出歌词修正需求！请根据实际情况将标题的「歌词修正请愿/占位」修改为「歌词修正请愿」或「歌词修正占位」，并在其后补充歌曲信息，以便其他贡献者或审核查找。
+  - type: textarea
+    id: originalpr
+    attributes:
+      label: 原歌词的 PR 编号
+      description: 仅需填写最新一版的歌词所属的 PR 编号。
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 需修正原因
+      description: 该歌词在哪些方面存在问题呢？请尽量具体描述一下，比如缺词、错词等问题。
+    validations:
+      required: true
+  - type: textarea
+    id: addition
+    attributes:
+      label: 备注
+      description: 还有其他需要补充的吗？
