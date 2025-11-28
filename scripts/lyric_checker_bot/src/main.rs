@@ -154,7 +154,7 @@ async fn main() -> Result<()> {
         }
         _ => {
             info!("扫描全部 issue (Event: {event_name})",);
-            if let Err(e) = handle_scheduled_run(github, http_client, root_path).await {
+            if let Err(e) = Box::pin(handle_scheduled_run(github, http_client, root_path)).await {
                 error!("扫描全部 issue 失败: {e:?}");
             }
         }
