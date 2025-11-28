@@ -24,7 +24,6 @@ pub struct PrContext<'a> {
     pub issue: &'a Issue,
     pub original_ttml: &'a str,
     pub compact_ttml: &'a str,
-    pub formatted_ttml: &'a str,
     pub metadata_store: &'a MetadataStore,
     pub remarks: &'a str,
     pub warnings: &'a [String],
@@ -33,9 +32,7 @@ pub struct PrContext<'a> {
 
 pub struct PrUpdateContext<'a> {
     pub pr_number: u64,
-    pub original_ttml: &'a str,
     pub compact_ttml: &'a str,
-    pub formatted_ttml: &'a str,
     pub warnings: &'a [String],
     pub root_path: &'a Path,
     pub requester: &'a str,
@@ -187,7 +184,7 @@ impl GitHubClient {
     ) -> Result<()> {
         let base_text = format!("{CHECKED_MARK}\n\n**歌词提交议题检查失败**\n\n原因: {reason}");
 
-        let body = Self::build_body(&base_text, Some(ttml_content), None, 65535);
+        let body = Self::build_body(&base_text, Some(ttml_content), 65535);
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -243,11 +240,8 @@ impl GitHubClient {
         // --- 2. GitHub API 操作 ---
 
         // 构建成功评论
-        let success_comment = Self::build_issue_success_comment(
-            context.original_ttml,
-            context.formatted_ttml,
-            context.warnings,
-        );
+        let success_comment =
+            Self::build_issue_success_comment(context.original_ttml, context.warnings);
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -309,16 +303,11 @@ impl GitHubClient {
     }
 
     fn build_pr_body(context: &PrContext<'_>) -> String {
-        const MAX_BODY_LENGTH: usize = 65536;
-        const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
-
         let issue_number = context.issue.number;
         let user_login = &context.issue.user.login;
         let metadata_store = context.metadata_store;
         let remarks = context.remarks;
         let warnings = context.warnings;
-        let compact_lyric = context.compact_ttml;
-        let formatted_lyric = context.formatted_ttml;
 
         let mut body_parts = Vec::new();
 
@@ -376,37 +365,7 @@ impl GitHubClient {
             body_parts.push(warnings_section);
         }
 
-        let base_body = body_parts.join("\n\n");
-        let separator = "\n\n";
-
-        let compact_lyric_section = format!("### 歌词文件内容\n```xml\n{compact_lyric}\n```");
-        let formatted_lyric_section =
-            format!("### 歌词文件内容 (已格式化)\n```xml\n{formatted_lyric}\n```");
-
-        let placeholder_section = format!("### 歌词文件内容\n\n{PLACEHOLDER_TEXT}");
-        let final_placeholder = "因数据过大，已省略歌词文本。请自行查看变更。".to_string();
-
-        let full_body_len = base_body.len()
-            + separator.len() * 2
-            + compact_lyric_section.len()
-            + formatted_lyric_section.len();
-        if full_body_len <= MAX_BODY_LENGTH {
-            return format!(
-                "{base_body}{separator}{compact_lyric_section}{separator}{formatted_lyric_section}"
-            );
-        }
-
-        let partial_body_len = base_body.len()
-            + separator.len() * 2
-            + placeholder_section.len()
-            + formatted_lyric_section.len();
-        if partial_body_len <= MAX_BODY_LENGTH {
-            return format!(
-                "{base_body}{separator}{placeholder_section}{separator}{formatted_lyric_section}"
-            );
-        }
-
-        format!("{base_body}{separator}{final_placeholder}")
+        body_parts.join("\n\n")
     }
 
     pub async fn add_labels_to_pr(
@@ -600,12 +559,7 @@ impl GitHubClient {
             base_text.push_str(&warnings_section);
         }
 
-        let update_comment = Self::build_body(
-            &base_text,
-            Some(context.original_ttml),
-            Some(context.formatted_ttml),
-            65535,
-        );
+        let update_comment = Self::build_body(&base_text, None, 65535);
 
         self.post_comment(context.pr_number, &update_comment)
             .await?;
@@ -686,35 +640,24 @@ impl GitHubClient {
     ) -> Result<()> {
         let base_text = format!("@{requester}，你提交的歌词文件更新失败。\n\n**原因**: {reason}");
 
-        let failure_comment = Self::build_body(&base_text, Some(ttml_content), None, 65535);
+        let failure_comment = Self::build_body(&base_text, Some(ttml_content), 65535);
 
         self.post_comment(pr_number, &failure_comment).await
     }
 
-    fn build_body(
-        base_text: &str,
-        original_lyric: Option<&str>,
-        processed_lyric: Option<&str>,
-        max_len: usize,
-    ) -> String {
+    fn build_body(base_text: &str, original_lyric: Option<&str>, max_len: usize) -> String {
         const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
         let separator = "\n\n";
 
         let original_section_title = "**原始歌词数据:**";
-        let processed_section_title = "**转存歌词数据:**";
 
         // 尝试包含所有内容
         let body = base_text.to_string();
         let original_section = original_lyric
             .map(|s| format!("{separator}{original_section_title}{separator}\n```xml\n{s}\n```"));
-        let processed_section = processed_lyric
-            .map(|s| format!("{separator}{processed_section_title}{separator}\n```xml\n{s}\n```"));
 
         let mut final_body = body.clone();
         if let Some(ref section) = original_section {
-            final_body.push_str(section);
-        }
-        if let Some(ref section) = processed_section {
             final_body.push_str(section);
         }
 
@@ -722,34 +665,13 @@ impl GitHubClient {
             return final_body;
         }
 
-        // 如果超长，尝试只包含处理后的歌词
-        if let Some(ref section) = processed_section {
-            let mut final_body = body.clone();
-            let placeholder_original =
-                format!("{separator}{original_section_title}{separator}{PLACEHOLDER_TEXT}");
-
-            final_body.push_str(&placeholder_original);
-            final_body.push_str(section);
-            if final_body.len() <= max_len {
-                return final_body;
-            }
-        }
-
-        // 如果仍然超长，对所有歌词都使用占位符
-        let mut final_body = body.clone();
         if original_lyric.is_some() {
             let placeholder_original =
                 format!("{separator}{original_section_title}{separator}{PLACEHOLDER_TEXT}");
 
             final_body.push_str(&placeholder_original);
         }
-        if processed_lyric.is_some() {
-            let placeholder_processed =
-                format!("{separator}{processed_section_title}{PLACEHOLDER_TEXT}");
-            final_body.push_str(&placeholder_processed);
-        }
 
-        // 如果连占位符都放不下，就只返回基础文本
         if final_body.len() <= max_len {
             final_body
         } else {
@@ -758,11 +680,7 @@ impl GitHubClient {
     }
 
     // 构建在 Issue 中发表的成功评论
-    fn build_issue_success_comment(
-        original_lyric: &str,
-        processed_lyric: &str,
-        warnings: &[String],
-    ) -> String {
+    fn build_issue_success_comment(original_lyric: &str, warnings: &[String]) -> String {
         let mut base_text = format!(
             "{CHECKED_MARK}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！"
         );
@@ -778,11 +696,6 @@ impl GitHubClient {
             base_text.push_str(&warnings_section);
         }
 
-        Self::build_body(
-            &base_text,
-            Some(original_lyric),
-            Some(processed_lyric),
-            65535,
-        )
+        Self::build_body(&base_text, Some(original_lyric), 65535)
     }
 }

@@ -18,7 +18,6 @@ use crate::github_api::{PrContext, PrUpdateContext};
 
 struct TtmlProcessingOutput {
     compact_ttml: String,
-    formatted_ttml: String,
     metadata_store: MetadataStore,
     warnings: Vec<String>,
 }
@@ -64,8 +63,6 @@ fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, Stri
     let agent_store = &parsed_data.agents;
 
     info!("正在生成 TTML 文件...");
-
-    info!("正在生成压缩的 TTML...");
     let compact_gen_opts = TtmlGenerationOptions {
         format: false,
         ..Default::default()
@@ -76,24 +73,10 @@ fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, Stri
         agent_store,
         &compact_gen_opts,
     )
-    .map_err(|e| format!("生成压缩 TTML 失败: {e:?}"))?;
-
-    info!("正在生成格式化的 TTML...");
-    let formatted_gen_opts = TtmlGenerationOptions {
-        format: true,
-        ..Default::default()
-    };
-    let formatted_ttml = generate_ttml(
-        &parsed_data.lines,
-        &metadata_store,
-        agent_store,
-        &formatted_gen_opts,
-    )
-    .map_err(|e| format!("生成格式化 TTML 失败: {e:?}"))?;
+    .map_err(|e| format!("生成 TTML 失败: {e:?}"))?;
 
     Ok(TtmlProcessingOutput {
         compact_ttml,
-        formatted_ttml,
         metadata_store,
         warnings,
     })
@@ -131,7 +114,8 @@ struct IssueEventPayload {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("trace"));
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("lyric_checker_bot=trace"));
     let _ = FmtSubscriber::builder()
         .with_env_filter(filter)
         .with_test_writer()
@@ -246,9 +230,7 @@ async fn handle_command(
             Ok(processed_data) => {
                 let update_context = PrUpdateContext {
                     pr_number,
-                    original_ttml: &original_ttml_content,
                     compact_ttml: &processed_data.compact_ttml,
-                    formatted_ttml: &processed_data.formatted_ttml,
                     warnings: &processed_data.warnings,
                     root_path,
                     requester: commenter,
@@ -380,7 +362,6 @@ async fn process_issue(
                 issue,
                 original_ttml: &original_ttml_content,
                 compact_ttml: &processed_data.compact_ttml,
-                formatted_ttml: &processed_data.formatted_ttml,
                 metadata_store: &processed_data.metadata_store,
                 remarks: &remarks,
                 warnings: &processed_data.warnings,
