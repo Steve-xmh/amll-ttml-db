@@ -297,8 +297,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let mut contribution_list = contribution_map.into_iter().collect::<Vec<_>>();
-    contribution_list.sort_by_key(|x| x.1.count);
-    contribution_list.reverse();
+    contribution_list.sort_by(|a, b| b.1.count.cmp(&a.1.count).then_with(|| a.0.cmp(&b.0)));
     let contributors_count = contribution_list.len();
 
     println!(
