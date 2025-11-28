@@ -5,7 +5,6 @@ mod validator;
 use anyhow::{Context, Result};
 use lyrics_helper_core::{
     DefaultLanguageOptions, MetadataStore, TtmlGenerationOptions, TtmlParsingOptions,
-    TtmlTimingMode,
 };
 use reqwest::Client;
 use serde::Deserialize;
@@ -24,33 +23,10 @@ struct TtmlProcessingOutput {
     warnings: Vec<String>,
 }
 
-fn process_ttml_string(
-    original_ttml: &str,
-    lyric_options: &str,
-    advanced_toggles: &str,
-    punctuation_weight_str: Option<&str>,
-) -> Result<TtmlProcessingOutput, String> {
-    let timing_mode = if lyric_options.contains("这是逐行歌词") {
-        TtmlTimingMode::Line
-    } else {
-        TtmlTimingMode::Word
-    };
-    info!("使用计时模式: {:?}", timing_mode);
-
-    let auto_split = advanced_toggles.contains("启用自动分词");
-
-    let punctuation_weight = if auto_split {
-        info!("已启用自动分词。");
-        punctuation_weight_str
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0.3)
-    } else {
-        0.3
-    };
-
+fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, String> {
     info!("开始解析 TTML 文件...");
     let parsing_options = TtmlParsingOptions {
-        force_timing_mode: Some(timing_mode),
+        force_timing_mode: None,
         default_languages: DefaultLanguageOptions::default(),
     };
     let mut parsed_data = match parse_ttml(original_ttml, &parsing_options) {
@@ -91,10 +67,7 @@ fn process_ttml_string(
 
     info!("正在生成压缩的 TTML...");
     let compact_gen_opts = TtmlGenerationOptions {
-        timing_mode,
         format: false,
-        auto_word_splitting: auto_split,
-        punctuation_weight,
         ..Default::default()
     };
     let compact_ttml = generate_ttml(
@@ -107,10 +80,7 @@ fn process_ttml_string(
 
     info!("正在生成格式化的 TTML...");
     let formatted_gen_opts = TtmlGenerationOptions {
-        timing_mode,
         format: true,
-        auto_word_splitting: auto_split,
-        punctuation_weight,
         ..Default::default()
     };
     let formatted_ttml = generate_ttml(
@@ -257,26 +227,7 @@ async fn handle_command(
             }
         };
 
-        let (lyric_options, advanced_toggles, punctuation_weight_str) =
-            if let Some(opts) = github.get_options_from_original_issue(pr_number).await? {
-                (
-                    opts.lyric_options,
-                    opts.advanced_toggles,
-                    opts.punctuation_weight_str,
-                )
-            } else {
-                let err_msg =
-                    format!("@{commenter}，无法从此 PR 找到关联的原始 Issue 来获取解析选项。");
-                github.post_comment(pr_number, &err_msg).await?;
-                return Ok(());
-            };
-
-        match process_ttml_string(
-            &original_ttml_content,
-            &lyric_options,
-            &advanced_toggles,
-            punctuation_weight_str.as_deref(),
-        ) {
+        match process_ttml_string(&original_ttml_content) {
             Ok(processed_data) => {
                 let update_context = PrUpdateContext {
                     pr_number,
@@ -362,9 +313,6 @@ async fn process_issue(
     };
     let remarks = body_params.get("备注").cloned().unwrap_or_default();
 
-    // 解析歌词选项
-    let options = crate::github_api::GitHubClient::extract_options_from_body(&body_params);
-
     // 3. 下载 TTML 文件
     info!("正在从 URL 下载 TTML: {ttml_url}");
     let original_ttml_content = match http_client.get(ttml_url).send().await {
@@ -387,12 +335,7 @@ async fn process_issue(
         }
     };
 
-    match process_ttml_string(
-        &original_ttml_content,
-        &options.lyric_options,
-        &options.advanced_toggles,
-        options.punctuation_weight_str.as_deref(),
-    ) {
+    match process_ttml_string(&original_ttml_content) {
         Ok(processed_data) => {
             info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
 

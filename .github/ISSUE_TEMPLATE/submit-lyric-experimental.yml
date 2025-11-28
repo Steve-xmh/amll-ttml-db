@@ -22,15 +22,6 @@ body:
     validations:
       required: true
 
-  - type: checkboxes
-    id: lyric-options
-    attributes:
-      label: 歌词选项
-      description: 选择歌词文件的选项
-      options:
-        - label: 这是逐行歌词
-          required: false
-
   - type: dropdown
     id: upload-reason
     attributes:
@@ -41,35 +32,6 @@ body:
         - 修正已有歌词
     validations:
       required: true
-
-  - type: markdown
-    attributes:
-      value: |
-        ---
-        ### **高级选项**
-        以下为高级处理选项，如果你不确定它们的作用，请保持默认哦
-
-  - type: checkboxes
-    id: advanced-toggles
-    attributes:
-      label: 功能开关
-      description: 选择需要启用的功能
-      options:
-        - label: 启用自动分词
-
-  - type: input
-    id: punctuation-weight
-    attributes:
-      label: "[分词] 标点符号权重"
-      description: "设置标点符号的时长权重。一个汉字的权重是 1.0。默认值: 0.3"
-      placeholder: "0.3"
-    validations:
-      required: false
-
-  - type: markdown
-    attributes:
-      value: |
-        ---
 
   - type: textarea
     id: comment

@@ -41,12 +41,6 @@ pub struct PrUpdateContext<'a> {
     pub requester: &'a str,
 }
 
-pub struct OriginalIssueOptions {
-    pub lyric_options: String,
-    pub advanced_toggles: String,
-    pub punctuation_weight_str: Option<String>,
-}
-
 #[derive(Clone)]
 pub struct GitHubClient {
     client: Arc<Octocrab>,
@@ -630,31 +624,6 @@ impl GitHubClient {
         Ok(())
     }
 
-    /// 从 PR 关联的原始 Issue 中获取解析选项
-    pub async fn get_options_from_original_issue(
-        &self,
-        pr_number: u64,
-    ) -> Result<Option<OriginalIssueOptions>> {
-        let pr = self
-            .client
-            .pulls(&self.owner, &self.repo)
-            .get(pr_number)
-            .await?;
-
-        if let Some(issue_number) = Self::parse_issue_number_from_pr_body(pr.body.as_deref()) {
-            let issue = self
-                .client
-                .issues(&self.owner, &self.repo)
-                .get(issue_number)
-                .await?;
-            let body_params = Self::parse_issue_body(issue.body.as_deref().unwrap_or(""));
-            let options = Self::extract_options_from_body(&body_params);
-            return Ok(Some(options));
-        }
-
-        Ok(None)
-    }
-
     /// 验证用户是否是原始 Issue 作者
     async fn verify_pr_permission(
         &self,
@@ -706,24 +675,6 @@ impl GitHubClient {
         }
 
         Ok(Some(pr))
-    }
-
-    /// 从解析后的 Issue 正文参数中提取歌词处理选项
-    pub fn extract_options_from_body(
-        body_params: &HashMap<String, String>,
-    ) -> OriginalIssueOptions {
-        let lyric_options = body_params.get("歌词选项").cloned().unwrap_or_default();
-        let advanced_toggles = body_params.get("功能开关").cloned().unwrap_or_default();
-        let punctuation_weight_str = body_params
-            .get("[分词] 标点符号权重")
-            .cloned()
-            .filter(|s| !s.is_empty() && s != "_No response_");
-
-        OriginalIssueOptions {
-            lyric_options,
-            advanced_toggles,
-            punctuation_weight_str,
-        }
     }
 
     pub async fn post_pr_failure_comment(
