@@ -43,9 +43,9 @@ pub struct PrUpdateContext<'a> {
 
 #[derive(Clone)]
 pub struct GitHubClient {
-    client: Arc<Octocrab>,
-    owner: String,
-    repo: String,
+    pub client: Arc<Octocrab>,
+    pub owner: String,
+    pub repo: String,
 }
 
 impl GitHubClient {

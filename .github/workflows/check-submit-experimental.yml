@@ -7,7 +7,7 @@ on:
     types: [created]
 
 concurrency:
-  group: check-submit-rust
+  group: check-submit-rust-${{ github.event.issue.number || github.run_id }}
   cancel-in-progress: true
 
 permissions:

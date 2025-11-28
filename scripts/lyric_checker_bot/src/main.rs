@@ -124,6 +124,11 @@ struct User {
     login: String,
 }
 
+#[derive(Deserialize, Debug)]
+struct IssueEventPayload {
+    issue: Issue,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("trace"));
@@ -149,15 +154,25 @@ async fn main() -> Result<()> {
     let github = github_api::GitHubClient::new(token, owner.to_string(), repo_name.to_string())?;
 
     let event_name = std::env::var("GITHUB_EVENT_NAME").unwrap_or_default();
-    if event_name == "issue_comment" {
-        info!("开始处理命令...");
-        if let Err(e) = handle_command(&github, &http_client, &root_path).await {
-            error!("处理命令失败: {e:?}");
+
+    match event_name.as_str() {
+        "issue_comment" => {
+            info!("处理 Issue 评论");
+            if let Err(e) = handle_command(&github, &http_client, &root_path).await {
+                error!("处理 Issue 评论失败: {e:?}");
+            }
         }
-    } else {
-        info!("开始处理新的 Issues...");
-        if let Err(e) = handle_scheduled_run(github, http_client, root_path).await {
-            error!("处理计划任务失败: {e:?}");
+        "issues" => {
+            info!("处理单个 Issue");
+            if let Err(e) = handle_single_issue_event(&github, &http_client, &root_path).await {
+                error!("处理单个 Issue 失败: {e:?}");
+            }
+        }
+        _ => {
+            info!("扫描全部 issue (Event: {event_name})",);
+            if let Err(e) = handle_scheduled_run(github, http_client, root_path).await {
+                error!("扫描全部 issue 失败: {e:?}");
+            }
         }
     }
 
@@ -251,6 +266,28 @@ async fn handle_command(
         info!("评论不包含已知命令，已忽略。");
         Ok(())
     }
+}
+
+async fn handle_single_issue_event(
+    github: &github_api::GitHubClient,
+    http_client: &Client,
+    root_path: &Path,
+) -> Result<()> {
+    let event_path = std::env::var("GITHUB_EVENT_PATH").context("未找到 GITHUB_EVENT_PATH")?;
+    let event_content = fs::read_to_string(event_path).context("无法读取事件文件")?;
+
+    let payload: IssueEventPayload = serde_json::from_str(&event_content)?;
+
+    let issue = payload.issue;
+
+    let full_issue = github
+        .client
+        .issues(&github.owner, &github.repo)
+        .get(issue.number)
+        .await
+        .context("无法从 GitHub API 获取 Issue 详情")?;
+
+    process_issue(&full_issue, http_client.clone(), github.clone(), root_path).await
 }
 
 /// 按计划执行，检查所有待处理的 Issues
