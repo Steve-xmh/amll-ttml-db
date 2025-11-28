@@ -3,10 +3,10 @@ name: 重建歌词文件夹并通知镜像站同步
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'scripts/**'
-      - 'raw-lyrics/**'
+      - "scripts/**"
+      - "raw-lyrics/**"
 
 concurrency:
   group: check-submit
@@ -28,7 +28,7 @@ jobs:
       - name: 准备 Rust 缓存
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: scripts/rebuild-folder -> target
+          workspaces: ./scripts -> target
 
       - name: 运行重建程序
         timeout-minutes: 10
@@ -45,5 +45,3 @@ jobs:
           curl -X POST https://amlldb.bikonoo.com/api/synchronous-lyrics \
           -H 'Content-Type: application/json' \
           -d '{"from":"github-actions"}'
-  
-
