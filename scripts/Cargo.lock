@@ -1689,8 +1689,10 @@ dependencies = [
  "anyhow",
  "base64",
  "chrono",
+ "lyrics_helper_core",
  "serde",
  "serde_json",
+ "ttml_processor",
  "ureq",
 ]
 

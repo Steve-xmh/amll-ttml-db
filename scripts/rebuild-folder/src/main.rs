@@ -1,9 +1,7 @@
-use std::{
-    borrow::Cow,
-    io::{BufReader, Write},
-    path::Path,
-    time::Instant,
-};
+use std::{borrow::Cow, io::Write, path::Path, time::Instant};
+
+use lyrics_helper_core::{DefaultLanguageOptions, TtmlParsingOptions};
+use ttml_processor::parse_ttml;
 
 use amll_lyric::ttml::TTMLLyric;
 use anyhow::Context;
@@ -155,10 +153,79 @@ fn main() -> anyhow::Result<()> {
                 pad = raw_lyrics_char_len
             );
         }
-        let file = std::fs::File::open(&file_path)
-            .with_context(|| format!("无法打开歌词文件 {:?}", entry.file_name()))?;
-        let lyric_data = amll_lyric::ttml::parse_ttml(BufReader::new(file))
-            .with_context(|| format!("解析歌词文件 {:?} 时出错", entry.file_name()))?;
+
+        let file_content = std::fs::read_to_string(&file_path)
+            .with_context(|| format!("无法读取歌词文件 {:?}", entry.file_name()))?;
+
+        let parse_opts = TtmlParsingOptions {
+            force_timing_mode: None,
+            default_languages: DefaultLanguageOptions::default(),
+        };
+
+        let parsed_source_data = match parse_ttml(&file_content, &parse_opts) {
+            Ok(data) => data,
+            Err(e) => {
+                println!("解析歌词文件 {:?} 失败: {:?}，跳过", entry.file_name(), e);
+                continue 'lyric_parse;
+            }
+        };
+
+        let mut old_lines = Vec::new();
+
+        for new_line in parsed_source_data.lines {
+            // agent 为 None 或 v1，视为非对唱，其他情况视为对唱
+            let is_duet = !matches!(new_line.agent.as_deref(), Some("v1") | None);
+
+            let mut process_and_push_track =
+                |track: &lyrics_helper_core::AnnotatedTrack, is_bg: bool| {
+                    let mut old_words = Vec::new();
+                    for syl in track.content.syllables() {
+                        old_words.push(amll_lyric::LyricWord {
+                            start_time: syl.start_ms,
+                            end_time: syl.end_ms,
+                            word: syl.text.clone().into(),
+                        });
+
+                        // AMLL 的历史遗留问题，用时间戳均为0的音节表示空格
+                        if syl.ends_with_space {
+                            old_words.push(amll_lyric::LyricWord {
+                                start_time: 0,
+                                end_time: 0,
+                                word: " ".into(),
+                            });
+                        }
+                    }
+
+                    old_lines.push(amll_lyric::LyricLine {
+                        words: old_words,
+                        translated_lyric: String::new().into(),
+                        roman_lyric: String::new().into(),
+                        is_bg,
+                        is_duet,
+                        start_time: new_line.start_ms,
+                        end_time: new_line.end_ms,
+                    });
+                };
+
+            if let Some(track) = new_line.main_track() {
+                process_and_push_track(track, false);
+            }
+
+            if let Some(track) = new_line.background_track() {
+                process_and_push_track(track, true);
+            }
+        }
+
+        let mut old_metadata = Vec::new();
+        for (k, v) in parsed_source_data.raw_metadata {
+            old_metadata.push((Cow::Owned(k), v.into_iter().map(Cow::Owned).collect()));
+        }
+
+        let lyric_data = TTMLLyric {
+            lines: old_lines,
+            metadata: old_metadata,
+        };
+
         for line in &lyric_data.lines {
             if line.start_time > line.end_time {
                 println!(
