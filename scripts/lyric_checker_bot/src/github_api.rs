@@ -17,7 +17,7 @@ use tracing::{error, info, warn};
 
 use crate::git_utils;
 
-const EXPERIMENTAL_LABEL: &str = "歌词提交/补正";
+const SUBMISSION_LABEL: &str = "歌词提交/补正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 
 pub struct PrContext<'a> {
@@ -102,7 +102,7 @@ impl GitHubClient {
             .client
             .issues(&self.owner, &self.repo)
             .list()
-            .labels(&[EXPERIMENTAL_LABEL.to_string()])
+            .labels(&[SUBMISSION_LABEL.to_string()])
             .state(octocrab::params::State::Open)
             .send()
             .await?;
@@ -279,7 +279,7 @@ impl GitHubClient {
     /// 如果 Issue 标题仅为标签或为空，则从元数据中提取信息。
     fn generate_pr_title(context: &PrContext<'_>) -> String {
         let issue_title = &context.issue.title;
-        let placeholder_title = format!("[{EXPERIMENTAL_LABEL}]");
+        let placeholder_title = format!("[{SUBMISSION_LABEL}]");
 
         let trimmed_title = issue_title.trim();
         if trimmed_title.is_empty() || trimmed_title == placeholder_title {
@@ -295,7 +295,7 @@ impl GitHubClient {
                 && !artist_str.is_empty()
                 && !title_str.is_empty()
             {
-                return format!("[{EXPERIMENTAL_LABEL}] {artist_str} - {title_str}");
+                return format!("[{SUBMISSION_LABEL}] {artist_str} - {title_str}");
             }
         }
 

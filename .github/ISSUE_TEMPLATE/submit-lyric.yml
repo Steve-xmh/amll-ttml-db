@@ -1,6 +1,6 @@
-name: 提交/修正歌词
-description: 我想提交/修正一个歌曲的 TTML 歌词文件！
-title: "[歌词提交/修正] "
+name: 提交/补正歌词
+description: 我想提交/补正一个歌曲的 TTML 歌词文件！
+title: "[歌词提交/补正] "
 labels: ["歌词提交/补正"]
 assignees:
   - Steve-xmh
@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        标题中的 `歌词提交/修正` 请尽量根据实际提交内容改为 `歌词提交` 或 `歌词修正`，并填写上类似 `艺术家 - 歌曲名` 的歌曲信息，以便审核。
+        标题中的 `歌词提交/补正` 请尽量根据实际提交内容改为 `歌词提交` 或 `歌词补正`，并填写上类似 `艺术家 - 歌曲名` 的歌曲信息，以便审核。
         在上传歌词之前请详细阅读[歌词规范文档](https://github.com/Steve-xmh/amll-ttml-db/blob/main/instruction.md)，并确认上传内容遵守了歌词规范。否则可能会被审核打回修改哦！
 
   - type: input
