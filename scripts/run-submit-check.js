@@ -19,7 +19,7 @@ async function main() {
 		owner: REPO_OWNER,
 		repo: REPO_NAME,
 		state: "open",
-		labels: "歌词提交/补正",
+		labels: "歌词提交/补正 (旧)",
 	});
 	for (const issue of openingIssues.data) {
 		try {
@@ -193,7 +193,7 @@ async function main() {
                         // 遍历所有歌词行进行规范化
                         for (let i = 0; i < normalizedLyric.lyricLines.length; i++) {
                             const line = normalizedLyric.lyricLines[i];
-                            
+
                             // 规范化主歌词文本
                             const mainLineResult = normalizeLyricLine(line, i, normalizationLogs);
                             if (mainLineResult.changed) {

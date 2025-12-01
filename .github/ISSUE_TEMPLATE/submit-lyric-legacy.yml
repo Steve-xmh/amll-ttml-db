@@ -1,7 +1,7 @@
-name: 提交/修正歌词
+name: 提交/修正歌词 (旧)
 description: 我想提交/修正一个歌曲的 TTML 歌词文件！
-title: "[歌词提交/修正] "
-labels: ["歌词提交/补正"]
+title: "[歌词提交/修正 (旧)] "
+labels: ["歌词提交/补正 (旧)"]
 assignees:
   - Steve-xmh
 body:
