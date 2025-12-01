@@ -121,14 +121,11 @@ async fn main() -> Result<()> {
         .with_test_writer()
         .try_init();
 
-    info!("启动实验性歌词提交检查程序...");
-
     let token = std::env::var("GITHUB_TOKEN").expect("未设置 GITHUB_TOKEN");
     let repo_str = std::env::var("GITHUB_REPOSITORY").expect("未设置 GITHUB_REPOSITORY");
     let (owner, repo_name) = repo_str
         .split_once('/')
         .expect("GITHUB_REPOSITORY 格式无效");
-    info!("目标仓库: {owner}/{repo_name}");
 
     let workspace_root = std::env::var("GITHUB_WORKSPACE")
         .expect("错误：未设置 GITHUB_WORKSPACE 环境变量。此程序应在 GitHub Actions 环境中运行。");
@@ -278,7 +275,6 @@ async fn handle_scheduled_run(
     http_client: Client,
     root_path: PathBuf,
 ) -> Result<()> {
-    info!("正在获取带 '实验性歌词提交/修正' 标签的 Issue...");
     let issues = github.list_experimental_issues().await?;
 
     for issue in issues {

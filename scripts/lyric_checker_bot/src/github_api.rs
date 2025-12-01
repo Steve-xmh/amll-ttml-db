@@ -17,7 +17,7 @@ use tracing::{error, info, warn};
 
 use crate::git_utils;
 
-const EXPERIMENTAL_LABEL: &str = "实验性歌词提交/修正";
+const EXPERIMENTAL_LABEL: &str = "歌词提交/补正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 
 pub struct PrContext<'a> {
@@ -232,7 +232,7 @@ impl GitHubClient {
 
         git_utils::add_path(&file_path).await?;
 
-        let commit_message = format!("(实验性) 提交歌曲歌词 {new_filename} #{issue_number}");
+        let commit_message = format!("提交歌曲歌词 {new_filename} #{issue_number}");
         git_utils::commit(&commit_message).await?;
         git_utils::push(&submit_branch).await?;
         git_utils::checkout_main_branch().await?;
@@ -311,7 +311,7 @@ impl GitHubClient {
 
         let mut body_parts = Vec::new();
 
-        body_parts.push(format!("### 歌词议题 (实验性流程)\n#{issue_number}"));
+        body_parts.push(format!("### 歌词议题\n#{issue_number}"));
         body_parts.push(format!("### 歌词作者\n@{user_login}"));
 
         let mut add_metadata_section = |title: &str, key: &CanonicalMetadataKey| {
@@ -534,10 +534,7 @@ impl GitHubClient {
             return Ok(());
         }
 
-        let commit_message = format!(
-            "(实验性) 更新歌词文件内容\n\n由 @{} 请求更新。",
-            context.requester
-        );
+        let commit_message = format!("更新歌词文件内容\n\n由 @{} 请求更新。", context.requester);
         git_utils::commit(&commit_message).await?;
         git_utils::force_push(branch_name).await?;
         git_utils::checkout_main_branch().await?;

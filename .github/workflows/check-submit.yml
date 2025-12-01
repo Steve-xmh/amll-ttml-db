@@ -1,4 +1,4 @@
-name: 检查歌词提交正确性 (实验性 Rust 后端)
+name: 检查歌词提交正确性
 on:
   workflow_dispatch:
   issues:
@@ -18,7 +18,7 @@ permissions:
 jobs:
   check-submit-rust:
     if: |
-      (github.event_name == 'issues' && github.event.label.name == '实验性歌词提交/修正') ||
+      (github.event_name == 'issues' && github.event.label.name == '歌词提交/补正') ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.sender.type != 'Bot' && startsWith(github.event.comment.body, '/'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
