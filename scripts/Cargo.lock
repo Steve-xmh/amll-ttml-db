@@ -2524,9 +2524,9 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "ttml_processor"
-version = "0.1.5"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b6fe4c70a5a0e3c59d16cb7ee78c41d5461701aa26a64600b981b4ac4d6a7af"
+checksum = "e45b9cc42d40b2c581b0819793dd6d2a3304b3477351a1235e755914ca67eeb1"
 dependencies = [
  "hyphenation",
  "lyrics_helper_core",
