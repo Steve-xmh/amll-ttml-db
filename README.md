@@ -229,7 +229,7 @@ Apple Music-like Lyrics for BetterNCM 已内置本仓库歌词源，无需手动
 
 ## UniLyric [适配最多]
 
-UniLyric 不仅是一个全能的歌词转换器，同时可以作为 AMLL Player 的歌词发送端。其工作原理则是通过监听 [SMTC](https://learn.microsoft.com/zh-cn/windows/uwp/audio-video-camera/integrate-with-systemmediatransportcontrols) 获取系统当前播放曲目的曲名、歌手名以及播放进度（如果 SMTC 发送方有设置的话），因此只要你的播放器支持 SMTC 就可以使用。并且 UniLyric 集成了包含 AMLL TTML DB 在内的多方歌词源并且能够自动搜索，可以说是目前最好用的词库搜索方和 AMLL Player 歌词发送端。 [前往了解](https://github.com/apoint123/Unilyric)
+UniLyric 不仅是一个全能的歌词转换器，同时可以作为 AMLL Player 的歌词发送端。其工作原理则是通过监听 [SMTC](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/integrate-with-systemmediatransportcontrols) 获取系统当前播放曲目的曲名、歌手名以及播放进度（如果 SMTC 发送方有设置的话），因此只要你的播放器支持 SMTC 就可以使用。并且 UniLyric 集成了包含 AMLL TTML DB 在内的多方歌词源并且能够自动搜索，可以说是目前最好用的词库搜索方和 AMLL Player 歌词发送端。 [前往了解](https://github.com/apoint123/Unilyric)
 
 ## 接入到其他项目
 
@@ -242,7 +242,7 @@ UniLyric 不仅是一个全能的歌词转换器，同时可以作为 AMLL Playe
 
 - [Netease Cloud Music - 网易云音乐](./ncm-lyrics) - [`ncm-lyrics/`](https://github.com/Steve-xmh/amll-ttml-db/tree/main/ncm-lyrics)
 - [QQ Music - QQ 音乐](./qq-lyrics) - [`qq-lyrics/`](https://github.com/Steve-xmh/amll-ttml-db/tree/main/qq-lyrics)
-- [Apple Music](./apple-lyrics) - [`am-lyrics/`](https://github.com/Steve-xmh/amll-ttml-db/tree/main/am-lyrics)
+- [Apple Music](./am-lyrics) - [`am-lyrics/`](https://github.com/Steve-xmh/amll-ttml-db/tree/main/am-lyrics)
 - [Spotify](./spotify-lyrics) - [`spotify-lyrics/`](https://github.com/Steve-xmh/amll-ttml-db/tree/main/spotify-lyrics)
 
 每个歌词文件均已自动生成不同格式的歌词文件，通过文件后缀名区分：
