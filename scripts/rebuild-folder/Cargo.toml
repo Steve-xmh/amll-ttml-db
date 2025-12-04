@@ -15,4 +15,4 @@ ureq = "^3"
 base64 = "^0.22"
 
 lyrics_helper_core = "0.2.0"
-ttml_processor = { version = "0.1.4" }
+ttml_processor = { version = "0.1.7" }
