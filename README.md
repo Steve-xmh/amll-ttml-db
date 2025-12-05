@@ -84,6 +84,10 @@
 
 原则上，AMLL TTML DataBase 主要接受音源来自 [网易云音乐](https://music.163.com) 的歌词，以便其他用户使用，我们还接受音源来自 [Apple Music](https://music.apple.com)、 [QQ音乐](https://y.qq.com)、[Spotify](https://open.spotify.com) 的歌词，因此提交的 TTML 文件中应当至少包含以上四个平台之中一个平台的 ID。
 
+> [!Tip]
+>
+> 审核时，我们默认您所提交的歌词中，列出所有平台的所有 ID 对应的音频皆是相同的，或者音频之间的偏移量小于 1 ms，因此对于库中的歌词文件，我们只对文件中所包含的**有效的**网易云音乐平台 ID 所对应的歌曲作逐字歌词质量保证，**除非您有为其它平台中所对应的歌曲制作并提交了特供版本**。
+
 ### 在此仓库中检索是否有已提交歌词
 
 请参考 [歌词元数据说明](https://github.com/Steve-xmh/amll-ttml-tool/wiki/%E6%AD%8C%E8%AF%8D%E5%85%83%E6%95%B0%E6%8D%AE) 获取您要提交歌词的歌曲 ID，在本仓库内搜索该 ID，如无任何文件，则该歌曲暂无 TTML 歌词，欢迎您的提交。
