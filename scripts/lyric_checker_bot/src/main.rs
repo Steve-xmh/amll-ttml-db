@@ -204,8 +204,7 @@ async fn handle_command(
             .await
     } else if let Some(url) = body
         .strip_prefix("/update")
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
+        .and_then(|s| s.split_whitespace().next())
     {
         let original_ttml_content = match http_client.get(url).send().await {
             Ok(resp) => match resp.text().await {
