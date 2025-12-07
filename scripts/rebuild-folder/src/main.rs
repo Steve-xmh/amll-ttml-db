@@ -301,19 +301,34 @@ fn generate_contributor_report(
         "![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)\n"
     )?;
 
+    writeln!(md_file, "| 排名 | 贡献者 | 贡献次数 |")?;
+    writeln!(md_file, "| :---: | :--- | :---: |")?;
+
     for (i, (_, c)) in contribution_list.iter().enumerate() {
-        let display_name = if let Some(login) = &c.github_login {
+        let rank = i + 1;
+
+        let rank_display = match rank {
+            1 => "🥇".to_string(),
+            2 => "🥈".to_string(),
+            3 => "🥉".to_string(),
+            _ => rank.to_string(),
+        };
+
+        let avatar_html = format!(
+            r#"<img src="https://avatars.githubusercontent.com/u/{}?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />"#,
+            c.github_id
+        );
+
+        let user_link = if let Some(login) = &c.github_login {
             format!("[{login}](https://github.com/{login})")
         } else {
-            format!("#{}", c.github_id)
+            format!("`#{}`", c.github_id)
         };
 
         writeln!(
             md_file,
-            "{}. {} (贡献次数: {})",
-            i + 1,
-            display_name,
-            c.count
+            "| {} | {}{} | {} |",
+            rank_display, avatar_html, user_link, c.count
         )?;
     }
 
