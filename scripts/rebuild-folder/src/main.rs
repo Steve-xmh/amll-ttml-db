@@ -308,7 +308,6 @@ fn generate_contributor_report(
     )?;
 
     let cst_offset = FixedOffset::east_opt(8 * 3600).expect("创建时区失败");
-    // 2. 获取当前 UTC 时间并转换为东八区
     let now_cst = Utc::now().with_timezone(&cst_offset);
 
     writeln!(
