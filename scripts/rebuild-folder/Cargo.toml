@@ -1,7 +1,7 @@
 [package]
 name = "rebuild-folder"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,6 +13,8 @@ anyhow = "^1.0"
 chrono = "^0.4"
 ureq = "^3"
 base64 = "^0.22"
+rayon = "1"
+indicatif = "0.18"
 
 lyrics_helper_core = "0.2.0"
 ttml_processor = { version = "0.1.8" }
