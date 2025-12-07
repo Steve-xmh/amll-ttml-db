@@ -86,6 +86,7 @@ impl ProjectLayout {
 #[derive(Debug)]
 struct Contributor<'a> {
     github_id: Cow<'a, str>,
+    github_login: Option<Cow<'a, str>>,
     count: usize,
 }
 
@@ -279,6 +280,7 @@ fn generate_contributor_report(
             &mut contributor_indecies,
             &serde_json::json!({
                 "githubId": c.github_id,
+                "githubLogin": c.github_login,
                 "count": c.count
             }),
         )?;
@@ -300,14 +302,21 @@ fn generate_contributor_report(
     )?;
 
     for (i, (_, c)) in contribution_list.iter().enumerate() {
+        let display_name = if let Some(login) = &c.github_login {
+            format!("[{login}](https://github.com/{login})")
+        } else {
+            format!("#{}", c.github_id)
+        };
+
         writeln!(
             md_file,
-            "{}. #{} (贡献次数: {})",
+            "{}. {} (贡献次数: {})",
             i + 1,
-            c.github_id,
+            display_name,
             c.count
         )?;
     }
+
     Ok(())
 }
 
@@ -379,20 +388,41 @@ fn main() -> Result<()> {
                 )?;
                 raw_indecies_writer.write_all(b"\n")?;
 
-                for (k, v) in &entry.data.metadata {
-                    if k == "ttmlAuthorGithub" {
-                        for id in v {
-                            let owned_id = Cow::Owned(id.clone());
-                            contribution_map
-                                .entry(owned_id)
-                                .and_modify(|x: &mut Contributor| x.count += 1)
-                                .or_insert_with(|| Contributor {
-                                    github_id: Cow::Owned(id.clone()),
-                                    count: 1,
-                                });
-                        }
-                    }
+                let ids = entry
+                    .data
+                    .metadata
+                    .iter()
+                    .find(|(k, _)| k == "ttmlAuthorGithub")
+                    .map(|(_, v)| v);
+                let logins = entry
+                    .data
+                    .metadata
+                    .iter()
+                    .find(|(k, _)| k == "ttmlAuthorGithubLogin")
+                    .map(|(_, v)| v);
 
+                if let Some(id_list) = ids {
+                    for (i, id) in id_list.iter().enumerate() {
+                        let owned_id: Cow<str> = Cow::Owned(id.clone());
+                        let login = logins.and_then(|l| l.get(i)).map(|s| Cow::Owned(s.clone()));
+
+                        contribution_map
+                            .entry(owned_id.clone())
+                            .and_modify(|x: &mut Contributor| {
+                                x.count += 1;
+                                if x.github_login.is_none() && login.is_some() {
+                                    x.github_login = login.clone();
+                                }
+                            })
+                            .or_insert_with(|| Contributor {
+                                github_id: owned_id,
+                                github_login: login,
+                                count: 1,
+                            });
+                    }
+                }
+
+                for (k, v) in &entry.data.metadata {
                     if gen_folder {
                         let platform = match k.as_str() {
                             "ncmMusicId" => Some(Platform::Ncm),
@@ -498,6 +528,19 @@ fn main() -> Result<()> {
             Platform::Qq => write_one_index(&mut qq_writer, &id, entry)?,
             Platform::Am => write_one_index(&mut am_writer, &id, entry)?,
         }
+    }
+
+    if let Some(w) = ncm_writer.as_mut() {
+        w.flush()?;
+    }
+    if let Some(w) = spotify_writer.as_mut() {
+        w.flush()?;
+    }
+    if let Some(w) = qq_writer.as_mut() {
+        w.flush()?;
+    }
+    if let Some(w) = am_writer.as_mut() {
+        w.flush()?;
     }
 
     generate_contributor_report(&layout, contribution_map)?;
