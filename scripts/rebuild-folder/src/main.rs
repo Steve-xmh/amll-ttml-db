@@ -1,8 +1,10 @@
 use std::{
     borrow::Cow,
+    cmp::Ordering,
     collections::HashMap,
     io::{BufWriter, Write},
     path::{Path, PathBuf},
+    str::FromStr,
     time::Instant,
 };
 
@@ -90,12 +92,46 @@ struct Contributor<'a> {
     count: usize,
 }
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, PartialOrd, Ord)]
 enum Platform {
     Ncm,
     Spotify,
     Qq,
     Am,
+}
+
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
+struct RawLyricInfo {
+    timestamp: u64,
+    author_id: String,
+    random_str: String,
+}
+
+impl FromStr for RawLyricInfo {
+    type Err = anyhow::Error;
+
+    fn from_str(file_name: &str) -> Result<Self, Self::Err> {
+        let stem = std::path::Path::new(file_name)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .context("无法提取文件名 stem")?;
+
+        let parts: Vec<&str> = stem.splitn(3, '-').collect();
+
+        if parts.len() < 3 {
+            anyhow::bail!("文件名格式错误，期望格式: TIMESTAMP-AUTHORID-RANDOMSTR");
+        }
+
+        let timestamp = parts[0].parse::<u64>().context("时间戳解析失败")?;
+        let author_id = parts[1].to_string();
+        let random_str = parts[2].to_string();
+
+        Ok(RawLyricInfo {
+            timestamp,
+            author_id,
+            random_str,
+        })
+    }
 }
 
 fn is_git_worktree_clean() -> Result<bool> {
@@ -142,27 +178,23 @@ fn push(branch: &str) -> Result<()> {
 fn load_raw_lyrics(raw_dir: &Path) -> Result<Vec<std::fs::DirEntry>> {
     let raw_entries = std::fs::read_dir(raw_dir).context("无法打开 raw-lyrics 文件夹")?;
 
-    let mut valid_lyrics: Vec<(u64, std::fs::DirEntry)> = raw_entries
+    let mut valid_lyrics: Vec<(RawLyricInfo, std::fs::DirEntry)> = raw_entries
         .flatten()
         .filter_map(|entry| {
             let file_name_os = entry.file_name();
             let file_name = file_name_os.to_string_lossy();
 
-            file_name
-                .split('-')
-                .next()
-                .and_then(|s| s.parse::<u64>().ok())
-                .map_or_else(
-                    || {
-                        eprintln!("意外的文件名: {file_name:?}");
-                        None
-                    },
-                    |id| Some((id, entry)),
-                )
+            match RawLyricInfo::from_str(&file_name) {
+                Ok(info) => Some((info, entry)),
+                Err(e) => {
+                    eprintln!("意外的文件名: {file_name:?}: {e}");
+                    None
+                }
+            }
         })
         .collect();
 
-    valid_lyrics.sort_by_key(|(id, _)| *id);
+    valid_lyrics.sort_by(|(info_a, _), (info_b, _)| info_a.cmp(info_b));
     let sorted_entries = valid_lyrics.into_iter().map(|(_, entry)| entry).collect();
     Ok(sorted_entries)
 }
@@ -491,7 +523,19 @@ fn main() -> Result<()> {
             .progress_chars("##-"),
     );
 
-    let task_list: Vec<_> = tasks.into_iter().collect();
+    let mut task_list: Vec<_> = tasks.into_iter().collect();
+
+    task_list.sort_by(|((p1, id1), entry1), ((p2, id2), entry2)| {
+        let info1 = RawLyricInfo::from_str(&entry1.file_name);
+        let info2 = RawLyricInfo::from_str(&entry2.file_name);
+
+        match (info1, info2) {
+            (Ok(i1), Ok(i2)) => i1.cmp(&i2).then(p1.cmp(p2)).then(id1.cmp(id2)),
+            (Ok(_), Err(_)) => Ordering::Less,
+            (Err(_), Ok(_)) => Ordering::Greater,
+            (Err(_), Err(_)) => Ordering::Equal,
+        }
+    });
 
     task_list.par_iter().for_each(|((platform, id), entry)| {
         write_pb.inc(1);
