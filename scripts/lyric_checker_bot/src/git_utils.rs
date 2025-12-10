@@ -1,9 +1,8 @@
 use anyhow::{Result, anyhow};
 use std::{path::Path, process::Stdio};
 use tokio::process::Command;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
-/// 运行一个 Git 命令并等待其完成，如果失败则返回错误。
 async fn run_git_command(args: &[&str]) -> Result<()> {
     info!("正在执行 Git 命令: git {}", args.join(" "));
     let output = Command::new("git")
@@ -18,7 +17,6 @@ async fn run_git_command(args: &[&str]) -> Result<()> {
         Ok(())
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        error!("Git 命令执行失败: {stderr}");
         Err(anyhow!(
             "Git 命令 `git {}` 失败: {}",
             args.join(" "),
@@ -27,28 +25,19 @@ async fn run_git_command(args: &[&str]) -> Result<()> {
     }
 }
 
-/// 检出分支
 pub async fn checkout_main_branch() -> Result<()> {
-    // 尝试 checkout main，如果失败再尝试 master
-    if run_git_command(&["checkout", "main"]).await.is_err() {
-        warn!("检出 'main' 分支失败，尝试检出 'master'...");
-        run_git_command(&["checkout", "master"]).await?;
-    }
-    // 拉取最新代码
+    run_git_command(&["checkout", "main"]).await?;
     run_git_command(&["pull"]).await
 }
 
-/// 创建并切换到新分支
 pub async fn create_branch(branch_name: &str) -> Result<()> {
     run_git_command(&["checkout", "-b", branch_name]).await
 }
 
-/// 提交
 pub async fn commit(message: &str) -> Result<()> {
     run_git_command(&["commit", "-m", message]).await
 }
 
-/// 推送
 pub async fn push(branch_name: &str) -> Result<()> {
     run_git_command(&["push", "--set-upstream", "origin", branch_name]).await
 }
@@ -96,7 +85,7 @@ pub async fn has_staged_changes() -> Result<bool> {
         Some(1) => Ok(true),
         _ => {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            error!("检查暂存区变更时出错: {}", stderr);
+            error!("检查暂存区变更时出错: {stderr}");
             Err(anyhow!(
                 "Git 命令 `git diff --cached --quiet` 失败: {stderr}"
             ))
