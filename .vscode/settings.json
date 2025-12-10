@@ -1,5 +1,5 @@
 {
-    "rust-analyzer.linkedProjects": [
-        "./scripts/rebuild-folder/Cargo.toml"
-    ]
+	"rust-analyzer.linkedProjects": [
+		"./scripts/rebuild-folder/Cargo.toml"
+	]
 }
