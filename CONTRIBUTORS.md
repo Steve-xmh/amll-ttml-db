@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2025-12-17 19:28 (UTC+8)
+> 最后更新于 2025-12-17 20:10 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -60,10 +60,10 @@
 | 42 | <img src="https://avatars.githubusercontent.com/u/70053196?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ImYiFeng](https://github.com/ImYiFeng) | 8 |
 | 43 | <img src="https://avatars.githubusercontent.com/u/71890055?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Burial0268](https://github.com/Burial0268) | 8 |
 | 44 | <img src="https://avatars.githubusercontent.com/u/78802596?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MariaArusu](https://github.com/MariaArusu) | 8 |
-| 45 | <img src="https://avatars.githubusercontent.com/u/68677053?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xwei1645](https://github.com/Xwei1645) | 7 |
-| 46 | <img src="https://avatars.githubusercontent.com/u/83578994?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[mizuhara37](https://github.com/mizuhara37) | 7 |
-| 47 | <img src="https://avatars.githubusercontent.com/u/dontknowhy?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[二狐](https://github.com/二狐) | 7 |
-| 48 | <img src="https://avatars.githubusercontent.com/u/102236122?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WongCaihong](https://github.com/WongCaihong) | 6 |
+| 45 | <img src="https://avatars.githubusercontent.com/u/102236122?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WongCaihong](https://github.com/WongCaihong) | 7 |
+| 46 | <img src="https://avatars.githubusercontent.com/u/68677053?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xwei1645](https://github.com/Xwei1645) | 7 |
+| 47 | <img src="https://avatars.githubusercontent.com/u/83578994?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[mizuhara37](https://github.com/mizuhara37) | 7 |
+| 48 | <img src="https://avatars.githubusercontent.com/u/dontknowhy?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[二狐](https://github.com/二狐) | 7 |
 | 49 | <img src="https://avatars.githubusercontent.com/u/113773064?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Justbecause0210](https://github.com/Justbecause0210) | 6 |
 | 50 | <img src="https://avatars.githubusercontent.com/u/240017569?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[AngelLarynx-CN](https://github.com/AngelLarynx-CN) | 6 |
 | 51 | <img src="https://avatars.githubusercontent.com/u/42143735?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MeTerminator](https://github.com/MeTerminator) | 6 |
