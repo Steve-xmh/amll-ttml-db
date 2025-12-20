@@ -12,7 +12,7 @@ jobs:
     permissions:
       pull-requests: write
       issues: write
-      contents: read
+      contents: write
 
     steps:
       - name: 签出代码
