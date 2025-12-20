@@ -112,6 +112,11 @@ async function run() {
 			console.log(`    最后提交距今 ${daysSinceCommit.toFixed(1)} 天`);
 
 			if (daysSinceLabel > DAYS_THRESHOLD && daysSinceCommit > DAYS_THRESHOLD) {
+				const branchName = pr.head.ref;
+				const isSameRepo = pr.head.repo?.full_name === `${OWNER}/${REPO}`;
+				const shouldDeleteBranch =
+					isSameRepo && branchName.startsWith("auto-submit-issue");
+
 				if (IS_DRY_RUN) {
 					console.log(`[!] 满足关闭条件`);
 					console.log(`    拟添加评论并关闭 PR #${pr.number}`);
@@ -131,6 +136,19 @@ async function run() {
 						pull_number: pr.number,
 						state: "closed",
 					});
+
+					if (shouldDeleteBranch) {
+						try {
+							console.log(`    删除分支 "${branchName}"`);
+							await octokit.rest.git.deleteRef({
+								owner: OWNER,
+								repo: REPO,
+								ref: `heads/${branchName}`,
+							});
+						} catch (err) {
+							console.error(`    删除分支失败`, err);
+						}
+					}
 				}
 			} else {
 				console.log(`    不满足条件，跳过`);
