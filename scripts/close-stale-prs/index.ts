@@ -46,7 +46,7 @@ const octokit = new Octokit({ auth: TOKEN });
 
 async function run() {
 	if (IS_DRY_RUN) {
-		console.log("[DRY RUN] 模拟运行模式，将不会执行任何操作");
+		console.log("🧪 [DRY RUN] 模拟运行模式，将不会执行任何操作");
 	}
 
 	const prs = await octokit.paginate(octokit.rest.pulls.list, {
@@ -56,14 +56,20 @@ async function run() {
 		per_page: 100,
 	});
 
-	const targetPrs = prs.filter((pr) =>
-		pr.labels.some((label) => label.name === LABEL_NAME),
+	const now = Date.now();
+	const msPerDay = 1000 * 3600 * 24;
+
+	const stalePrs = prs.filter((pr) => {
+		const updatedAt = new Date(pr.updated_at).getTime();
+		return (now - updatedAt) / msPerDay > DAYS_THRESHOLD;
+	});
+
+	console.log(
+		`🔍 找到 ${stalePrs.length} 个超过 ${DAYS_THRESHOLD} 天未更新的 PR。总 Open PR: ${prs.length}`,
 	);
 
-	console.log(`[i] 找到 ${targetPrs.length} 个待检查的 PR`);
-
-	for (const pr of targetPrs) {
-		console.log(`-> 检查 PR ${pr.number}: ${pr.title}`);
+	for (const pr of stalePrs) {
+		console.log(`\n📋 检查 PR #${pr.number}: ${pr.title}`);
 
 		try {
 			// 标签添加的时间
@@ -78,56 +84,65 @@ async function run() {
 				.reverse()
 				.find((e) => isLabeledEvent(e) && e.label.name === LABEL_NAME);
 
-			if (!labelEvent || !labelEvent.created_at) {
-				console.log(`找不到标签添加时间，跳过`);
-				continue;
-			}
-
-			// 最后一次 commit 的时间
-			const { data: latestCommit } = await octokit.rest.repos.getCommit({
+			const reviews = await octokit.paginate(octokit.rest.pulls.listReviews, {
 				owner: OWNER,
 				repo: REPO,
-				ref: pr.head.sha,
+				pull_number: pr.number,
+				per_page: 100,
 			});
 
-			const lastCommitDateStr =
-				latestCommit.commit.committer?.date || latestCommit.commit.author?.date;
+			const changesRequestedReview = reviews
+				.reverse()
+				.find((review) => review.state === "CHANGES_REQUESTED");
 
-			if (!lastCommitDateStr) {
-				console.log(`找不到 Commit 时间，跳过`);
+			let lastTriggerTime = 0;
+			const triggerReasons: string[] = [];
+
+			if (labelEvent?.created_at) {
+				const labelTime = new Date(labelEvent.created_at).getTime();
+				if (labelTime > lastTriggerTime) {
+					lastTriggerTime = labelTime;
+				}
+				triggerReasons.push(`🏷️ 标签 "${LABEL_NAME}"`);
+			}
+
+			if (changesRequestedReview?.submitted_at) {
+				const reviewTime = new Date(
+					changesRequestedReview.submitted_at,
+				).getTime();
+				if (reviewTime > lastTriggerTime) {
+					lastTriggerTime = reviewTime;
+				}
+				triggerReasons.push("📝 Review 请求更改");
+			}
+
+			if (lastTriggerTime === 0) {
+				console.log(`    ⚪ 无待更新标签或变更请求，跳过`);
 				continue;
 			}
 
-			// 时间差
-			const now = new Date();
-			const labelDate = new Date(labelEvent.created_at);
-			const commitDate = new Date(lastCommitDateStr);
+			const daysSinceTrigger = (now - lastTriggerTime) / msPerDay;
 
-			const daysSinceLabel =
-				(now.getTime() - labelDate.getTime()) / (1000 * 3600 * 24);
-			const daysSinceCommit =
-				(now.getTime() - commitDate.getTime()) / (1000 * 3600 * 24);
+			console.log(`    🧐 触发原因: ${triggerReasons.join(" & ")}`);
+			console.log(`    ⏳ 触发状态距今: ${daysSinceTrigger.toFixed(1)} 天`);
 
-			console.log(`    标签添加距今 ${daysSinceLabel.toFixed(1)} 天`);
-			console.log(`    最后提交距今 ${daysSinceCommit.toFixed(1)} 天`);
-
-			if (daysSinceLabel > DAYS_THRESHOLD && daysSinceCommit > DAYS_THRESHOLD) {
+			if (daysSinceTrigger > DAYS_THRESHOLD) {
 				const branchName = pr.head.ref;
 				const isSameRepo = pr.head.repo?.full_name === `${OWNER}/${REPO}`;
 				const shouldDeleteBranch =
 					isSameRepo && branchName.startsWith("auto-submit-issue");
 
 				if (IS_DRY_RUN) {
-					console.log(`[!] 满足关闭条件`);
-					console.log(`    拟添加评论并关闭 PR #${pr.number}`);
+					console.log(`    🔔 [DRY RUN] 满足关闭条件`);
+					console.log(`        拟添加评论并关闭 PR #${pr.number}`);
 				} else {
-					console.log(`[x] 满足条件，正在关闭此 PR`);
+					console.log(`    🚫 满足条件，正在关闭此 PR...`);
 
 					await octokit.rest.issues.createComment({
 						owner: OWNER,
 						repo: REPO,
 						issue_number: pr.number,
-						body: `你好，由于此 PR 需要更新，但超过 ${DAYS_THRESHOLD} 天未更新，我们已关闭此 PR。如需更新歌词，请打开一个新的 PR。`,
+						body: `你好，由于此 PR 需要更新，但超过 ${DAYS_THRESHOLD} 天未更新，我们已将其关闭。如需继续贡献歌词，请重新打开一个新的 PR。`,
 					});
 
 					await octokit.rest.pulls.update({
@@ -139,22 +154,22 @@ async function run() {
 
 					if (shouldDeleteBranch) {
 						try {
-							console.log(`    删除分支 "${branchName}"`);
+							console.log(`    🗑️ 删除分支 "${branchName}"`);
 							await octokit.rest.git.deleteRef({
 								owner: OWNER,
 								repo: REPO,
 								ref: `heads/${branchName}`,
 							});
 						} catch (err) {
-							console.error(`    删除分支失败`, err);
+							console.error(`    💥 删除分支失败`, err);
 						}
 					}
 				}
 			} else {
-				console.log(`    不满足条件，跳过`);
+				console.log(`    ⏭️ 触发时间未超过 ${DAYS_THRESHOLD} 天，跳过`);
 			}
 		} catch (error) {
-			console.error(`处理 PR #${pr.number} 时出错`, error);
+			console.error(`💥 处理 PR #${pr.number} 时出错`, error);
 		}
 	}
 }
