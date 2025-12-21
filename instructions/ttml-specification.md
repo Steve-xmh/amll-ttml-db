@@ -23,7 +23,7 @@
 <!-- 必须为 UTF-8 编码，且文件不得包含字节顺序标记 (BOM)。 -->
 <tt xmlns="http://www.w3.org/ns/ttml"
     xmlns:ttm="http://www.w3.org/ns/ttml#metadata"
-    xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" 
+    xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions"
     xmlns:amll="http://www.example.com/ns/amll"
     xml:lang="en"
     itunes:timing="Word">
@@ -119,7 +119,7 @@
             <ttm:name type="full">艺人B</ttm:name>
         </ttm:agent>
         <ttm:agent type="group" xml:id="v1000" />
-        
+
         <!-- AMLL 元数据 -->
         <amll:meta key="musicName" value="歌曲名" />
         <amll:meta key="musicName" value="可能的第二个歌曲名" />
@@ -280,13 +280,13 @@
 使用 `<div>` 标签来分割歌曲的不同部分（如主歌、副歌），并通过 `itunes:song-part` 属性来标记。这是可选的内容。
 
 * `itunes:song-part` 属性可以指定为任意值，但我们建议使用以下值：
-    - `Verse` (主歌), 
-    - `Chorus` (副歌), 
-    - `PreChorus` (预副歌), 
-    - `Bridge` (桥段), 
-    - `Intro` (前奏), 
-    - `Outro` (尾奏), 
-    - `Refrain` (叠句), 
+    - `Verse` (主歌),
+    - `Chorus` (副歌),
+    - `PreChorus` (预副歌),
+    - `Bridge` (桥段),
+    - `Intro` (前奏),
+    - `Outro` (尾奏),
+    - `Refrain` (叠句),
     - `Instrumental` (器乐)。
 
 * `<div>` 块可以拥有 `begin` 和 `end` 时间码，其时间范围必须能完全包含内部所有子元素的时间。
@@ -324,7 +324,7 @@
 > AMLL 全系目前还不支持多翻译和多罗马音。不建议现在提交多翻译和多罗马音歌词。
 
 * **翻译**: 使用 `<span ttm:role="x-translation" xml:lang="语言代码">...</span>`。
-* **罗马音**: 使用 `<span ttm:role="x-roman" xml:lang="语言-Latn" xml:scheme="罗马音方案">...</span>`。
+* **罗马音**: 使用 `<span ttm:role="x-roman" xml:lang="语言-Latn">...</span>`。
 * **背景人声**: 使用 `<span ttm:role="x-bg" begin="..." end="...">...</span>`。如果背景人声出现在主唱人声之前，建议将 `<span ttm:role="x-bg">` 标签放在主唱人声的 `<span>` 标签之前。否则，请将 `<span ttm:role="x-bg">` 标签放在 `<p>` 标签的末尾。建议使用半角括号将背景人声文本包裹起来。机器人也会自动添加括号（如果没有）。不建议添加两个或更多括号，尽管词库的机器人可以正确处理，但其它解析器不一定。
 
 ```xml
@@ -339,23 +339,21 @@
     <span ttm:role="x-translation" xml:lang="zh-CN">你所不知道的物语</span>
     <span ttm:role="x-translation" xml:lang="en">The Story You Don't Know</span>
 
-    <!-- 罗马音: 使用 xml:scheme 属性来标记不同的方案 -->
-    <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="hepburn">kimi no shiranai monogatari</span>
-    <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="kunrei">kimi no siranai monogatari</span>
+    <!-- 罗马音 -->
+    <span ttm:role="x-roman" xml:lang="ja-Latn">kimi no shiranai monogatari</span>
 
     <!-- 背景人声 -->
     <span ttm:role="x-bg" begin="00:30.500" end="00:32.500">
         <!-- 背景人声的主歌词 -->
         <span begin="00:30.500" end="00:31.500">(秘密</span>
         <span begin="00:31.600" end="00:32.500">だよ)</span>
-        
+
         <!-- 背景人声的翻译 -->
         <span ttm:role="x-translation" xml:lang="zh-CN">是秘密哦</span>
         <span ttm:role="x-translation" xml:lang="en">It's a secret</span>
-        
+
         <!-- 背景人声的罗马音 -->
-        <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="hepburn">himitsu da yo</span>
-        <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="kunrei">himitu da yo</span>
+        <span ttm:role="x-roman" xml:lang="ja-Latn">himitsu da yo</span>
     </span>
 </p>
 ```

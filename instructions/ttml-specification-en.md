@@ -23,7 +23,7 @@ Every TTML file must be a valid XML document and include the following basic str
 <!-- The encoding must be UTF-8 and the file must not contain a Byte Order Mark (BOM). -->
 <tt xmlns="http://www.w3.org/ns/ttml"
     xmlns:ttm="http://www.w3.org/ns/ttml#metadata"
-    xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions" 
+    xmlns:itunes="http://itunes.apple.com/lyric-ttml-extensions"
     xmlns:amll="http://www.example.com/ns/amll"
     xml:lang="en"
     itunes:timing="Word">
@@ -124,7 +124,7 @@ Please refer to the [AMLL Wiki](https://github.com/Steve-xmh/amll-ttml-tool/wiki
             <ttm:name type="full">Artist B</ttm:name>
         </ttm:agent>
         <ttm:agent type="group" xml:id="v1000" />
-        
+
         <!-- AMLL metadata -->
         <amll:meta key="musicName" value="Song Title" />
         <amll:meta key="musicName" value="Possible Second Song Title" />
@@ -329,7 +329,7 @@ You can nest `<span>` tags within the main lyric line to provide translations, r
 > The AMLL suite does not yet support multiple translations or multiple romanizations. Submitting lyrics with multiple translations or romanizations is not recommended at this time.
 
   * **Translation**: Use `<span ttm:role="x-translation" xml:lang="language-code">...</span>`.
-  * **Romanization**: Use `<span ttm:role="x-roman" xml:lang="language-Latn" xml:scheme="romanization-scheme">...</span>`.
+  * **Romanization**: Use `<span ttm:role="x-roman" xml:lang="language-Latn">...</span>`.
   *   **Background Vocals**: Use `<span ttm:role="x-bg" begin="..." end="...">...</span>`. If the background vocal appears before the main vocal, it is recommended to place the `<span ttm:role="x-bg">` tag before the main vocal's `<span>` tag. Otherwise, place the `<span ttm:role="x-bg">` tag at the end of the `<p>` tag. It is recommended to wrap the background vocal text in half-width parentheses. The robot will also automatically add parentheses (if they are missing). It is not recommended to add two or more parentheses, as although the library's robot can handle it, other parsers may not.
 
 ```xml
@@ -344,23 +344,21 @@ You can nest `<span>` tags within the main lyric line to provide translations, r
     <span ttm:role="x-translation" xml:lang="zh-CN">你所不知道的物语</span>
     <span ttm:role="x-translation" xml:lang="en">The Story You Don't Know</span>
 
-    <!-- Romaji: Use the xml:scheme attribute to mark different schemes -->
-    <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="hepburn">kimi no shiranai monogatari</span>
-    <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="kunrei">kimi no siranai monogatari</span>
+    <!-- Romaji -->
+    <span ttm:role="x-roman" xml:lang="ja-Latn">kimi no shiranai monogatari</span>
 
     <!-- Background Vocals -->
     <span ttm:role="x-bg" begin="00:30.500" end="00:32.500">
         <!-- Main lyrics for background vocals -->
         <span begin="00:30.500" end="00:31.500">(秘密</span>
         <span begin="00:31.600" end="00:32.500">だよ)</span>
-        
+
         <!-- Translation of background vocals -->
         <span ttm:role="x-translation" xml:lang="zh-CN">是秘密哦</span>
         <span ttm:role="x-translation" xml:lang="en">It's a secret</span>
-        
+
         <!-- Romanization of background vocals  -->
-        <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="hepburn">himitsu da yo</span>
-        <span ttm:role="x-roman" xml:lang="ja-Latn" xml:scheme="kunrei">himitu da yo</span>
+        <span ttm:role="x-roman" xml:lang="ja-Latn">himitsu da yo</span>
     </span>
 </p>
 ```
