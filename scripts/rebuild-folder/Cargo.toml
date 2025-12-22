@@ -15,6 +15,11 @@ ureq = "^3"
 base64 = "^0.22"
 rayon = "1"
 indicatif = "0.18"
+zip = "7.0.0"
 
 lyrics_helper_core = "0.2.0"
 ttml_processor = { version = "0.1.8" }
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }

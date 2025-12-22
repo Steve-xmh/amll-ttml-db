@@ -1,4 +1,4 @@
-name: 重建歌词文件夹并通知镜像站同步
+name: 重建歌词文件夹
 
 on:
   workflow_dispatch:
@@ -9,11 +9,14 @@ on:
       - "raw-lyrics/**"
 
 concurrency:
-  group: check-submit
+  group: rebuild-folder
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
-  check-submit:
+  rebuild-folder:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -37,6 +40,18 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@users.noreply.github.com'
           cargo run --release --locked
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 发布数据库构建
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: db-latest
+          name: "AMLL 歌词数据库最新构建"
+          body: "尚在测试中，不建议使用"
+          files: |
+            raw-lyrics.zip
+            version.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

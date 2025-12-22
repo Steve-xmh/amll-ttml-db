@@ -2,6 +2,7 @@ use std::{
     borrow::Cow,
     cmp::Ordering,
     collections::HashMap,
+    fs::File,
     io::{BufWriter, Write},
     path::{Path, PathBuf},
     str::FromStr,
@@ -14,6 +15,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use lyrics_helper_core::{DefaultLanguageOptions, TtmlParsingOptions};
 use rayon::prelude::*;
 use ttml_processor::parse_ttml;
+use zip::write::SimpleFileOptions;
 
 struct ParsedLyric {
     lines: Vec<amll_lyric::LyricLine<'static>>,
@@ -126,7 +128,7 @@ impl FromStr for RawLyricInfo {
         let author_id = parts[1].to_string();
         let random_str = parts[2].to_string();
 
-        Ok(RawLyricInfo {
+        Ok(Self {
             timestamp,
             author_id,
             random_str,
@@ -173,6 +175,20 @@ fn push(branch: &str) -> Result<()> {
         .context("无法执行 git push 命令")?;
     anyhow::ensure!(result.success(), "git push 命令执行失败");
     Ok(())
+}
+
+fn get_current_git_hash() -> Result<String> {
+    let output = std::process::Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .context("无法执行 git rev-parse 命令")?;
+
+    let hash = String::from_utf8(output.stdout)
+        .context("Git hash 输出包含非 UTF-8 字符")?
+        .trim()
+        .to_string();
+
+    Ok(hash)
 }
 
 fn load_raw_lyrics(raw_dir: &Path) -> Result<Vec<std::fs::DirEntry>> {
@@ -372,11 +388,10 @@ fn generate_contributor_report(
             c.github_id
         );
 
-        let user_link = if let Some(login) = &c.github_login {
-            format!("[{login}](https://github.com/{login})")
-        } else {
-            format!("`#{}`", c.github_id)
-        };
+        let user_link = c.github_login.as_ref().map_or_else(
+            || format!("`#{}`", c.github_id),
+            |login| format!("[{login}](https://github.com/{login})"),
+        );
 
         writeln!(
             md_file,
@@ -384,6 +399,68 @@ fn generate_contributor_report(
             rank_display, avatar_html, user_link, c.count
         )?;
     }
+
+    Ok(())
+}
+
+fn generate_zip_archive(layout: &ProjectLayout, entries: &[std::fs::DirEntry]) -> Result<()> {
+    println!("正在生成 raw-lyrics.zip 压缩包...");
+    let start = Instant::now();
+
+    let zip_path = layout.root.join("raw-lyrics.zip");
+    let file = File::create(&zip_path).context("无法创建压缩包文件")?;
+
+    let mut zip = zip::ZipWriter::new(file);
+    let options = SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated)
+        .unix_permissions(0o644);
+
+    let pb = ProgressBar::new(entries.len() as u64);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] {bar:40.yellow/white} {pos}/{len} {msg}")?
+            .progress_chars("##-"),
+    );
+    pb.set_message("正在压缩歌词...");
+
+    for entry in entries {
+        let path = entry.path();
+        let file_name = entry.file_name().to_string_lossy().into_owned();
+
+        zip.start_file(file_name, options)?;
+        let mut f = File::open(path)?;
+        std::io::copy(&mut f, &mut zip)?;
+
+        pb.inc(1);
+    }
+    pb.finish_with_message("歌词压缩完成");
+
+    let extra_files = ["raw-lyrics-index.jsonl", "contributors.jsonl"];
+
+    for filename in extra_files {
+        let file_path = layout.metadata_dir.join(filename);
+
+        if file_path.exists() {
+            println!("正在添加元数据文件: {filename}");
+
+            zip.start_file(filename, options)?;
+
+            let mut f = File::open(&file_path)
+                .with_context(|| format!("无法读取文件: {}", file_path.display()))?;
+            std::io::copy(&mut f, &mut zip)?;
+        } else {
+            eprintln!("找不到元数据文件 {}", file_path.display());
+        }
+    }
+
+    zip.finish()?;
+
+    let duration = start.elapsed();
+    println!(
+        "压缩包生成完毕，共 {} 个歌词文件及元数据，耗时 {:.2?}",
+        entries.len(),
+        duration
+    );
 
     Ok(())
 }
@@ -479,7 +556,7 @@ fn main() -> Result<()> {
                             .and_modify(|x: &mut Contributor| {
                                 x.count += 1;
                                 if x.github_login.is_none() && login.is_some() {
-                                    x.github_login = login.clone();
+                                    x.github_login.clone_from(&login);
                                 }
                             })
                             .or_insert_with(|| Contributor {
@@ -624,6 +701,21 @@ fn main() -> Result<()> {
     }
 
     generate_contributor_report(&layout, contribution_map)?;
+
+    println!("正在生成版本信息文件...");
+    let current_hash = get_current_git_hash().unwrap_or_else(|_| "unknown".to_string());
+    let version_info = serde_json::json!({
+        "commit": current_hash,
+        "timestamp": Utc::now().timestamp(),
+        "build_date": Utc::now().to_rfc3339(),
+        "file_count": raw_lyrics.len(),
+    });
+
+    let version_file_path = layout.root.join("version.json");
+    let version_file = std::fs::File::create(&version_file_path)?;
+    serde_json::to_writer_pretty(version_file, &version_info)?;
+
+    generate_zip_archive(&layout, &raw_lyrics)?;
 
     if push_git {
         if is_git_worktree_clean()? {
