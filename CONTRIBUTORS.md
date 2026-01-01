@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-02 00:34 (UTC+8)
+> 最后更新于 2026-01-02 00:41 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -24,7 +24,7 @@
 | 6 | <img src="https://avatars.githubusercontent.com/u/174598250?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ASyunagi](https://github.com/ASyunagi) | 141 |
 | 7 | <img src="https://avatars.githubusercontent.com/u/92374733?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Seayay](https://github.com/Seayay) | 127 |
 | 8 | <img src="https://avatars.githubusercontent.com/u/115442729?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[1625423178](https://github.com/1625423178) | 98 |
-| 9 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 79 |
+| 9 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 80 |
 | 10 | <img src="https://avatars.githubusercontent.com/u/117785554?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[gaofurui](https://github.com/gaofurui) | 52 |
 | 11 | <img src="https://avatars.githubusercontent.com/u/86943191?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[bywhite0](https://github.com/bywhite0) | 41 |
 | 12 | <img src="https://avatars.githubusercontent.com/u/72502111?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Havenmab](https://github.com/Havenmab) | 39 |
@@ -117,16 +117,17 @@
 | 99 | <img src="https://avatars.githubusercontent.com/u/146098469?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[HKLHaoBin](https://github.com/HKLHaoBin) | 1 |
 | 100 | <img src="https://avatars.githubusercontent.com/u/166970328?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[zhixuan02](https://github.com/zhixuan02) | 1 |
 | 101 | <img src="https://avatars.githubusercontent.com/u/181228823?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[watercooling480](https://github.com/watercooling480) | 1 |
-| 102 | <img src="https://avatars.githubusercontent.com/u/58398544?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[chali1997](https://github.com/chali1997) | 1 |
-| 103 | <img src="https://avatars.githubusercontent.com/u/63804958?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[noo0o0o0ob](https://github.com/noo0o0o0ob) | 1 |
-| 104 | <img src="https://avatars.githubusercontent.com/u/65543422?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[IntoSky0405](https://github.com/IntoSky0405) | 1 |
-| 105 | <img src="https://avatars.githubusercontent.com/u/74817824?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[mcuTiger](https://github.com/mcuTiger) | 1 |
-| 106 | <img src="https://avatars.githubusercontent.com/u/74950717?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[PlumPlum-FISH](https://github.com/PlumPlum-FISH) | 1 |
-| 107 | <img src="https://avatars.githubusercontent.com/u/76270408?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[konoluoboda](https://github.com/konoluoboda) | 1 |
-| 108 | <img src="https://avatars.githubusercontent.com/u/82600685?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[duhuaxu](https://github.com/duhuaxu) | 1 |
-| 109 | <img src="https://avatars.githubusercontent.com/u/93859788?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[YuSiwu](https://github.com/YuSiwu) | 1 |
-| 110 | <img src="https://avatars.githubusercontent.com/u/96913885?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xinshao-air](https://github.com/Xinshao-air) | 1 |
-| 111 | <img src="https://avatars.githubusercontent.com/u/ASyunagi?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[174598250](https://github.com/174598250) | 1 |
-| 112 | <img src="https://avatars.githubusercontent.com/u/Des-Magmeta?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Magmeta](https://github.com/Magmeta) | 1 |
-| 113 | <img src="https://avatars.githubusercontent.com/u/Linho1219?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho](https://github.com/Linho) | 1 |
-| 114 | <img src="https://avatars.githubusercontent.com/u/bywhite0?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[86943191](https://github.com/86943191) | 1 |
+| 102 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 1 |
+| 103 | <img src="https://avatars.githubusercontent.com/u/58398544?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[chali1997](https://github.com/chali1997) | 1 |
+| 104 | <img src="https://avatars.githubusercontent.com/u/63804958?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[noo0o0o0ob](https://github.com/noo0o0o0ob) | 1 |
+| 105 | <img src="https://avatars.githubusercontent.com/u/65543422?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[IntoSky0405](https://github.com/IntoSky0405) | 1 |
+| 106 | <img src="https://avatars.githubusercontent.com/u/74817824?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[mcuTiger](https://github.com/mcuTiger) | 1 |
+| 107 | <img src="https://avatars.githubusercontent.com/u/74950717?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[PlumPlum-FISH](https://github.com/PlumPlum-FISH) | 1 |
+| 108 | <img src="https://avatars.githubusercontent.com/u/76270408?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[konoluoboda](https://github.com/konoluoboda) | 1 |
+| 109 | <img src="https://avatars.githubusercontent.com/u/82600685?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[duhuaxu](https://github.com/duhuaxu) | 1 |
+| 110 | <img src="https://avatars.githubusercontent.com/u/93859788?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[YuSiwu](https://github.com/YuSiwu) | 1 |
+| 111 | <img src="https://avatars.githubusercontent.com/u/96913885?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xinshao-air](https://github.com/Xinshao-air) | 1 |
+| 112 | <img src="https://avatars.githubusercontent.com/u/ASyunagi?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[174598250](https://github.com/174598250) | 1 |
+| 113 | <img src="https://avatars.githubusercontent.com/u/Des-Magmeta?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Magmeta](https://github.com/Magmeta) | 1 |
+| 114 | <img src="https://avatars.githubusercontent.com/u/Linho1219?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho](https://github.com/Linho) | 1 |
+| 115 | <img src="https://avatars.githubusercontent.com/u/bywhite0?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[86943191](https://github.com/86943191) | 1 |
