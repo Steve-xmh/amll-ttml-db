@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-02 12:14 (UTC+8)
+> 最后更新于 2026-01-02 12:29 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -54,8 +54,8 @@
 | 36 | <img src="https://avatars.githubusercontent.com/u/76810494?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Big-Cake-jpg](https://github.com/Big-Cake-jpg) | 10 |
 | 37 | <img src="https://avatars.githubusercontent.com/u/99335871?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Tseshongfeeshur](https://github.com/Tseshongfeeshur) | 10 |
 | 38 | <img src="https://avatars.githubusercontent.com/u/12137562?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Mrs4s](https://github.com/Mrs4s) | 9 |
-| 39 | <img src="https://avatars.githubusercontent.com/u/39523898?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Steve-xmh](https://github.com/Steve-xmh) | 9 |
-| 40 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 8 |
+| 39 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 9 |
+| 40 | <img src="https://avatars.githubusercontent.com/u/39523898?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Steve-xmh](https://github.com/Steve-xmh) | 9 |
 | 41 | <img src="https://avatars.githubusercontent.com/u/227764671?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />`#227764671` | 8 |
 | 42 | <img src="https://avatars.githubusercontent.com/u/32015980?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho1219](https://github.com/Linho1219) | 8 |
 | 43 | <img src="https://avatars.githubusercontent.com/u/56493273?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MianSoft](https://github.com/MianSoft) | 8 |
