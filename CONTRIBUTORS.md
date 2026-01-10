@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-10 17:00 (UTC+8)
+> 最后更新于 2026-01-10 17:04 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -18,13 +18,13 @@
 | :---: | :--- | :---: |
 | 🥇 | <img src="https://avatars.githubusercontent.com/u/50747104?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xionghaizi001](https://github.com/Xionghaizi001) | 338 |
 | 🥈 | <img src="https://avatars.githubusercontent.com/u/50987405?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ITManCHINA](https://github.com/ITManCHINA) | 251 |
-| 🥉 | <img src="https://avatars.githubusercontent.com/u/68000793?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ranhengzhang](https://github.com/ranhengzhang) | 179 |
-| 4 | <img src="https://avatars.githubusercontent.com/u/108002475?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[apoint123](https://github.com/apoint123) | 163 |
+| 🥉 | <img src="https://avatars.githubusercontent.com/u/68000793?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ranhengzhang](https://github.com/ranhengzhang) | 180 |
+| 4 | <img src="https://avatars.githubusercontent.com/u/108002475?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[apoint123](https://github.com/apoint123) | 164 |
 | 5 | <img src="https://avatars.githubusercontent.com/u/174598250?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ASyunagi](https://github.com/ASyunagi) | 159 |
 | 6 | <img src="https://avatars.githubusercontent.com/u/37899975?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WorldSansha](https://github.com/WorldSansha) | 152 |
 | 7 | <img src="https://avatars.githubusercontent.com/u/92374733?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Seayay](https://github.com/Seayay) | 127 |
 | 8 | <img src="https://avatars.githubusercontent.com/u/115442729?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[1625423178](https://github.com/1625423178) | 99 |
-| 9 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 89 |
+| 9 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 90 |
 | 10 | <img src="https://avatars.githubusercontent.com/u/117785554?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[gaofurui](https://github.com/gaofurui) | 52 |
 | 11 | <img src="https://avatars.githubusercontent.com/u/86943191?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[bywhite0](https://github.com/bywhite0) | 41 |
 | 12 | <img src="https://avatars.githubusercontent.com/u/72502111?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Havenmab](https://github.com/Havenmab) | 39 |
@@ -72,15 +72,15 @@
 | 54 | <img src="https://avatars.githubusercontent.com/u/136240303?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[shaojin666](https://github.com/shaojin666) | 5 |
 | 55 | <img src="https://avatars.githubusercontent.com/u/151196223?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Torotar](https://github.com/Torotar) | 5 |
 | 56 | <img src="https://avatars.githubusercontent.com/u/227403208?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[syaro715](https://github.com/syaro715) | 5 |
-| 57 | <img src="https://avatars.githubusercontent.com/u/56755417?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Eplorr](https://github.com/Eplorr) | 5 |
-| 58 | <img src="https://avatars.githubusercontent.com/u/98522202?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[XanderHo](https://github.com/XanderHo) | 5 |
-| 59 | <img src="https://avatars.githubusercontent.com/u/kmgcc?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kmg](https://github.com/kmg) | 5 |
-| 60 | <img src="https://avatars.githubusercontent.com/u/101032423?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[DirectCuiFei](https://github.com/DirectCuiFei) | 4 |
-| 61 | <img src="https://avatars.githubusercontent.com/u/113187535?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[marenol1mg](https://github.com/marenol1mg) | 4 |
-| 62 | <img src="https://avatars.githubusercontent.com/u/117369476?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Ramadani1t](https://github.com/Ramadani1t) | 4 |
-| 63 | <img src="https://avatars.githubusercontent.com/u/121381012?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[zhazhaLOL](https://github.com/zhazhaLOL) | 4 |
-| 64 | <img src="https://avatars.githubusercontent.com/u/139452696?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[tfan114](https://github.com/tfan114) | 4 |
-| 65 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 4 |
+| 57 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 5 |
+| 58 | <img src="https://avatars.githubusercontent.com/u/56755417?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Eplorr](https://github.com/Eplorr) | 5 |
+| 59 | <img src="https://avatars.githubusercontent.com/u/98522202?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[XanderHo](https://github.com/XanderHo) | 5 |
+| 60 | <img src="https://avatars.githubusercontent.com/u/kmgcc?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kmg](https://github.com/kmg) | 5 |
+| 61 | <img src="https://avatars.githubusercontent.com/u/101032423?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[DirectCuiFei](https://github.com/DirectCuiFei) | 4 |
+| 62 | <img src="https://avatars.githubusercontent.com/u/113187535?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[marenol1mg](https://github.com/marenol1mg) | 4 |
+| 63 | <img src="https://avatars.githubusercontent.com/u/117369476?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Ramadani1t](https://github.com/Ramadani1t) | 4 |
+| 64 | <img src="https://avatars.githubusercontent.com/u/121381012?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[zhazhaLOL](https://github.com/zhazhaLOL) | 4 |
+| 65 | <img src="https://avatars.githubusercontent.com/u/139452696?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[tfan114](https://github.com/tfan114) | 4 |
 | 66 | <img src="https://avatars.githubusercontent.com/u/72300219?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ljy6-6-6](https://github.com/ljy6-6-6) | 4 |
 | 67 | <img src="https://avatars.githubusercontent.com/u/153404985?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Wemsur](https://github.com/Wemsur) | 3 |
 | 68 | <img src="https://avatars.githubusercontent.com/u/162801438?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MapleBeforeCold](https://github.com/MapleBeforeCold) | 3 |
