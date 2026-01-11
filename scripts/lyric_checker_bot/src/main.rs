@@ -192,7 +192,7 @@ async fn main() -> Result<()> {
     match event_name.as_str() {
         "issue_comment" => {
             info!("处理 Issue 评论");
-            if let Err(e) = handle_command(&github, &http_client, &root_path).await {
+            if let Err(e) = Box::pin(handle_command(&github, &http_client, &root_path)).await {
                 error!("处理 Issue 评论失败: {e:?}");
             }
         }
@@ -255,10 +255,18 @@ async fn handle_command(
         github
             .add_labels_to_pr(pr_number, commenter, labels_str.trim(), comment_id)
             .await
-    } else if let Some(url) = body
-        .strip_prefix("/update")
-        .and_then(|s| s.split_whitespace().next())
-    {
+    } else if let Some(args) = body.strip_prefix("/update") {
+        let args = args.trim();
+
+        if args.is_empty() {
+            return Ok(());
+        }
+
+        let (url, new_remarks) = match args.split_once(char::is_whitespace) {
+            Some((u, r)) => (u, Some(r.trim().to_string())), // 有 URL 也有备注
+            None => (args, None),                            // 只有 URL，没有备注
+        };
+
         let original_ttml_content = match http_client.get(url).send().await {
             Ok(resp) => match resp.text().await {
                 Ok(text) => text,
@@ -283,8 +291,11 @@ async fn handle_command(
                     warnings: &processed_data.warnings,
                     root_path,
                     requester: commenter,
+                    metadata_store: &processed_data.metadata_store,
+                    remarks: new_remarks,
+                    comment_id,
                 };
-                github.update_pr(&update_context).await?;
+                Box::pin(github.update_pr(&update_context)).await?;
             }
             Err(err_msg) => {
                 github

@@ -38,6 +38,9 @@ pub struct PrUpdateContext<'a> {
     pub warnings: &'a [String],
     pub root_path: &'a Path,
     pub requester: &'a str,
+    pub metadata_store: &'a MetadataStore,
+    pub remarks: Option<String>,
+    pub comment_id: u64,
 }
 
 #[derive(Clone)]
@@ -263,7 +266,13 @@ impl GitHubClient {
             .await?;
         info!("已关闭并锁定 Issue #{issue_number}");
 
-        let pr_body = Self::build_pr_body(context);
+        let pr_body = Self::generate_body_content(
+            context.issue.number,
+            &context.issue.user.login,
+            context.metadata_store,
+            context.remarks,
+            context.warnings,
+        );
         let pr_title = Self::generate_pr_title(context);
 
         let pr = self
@@ -321,13 +330,13 @@ impl GitHubClient {
         issue_title.clone()
     }
 
-    fn build_pr_body(context: &PrContext<'_>) -> String {
-        let issue_number = context.issue.number;
-        let user_login = &context.issue.user.login;
-        let metadata_store = context.metadata_store;
-        let remarks = context.remarks;
-        let warnings = context.warnings;
-
+    fn generate_body_content(
+        issue_number: u64,
+        user_login: &str,
+        metadata_store: &MetadataStore,
+        remarks: &str,
+        warnings: &[String],
+    ) -> String {
         let mut body_parts = Vec::new();
 
         body_parts.push(format!("### 歌词议题\n#{issue_number}"));
@@ -485,7 +494,6 @@ impl GitHubClient {
             context.requester, context.pr_number
         );
 
-        // 权限检查
         let Some(pr) = self
             .verify_pr_permission(context.pr_number, context.requester)
             .await?
@@ -493,13 +501,41 @@ impl GitHubClient {
             return Ok(());
         };
 
-        // 找到要更新的文件
+        let file_to_update = self
+            .find_target_file(context.pr_number, context.root_path)
+            .await?;
+
+        let branch_name = &pr.head.ref_field;
+        let changes_made = self
+            .execute_git_changes(branch_name, &file_to_update, context)
+            .await?;
+
+        if !changes_made {
+            return Ok(());
+        }
+
+        if let Err(e) = self.refresh_pr_metadata(&pr, context).await {
+            warn!("更新 PR #{} 元数据失败: {:?}", context.pr_number, e);
+        }
+
+        self.send_feedback_reaction(context.comment_id).await;
+
+        info!("成功更新 PR #{}", context.pr_number);
+        Ok(())
+    }
+
+    async fn find_target_file(
+        &self,
+        pr_number: u64,
+        root_path: &Path,
+    ) -> Result<std::path::PathBuf> {
         let files = self
             .client
             .pulls(&self.owner, &self.repo)
-            .list_files(context.pr_number)
+            .list_files(pr_number)
             .await?
             .items;
+
         let ttml_file = files.iter().find(|f| {
             std::path::Path::new(&f.filename)
                 .extension()
@@ -507,40 +543,34 @@ impl GitHubClient {
                 && f.filename.starts_with("raw-lyrics/")
         });
 
-        let file_to_update = if let Some(file) = ttml_file {
-            context.root_path.join(&file.filename)
+        if let Some(file) = ttml_file {
+            Ok(root_path.join(&file.filename))
         } else {
-            error!("在 PR #{} 中未找到 .ttml 文件", context.pr_number);
-            let error_comment = format!(
-                "抱歉，@{requester}，无法在此 PR 中找到需要更新的 TTML 文件。",
-                requester = context.requester
-            );
-            self.client
-                .issues(&self.owner, &self.repo)
-                .create_comment(context.pr_number, error_comment)
-                .await?;
-            return Ok(());
-        };
-        info!(
-            "将在 PR #{} 中更新文件: {}",
-            context.pr_number,
-            file_to_update.display()
-        );
+            let msg = format!("在 PR #{pr_number} 中未找到 raw-lyrics/ 下的 .ttml 文件");
+            error!("{}", msg);
+            anyhow::bail!(msg)
+        }
+    }
 
-        // Git 操作
-        let branch_name = &pr.head.ref_field;
+    async fn execute_git_changes(
+        &self,
+        branch_name: &str,
+        file_path: &Path,
+        context: &PrUpdateContext<'_>,
+    ) -> Result<bool> {
         git_utils::checkout_main_branch().await?;
         git_utils::checkout_branch(branch_name).await?;
         git_utils::pull_branch(branch_name)
             .await
             .context("拉取分支失败")?;
 
-        fs::write(&file_to_update, context.compact_ttml)
-            .await
-            .context(format!("写入文件 {} 失败", file_to_update.display()))?;
-        info!("已将更新后的歌词写入到: {}", file_to_update.display());
+        info!("将更新文件: {}", file_path.display());
 
-        git_utils::add_path(&file_to_update).await?;
+        fs::write(file_path, context.compact_ttml)
+            .await
+            .context(format!("写入文件 {} 失败", file_path.display()))?;
+
+        git_utils::add_path(file_path).await?;
 
         if !git_utils::has_staged_changes().await? {
             let no_change_comment = format!(
@@ -550,42 +580,65 @@ impl GitHubClient {
             self.post_comment(context.pr_number, &no_change_comment)
                 .await?;
             git_utils::checkout_main_branch().await?;
-            return Ok(());
+            return Ok(false);
         }
 
         let commit_message = format!("更新歌词文件内容\n\n由 @{} 请求更新。", context.requester);
         git_utils::commit(&commit_message).await?;
         git_utils::force_push(branch_name).await?;
+
         git_utils::checkout_main_branch().await?;
 
-        // 发表评论
-        let mut base_text = format!(
-            "@{requester}，歌词文件已根据你的请求更新！",
-            requester = context.requester
-        );
-        if !context.warnings.is_empty() {
-            let warnings_list = context
-                .warnings
-                .iter()
-                .map(|w| format!("> - {w}"))
-                .collect::<Vec<_>>()
-                .join("\n");
-            let warnings_section =
-                format!("\n\n> [!WARNING]\n> 解析歌词文件时发现以下问题:\n{warnings_list}");
-            base_text.push_str(&warnings_section);
-        }
+        Ok(true)
+    }
 
-        let update_comment = Self::build_body(&base_text, None, 65535);
+    async fn refresh_pr_metadata(
+        &self,
+        pr: &octocrab::models::pulls::PullRequest,
+        context: &PrUpdateContext<'_>,
+    ) -> Result<()> {
+        let Some(issue_number) = Self::parse_issue_number_from_pr_body(pr.body.as_deref()) else {
+            warn!("无法解析关联 Issue 编号，跳过更新 PR Body。");
+            return Ok(());
+        };
 
-        self.post_comment(context.pr_number, &update_comment)
+        let issue = self
+            .client
+            .issues(&self.owner, &self.repo)
+            .get(issue_number)
             .await?;
+        let original_author = &issue.user.login;
+        let remarks_to_use = context.remarks.as_deref().unwrap_or("");
 
-        info!("成功更新 PR #{} 并发表了评论。", context.pr_number);
+        let new_body = Self::generate_body_content(
+            issue_number,
+            original_author,
+            context.metadata_store,
+            remarks_to_use,
+            context.warnings,
+        );
+
+        self.client
+            .pulls(&self.owner, &self.repo)
+            .update(context.pr_number)
+            .body(&new_body)
+            .send()
+            .await?;
 
         Ok(())
     }
 
-    /// 发表评论
+    async fn send_feedback_reaction(&self, comment_id: u64) {
+        if let Err(e) = self
+            .client
+            .issues(&self.owner, &self.repo)
+            .create_comment_reaction(comment_id, ReactionContent::PlusOne)
+            .await
+        {
+            warn!("给评论添加 reaction 失败: {e:?}");
+        }
+    }
+
     pub async fn post_comment(&self, issue_or_pr_number: u64, body: &str) -> Result<()> {
         self.client
             .issues(&self.owner, &self.repo)
