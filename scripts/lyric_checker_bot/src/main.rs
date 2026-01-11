@@ -2,13 +2,16 @@ mod git_utils;
 mod github_api;
 mod validator;
 
+use std::fs;
+use std::io::BufRead;
+use std::io::BufReader;
+
 use anyhow::{Context, Result};
 use lyrics_helper_core::{
     DefaultLanguageOptions, MetadataStore, TtmlGenerationOptions, TtmlParsingOptions,
 };
 use reqwest::Client;
 use serde::Deserialize;
-use std::fs;
 use std::path::{Path, PathBuf};
 use tracing::{error, info, warn};
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
@@ -20,6 +23,56 @@ struct TtmlProcessingOutput {
     compact_ttml: String,
     metadata_store: MetadataStore,
     warnings: Vec<String>,
+}
+
+#[allow(dead_code)]
+#[derive(Deserialize, Debug)]
+struct ContributorEntry {
+    count: u64,
+
+    #[serde(rename = "githubId")]
+    github_id: String,
+
+    #[serde(rename = "githubLogin")]
+    github_username: String,
+}
+
+/// 从贡献者名单中寻找给定 GitHub ID 的用户，返回 False 代表不在名单中
+///
+/// 一个典型的应用是判断用户是否是第一次提交以添加 “首次投稿” 标签
+fn check_is_contributor(root_path: &Path, user_id: u64) -> bool {
+    let contributors_path = root_path.join("metadata/contributors.jsonl");
+
+    if !contributors_path.exists() {
+        error!("未能找到贡献者名单文件");
+        return true;
+    }
+
+    let file = match fs::File::open(&contributors_path) {
+        Ok(f) => f,
+        Err(e) => {
+            warn!("无法打开贡献者文件: {e:?}");
+            return true;
+        }
+    };
+
+    let reader = BufReader::new(file);
+    let target_id_str = user_id.to_string();
+
+    for line in reader.lines() {
+        match line {
+            Ok(content) => {
+                if let Ok(entry) = serde_json::from_str::<ContributorEntry>(&content)
+                    && entry.github_id == target_id_str
+                {
+                    return true;
+                }
+            }
+            Err(e) => warn!("读取贡献者行失败: {e:?}"),
+        }
+    }
+
+    false
 }
 
 fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, String> {
@@ -353,6 +406,9 @@ async fn process_issue(
         Ok(processed_data) => {
             info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
 
+            let is_contributor = check_is_contributor(root_path, issue.user.id.0);
+            let is_first_time = !is_contributor;
+
             let pr_context = PrContext {
                 issue,
                 original_ttml: &original_ttml_content,
@@ -361,6 +417,7 @@ async fn process_issue(
                 remarks: &remarks,
                 warnings: &processed_data.warnings,
                 root_path,
+                is_first_time,
             };
 
             github.post_success_and_create_pr(&pr_context).await?;
@@ -372,4 +429,63 @@ async fn process_issue(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+    use std::fs;
+
+    fn setup_test_env(dir_name: &str) -> PathBuf {
+        let mut temp_dir = env::temp_dir();
+        temp_dir.push(dir_name);
+
+        if temp_dir.exists() {
+            let _ = fs::remove_dir_all(&temp_dir);
+        }
+        let _ = fs::create_dir_all(temp_dir.join("metadata"));
+
+        temp_dir
+    }
+
+    fn cleanup_test_env(path: &Path) {
+        let _ = fs::remove_dir_all(path);
+    }
+
+    #[test]
+    fn test_check_is_contributor_detection() {
+        let root_path = setup_test_env("test_lyric_bot_contributors");
+        let file_path = root_path.join("metadata/contributors.jsonl");
+
+        let content = r#"
+{"count":338,"githubId":"1001","githubLogin":"OldUserA"}
+{"count":251,"githubId":"1002","githubLogin":"OldUserB"}
+"#;
+        fs::write(&file_path, content).expect("无法写入测试文件");
+
+        assert!(
+            check_is_contributor(&root_path, 1001),
+            "老贡献者 (1001) 应该被识别出来"
+        );
+
+        assert!(
+            !check_is_contributor(&root_path, 9999),
+            "新用户 (9999) 不应该被识别为贡献者"
+        );
+
+        cleanup_test_env(&root_path);
+    }
+
+    #[test]
+    fn test_check_is_contributor_missing_file() {
+        let root_path = setup_test_env("test_lyric_bot_missing_file");
+
+        assert!(
+            check_is_contributor(&root_path, 12345),
+            "文件丢失时，应默认为老贡献者以避免误打标签"
+        );
+
+        cleanup_test_env(&root_path);
+    }
 }

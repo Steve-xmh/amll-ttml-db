@@ -19,6 +19,7 @@ use crate::git_utils;
 
 const SUBMISSION_LABEL: &str = "歌词提交/补正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
+const FIRST_TIME_LABEL: &str = "首次投稿";
 
 pub struct PrContext<'a> {
     pub issue: &'a Issue,
@@ -28,6 +29,7 @@ pub struct PrContext<'a> {
     pub remarks: &'a str,
     pub warnings: &'a [String],
     pub root_path: &'a Path,
+    pub is_first_time: bool,
 }
 
 pub struct PrUpdateContext<'a> {
@@ -264,13 +266,30 @@ impl GitHubClient {
         let pr_body = Self::build_pr_body(context);
         let pr_title = Self::generate_pr_title(context);
 
-        self.client
+        let pr = self
+            .client
             .pulls(&self.owner, &self.repo)
             .create(&pr_title, &submit_branch, "main")
             .body(&pr_body)
             .send()
             .await?;
+
         info!("已为 Issue #{issue_number} 创建关联的 Pull Request。");
+
+        if context.is_first_time {
+            info!(
+                "用户 {} 为首次投稿，正在添加标签...",
+                context.issue.user.login
+            );
+            if let Err(e) = self
+                .client
+                .issues(&self.owner, &self.repo)
+                .add_labels(pr.number, &[FIRST_TIME_LABEL.to_string()])
+                .await
+            {
+                error!("添加首次投稿标签失败: {e:?}");
+            }
+        }
 
         Ok(())
     }
