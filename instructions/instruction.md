@@ -459,6 +459,12 @@
   >
   > <pre lang="xml">&lt;text for=&quot;L27&quot;&gt;&lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ko ko ro&lt;/span&gt; &lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;no&lt;/span&gt; &lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jum&lt;/span&gt; &lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;bi&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na&lt;/span&gt;&lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;n&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt; &lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;i&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;t&lt;/span&gt;&lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ru&lt;/span&gt; &lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;hi ma&lt;/span&gt; &lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;wa&lt;/span&gt; &lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na i&lt;/span&gt;&lt;/text&gt;</pre>
 
+> [!TIP]
+>
+> 可以在 AMLL Player 中查看行音译部分的内容，依此检查逐字音译的空格设置是否有误：
+>
+> ![根据行音译内容检查逐字音译的空格](./img/image-20260113020619009.png)
+
 ## 4. 排版
 
 - 尽可能按照单个文字或单个音节制作逐字/逐音节歌词；
