@@ -356,6 +356,8 @@
 
 ## 3. 翻译和音译
 
+### 3.1 翻译
+
 > [!WARNING]
 >
 > - 涉及政治敏感、有违人道主义的曲目不得提供歌词翻译；
@@ -374,18 +376,88 @@
 
 - 原则上不建议在翻译行末尾保留逗号或句号；
 
-- 对于注音部分则不应当出现全角标点符号；
+### 3.2 音译
 
-- 音译应当尽量使用空格分隔每个字的音译，日语请尽量分隔每个**假名**的音译：
+- 对于注音部分则不应当出现**全角**标点符号；
 
-  > <ruby>思<rt>おも</rt></ruby>う/**o mo** u
+- 注音的内容并没有统一标准，但是一份歌词中**使用相同语言代码的一组音译**应当符合同一份标准。
 
-- 日语中的「ん」的音译 "n/m" 之前可以不用空格分隔；
+  > 例如：一份日语歌词中的注音可以是遵循黑本式/训令式/护照式的，并且标记 `xml:lang="ja-Latn"`，但是在同一份歌词中**不能同时**将这几种标准的音译都放在 `xml:lang="ja-Latn"` 标记的音译中，如果需要上传多种标准的音译，则需要使用不同语言代码进行区分：`ja-Latn-hepburn` `ja-Latn-kunrei` `ja-Latn-passport`，如果 BCP-47 标准中没有则可以使用 `x-` 前缀**私有扩展**：`ja-Latn-x-hepburn` `ja-Latn-x-kunrei` `ja-Latn-x-passport`。
 
-- 对于日语的音译如果以**汉字/单词**为单位分隔，并且「ん」后紧跟 a 行，则请在「ん」的注音之后添加一个半角单引号：
+- 并不强制要求使用空格严格分隔，但是不管是否使用空格分隔，注音都需要符合以下标准：**内容准确**和**无二义性**。以日语为例：
 
-  > <ruby>会議<rt>かぎ</rt></ruby>で<ruby>彼<rt>かれ</rt></ruby>の<ruby>真意<rt>しんい</rt></ruby>を<ruby>理解<rt>りかい</rt></ruby>した/kaigi de kare no **shin'i** o rikai shita
+  - 音译应当尽量使用空格分隔每个字的音译，尽量分隔每个**假名**的音译：
 
+    > **<ruby>思<rt>おも</rt></ruby>**う/**o mo** u
+
+  - 日语中的「ん」的音译 "n/m" 之前可以不用空格分隔；
+
+  - 对于日语的音译如果以**汉字/单词**为单位分隔，并且「ん」后紧跟 a 行，则请在「ん」的注音之后添加一个半角单引号避免二义性：
+
+    > <ruby>会議<rt>かいぎ</rt></ruby>で<ruby>彼<rt>かれ</rt></ruby>の<ruby>真意<rt>しんい</rt></ruby>を<ruby>理解<rt>りかい</rt></ruby>した/kaigi de kare no **shin'i** o rikai shita
+
+### 3.3 逐字音译/翻译
+
+> [!IMPORTANT]
+>
+> 提交之前请保证你的带有逐字音译/翻译的歌词文件能够在 AMLL Player 和 AM 网页端之中至少一方能够正常显示。
+
+> [!CAUTION]
+>
+> 逐字翻译是简体中文和繁体中文在显示时进行互换的一种方式，目前除了 AM 之外没有软件实现这种功能，在 AMLL Player 中也只会显示为逐行翻译。
+
+#### 3.3.1 在 TTML TOOL 中
+
+- 音译中的每个注音之间应当尽量使用**纯文本节点形式**的空格进行分割：
+
+  > <kbd>圆</kbd><kbd>是</kbd><kbd>美</kbd><kbd>满</kbd>
+  >
+  > <kbd>jyun4·</kbd><kbd>si6·</kbd><kbd>mei5·</kbd><kbd>mun5</kbd>
+
+- 标点的音译要么使用对应的半角符号，要么不填写：
+
+  > <kbd>「</kbd><kbd><ruby>未<rt>願</rt></ruby></kbd><kbd><ruby>来<rt>い</rt></ruby></kbd><kbd>」</kbd><kbd>「</kbd><kbd><ruby>希<rt>願</rt></ruby></kbd><kbd><ruby>望<rt>い</rt></ruby></kbd><kbd>」</kbd>
+  > <kbd>“</kbd><kbd>ne·ga·</kbd><kbd>i</kbd><kbd>”</kbd><kbd>“</kbd><kbd>ne·ga·</kbd><kbd>i</kbd><kbd>”</kbd>
+
+- 日语中音译连续但是被分开为多个音节（「ん」和促音）时，不需要使用空格分隔：
+
+  > <kbd><ruby>心<rt>こころ</rt></ruby></kbd><kbd>の</kbd><kbd><ruby>準<rt>じゅん</rt></ruby></kbd><kbd><ruby>備<rt>び</rt></ruby></kbd><kbd>な</kbd><kbd>ん</kbd><kbd>て</kbd><kbd><ruby>言<rt>い</rt></ruby></kbd><kbd>っ</kbd><kbd>て</kbd><kbd>る</kbd><kbd><ruby>暇<rt>ひま</rt></ruby></kbd><kbd>は</kbd><kbd>ない</kbd>
+  >
+  > <kbd>ko·ko·ro·</kbd><kbd>no·</kbd><kbd>jum·</kbd><kbd>bi·</kbd><b><mark><kbd>na</kbd><kbd>n·</kbd></mark></b><kbd>te·</kbd><kbd>i·</kbd><b><mark><kbd>t</kbd><kbd>te·</kbd></mark></b><kbd>ru·</kbd><kbd>hi·ma·</kbd><kbd>wa·</kbd><kbd>na·i</kbd>
+
+#### 3.3.2 在 TTML 文件中
+
+- 对于歌词文件、翻译、音译的语言标记，应当使用遵循 IETF 的 BCP-47 标准的正确语言类型标记，目前常用语言类型有以下几种：
+
+  - `zh-Hans` - 简体中文
+  - `zh-Hant` - 繁体中文 (粤语同样使用)
+  - `zh-Latn-pinyin` - 中文拼音 (不分繁简)
+  - `zh-Latn-jyutping` - 粤语注音
+  - `en` - 英文
+  - `ja` - 日语
+  - `ja-Latn` - 日语罗马音
+  - `ko` - 韩语
+  - `ko-Latn` - 韩语罗马音
+
+- 音译中的每个注音之间应当尽量使用空格进行分割，如果原文中此处没有独立的空格音节，则向前合并：
+
+  > ```xml
+  > <p begin="16.220" end="21.620" itunes:key="L1" ttm:agent="v1"><span begin="16.220" end="16.440">圓</span><span begin="16.440" end="16.780">是</span><span begin="16.780" end="17.150">美</span><span begin="17.150" end="17.710">滿</span></p>
+  > ```
+  >
+  > <pre lang="xml">&lt;text for=&quot;L1&quot;&gt;&lt;span begin=&quot;16.220&quot; end=&quot;16.440&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jyun4&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;16.440&quot; end=&quot;16.780&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;si6&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;16.780&quot; end=&quot;17.150&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mei5&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;17.150&quot; end=&quot;17.710&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mun5&lt;/span&gt;&lt;/text&gt;</pre>
+
+- 标点的音译要么使用对应的半角符号，要么不填写；
+
+  > <pre>&lt;p begin=&quot;3:52.868&quot; end=&quot;3:56.138&quot; itunes:key=&quot;L52&quot; ttm:agent=&quot;v1&quot;&gt;&lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot;&gt;未&lt;/span&gt;&lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot;&gt;来&lt;/span&gt;&lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot;&gt;希&lt;/span&gt;&lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot;&gt;望&lt;/span&gt;&lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;&lt;/p&gt;</pre>
+  >
+  > <pre>&lt;text for=&quot;L52&quot;&gt;&lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt; &lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;&lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt; &lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;&lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;&lt;/text&gt;</pre>
+
+- 日语中音译连续但是被分开为多个音节（「ん」和促音）时，不需要添加空格：
+
+  > <pre lang="xml">&lt;p begin=&quot;2:20.288&quot; end=&quot;2:23.488&quot; itunes:key=&quot;L27&quot; ttm:agent=&quot;v1&quot;&gt;&lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot;&gt;心&lt;/span&gt;&lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot;&gt;の&lt;/span&gt;&lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot;&gt;準&lt;/span&gt;&lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot;&gt;備&lt;/span&gt;&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot;&gt;な&lt;/span&gt;&lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot;&gt;ん&lt;/span&gt;&lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot;&gt;て&lt;/span&gt;&lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot;&gt;言&lt;/span&gt;&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot;&gt;っ&lt;/span&gt;&lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot;&gt;て&lt;/span&gt;&lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot;&gt;る&lt;/span&gt;&lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot;&gt;暇&lt;/span&gt;&lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot;&gt;は&lt;/span&gt;&lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot;&gt;ない&lt;/span&gt;&lt;/p&gt;</pre>
+  >
+  > <pre lang="xml">&lt;text for=&quot;L27&quot;&gt;&lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ko ko ro&lt;/span&gt; &lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;no&lt;/span&gt; &lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jum&lt;/span&gt; &lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;bi&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na&lt;/span&gt;&lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;n&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt; &lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;i&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;t&lt;/span&gt;&lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ru&lt;/span&gt; &lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;hi ma&lt;/span&gt; &lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;wa&lt;/span&gt; &lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na i&lt;/span&gt;&lt;/text&gt;</pre>
 
 ## 4. 排版
 
@@ -551,45 +623,7 @@
 >
 > ![使用 Lyricify4 查找歌曲信息](./img/image-20250728160546661.png)
 
-## 6. 逐字音译/翻译（Beta）
-
-> [!CAUTION]
->
-> 由于 AMLL Player 和仓库机器人目前并未完全适配逐字音译/翻译，并且合并后会导致机器人宕机，因此所有逐字翻译/音译歌词文件的提交都将无法通过机器人处理，即使通过 PR 直接提交也暂时不会审核。
->
-> 目前该部分还在完善中，如果您一定要投稿逐字翻译/音译的话请做好多次修改的准备。如果对于该部分有补充的内容欢迎入群讨论。
-
-- 目前 AMLL TTML Tool 还无法制作逐字音译/翻译歌词，请确保你的第三方工具制作的歌词文件是符合规范的；
-
-- 提交之前请保证你的带有逐字音译/翻译的歌词文件能够在 AMLL Player 和 AM 网页端之中至少一方能够正常显示；
-
-- 对于翻译、音译部分，应当遵循 IETF 的 BCP-47 标准正确标记语言类型，目前常用语言类型有以下几种：
-
-  - `zh-Hans` - 简体中文
-  - `zh-Hant` - 繁体中文 (粤语同样使用)
-  - `zh-Latn-pinyin` - 中文拼音 (不分繁简)
-  - `zh-Latn-jyutping` - 粤语注音
-  - `en` - 英文
-  - `ja` - 日语
-  - `ja-Latn` - 日语罗马音
-  - `ko` - 韩语
-  - `ko-Latn` - 韩语罗马音
-
-- 音译中的每个注音之间应当尽量使用空格进行分割，如果原文中此处没有独立的空格音节，则向前合并：
-
-  > <kbd>圆</kbd><kbd>是</kbd><kbd>美</kbd><kbd>满</kbd>
-  >
-  > <kbd>jyun4·</kbd><kbd>si6·</kbd><kbd>mei5·</kbd><kbd>mun5</kbd>
-  
-- 音译部分对于标点部分请通过置空的方式跳过；
-
-- 日语中音译连续但是被分开为多个音节（向前合并的「ん」和促音）时，不需要使用空格分隔：
-
-  > <kbd><ruby>奇<rt>き</rt></ruby></kbd><kbd><ruby>跡<rt>せき</rt></ruby></kbd><kbd>を</kbd><kbd><ruby>祈<rt>いの</rt></ruby></kbd><kbd>っ</kbd><kbd>た</kbd><kbd><ruby>瞬<rt>しゅん</rt></ruby></kbd><kbd><ruby>間<rt>かん</rt></ruby></kbd><kbd>に</kbd>
-  >
-  > <kbd>ki·</kbd><kbd>se·ki·</kbd><kbd>o·</kbd><kbd>i·no·</kbd><kbd>t</kbd><kbd>ta·</kbd><kbd>shun·</kbd><kbd>kan·</kbd><kbd>ni</kbd>
-
-## 7. 其他
+## 6. 其他
 
 - 请善用结束时间来让歌词播放器自动生成间奏区域，不要为了演出效果强制改变为错误的时间轴，例如为了不触发间奏强行延后上一句结束时间和提早下一句开始时间或为了触发间奏强行提前上一行结束时间和延后下一句开始时间；
 
