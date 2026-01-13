@@ -3,7 +3,7 @@
 import { Octokit } from "octokit";
 
 const LABEL_NAME = "待更新";
-const DAYS_THRESHOLD = 3;
+const DAYS_THRESHOLD = 7;
 
 const repoEnv = process.env["GITHUB_REPOSITORY"] || "";
 const OWNER = process.env["OWNER"] || repoEnv.split("/")[0] || "Steve-xmh";
@@ -19,36 +19,34 @@ if (!OWNER || !REPO || !TOKEN) {
 	process.exit(1);
 }
 
-interface LabeledEvent {
-	event: "labeled";
-	created_at: string;
-	label: {
-		name: string;
-	};
-}
-
-function isLabeledEvent(event: unknown): event is LabeledEvent {
-	if (typeof event !== "object" || event === null) {
-		return false;
-	}
-
-	const e = event as Record<string, unknown>;
-
-	return (
-		e["event"] === "labeled" &&
-		typeof e["label"] === "object" &&
-		e["label"] !== null &&
-		"name" in e["label"]
-	);
-}
-
 const octokit = new Octokit({ auth: TOKEN });
+
+async function getLastCommitTime(
+	owner: string,
+	repo: string,
+	commitSha: string,
+): Promise<number> {
+	try {
+		const { data: commit } = await octokit.rest.repos.getCommit({
+			owner,
+			repo,
+			ref: commitSha,
+		});
+
+		const dateStr = commit.commit.committer?.date || commit.commit.author?.date;
+		return dateStr ? new Date(dateStr).getTime() : 0;
+	} catch (error) {
+		console.error(`    💥 获取 Commit 详情失败 (SHA: ${commitSha})`, error);
+		return 0;
+	}
+}
 
 async function run() {
 	if (IS_DRY_RUN) {
 		console.log("🧪 [DRY RUN] 模拟运行模式，将不会执行任何操作");
 	}
 
+	console.log("🔍 正在获取 Open 状态的 PR...");
 	const prs = await octokit.paginate(octokit.rest.pulls.list, {
 		owner: OWNER,
 		repo: REPO,
@@ -65,68 +63,63 @@ async function run() {
 	});
 
 	console.log(
-		`🔍 找到 ${stalePrs.length} 个超过 ${DAYS_THRESHOLD} 天未更新的 PR。总 Open PR: ${prs.length}`,
+		`🔍 总 Open PR: ${prs.length}。其中 ${stalePrs.length} 个 PR 超过 ${DAYS_THRESHOLD} 天未活跃 (无代码、无评论、无状态变更)。`,
 	);
 
 	for (const pr of stalePrs) {
 		console.log(`\n📋 检查 PR #${pr.number}: ${pr.title}`);
 
 		try {
-			// 标签添加的时间
-			const events = await octokit.paginate(octokit.rest.issues.listEvents, {
-				owner: OWNER,
-				repo: REPO,
-				issue_number: pr.number,
-				per_page: 100,
-			});
+			let shouldClose = false;
+			let closeReason = "";
 
-			const labelEvent = events
-				.reverse()
-				.find((e) => isLabeledEvent(e) && e.label.name === LABEL_NAME);
+			const currentLabelNames = pr.labels.map((l) => l.name);
+			const hasWaitingLabel = currentLabelNames.includes(LABEL_NAME);
 
-			const reviews = await octokit.paginate(octokit.rest.pulls.listReviews, {
-				owner: OWNER,
-				repo: REPO,
-				pull_number: pr.number,
-				per_page: 100,
-			});
+			if (hasWaitingLabel) {
+				shouldClose = true;
+				closeReason = `🏷️ 存在 "${LABEL_NAME}" 标签且 ${DAYS_THRESHOLD} 天无任何活跃`;
+			} else {
+				const reviews = await octokit.paginate(octokit.rest.pulls.listReviews, {
+					owner: OWNER,
+					repo: REPO,
+					pull_number: pr.number,
+					per_page: 100,
+				});
 
-			const changesRequestedReview = reviews
-				.reverse()
-				.find((review) => review.state === "CHANGES_REQUESTED");
+				const lastChangeRequest = reviews
+					.reverse()
+					.find((review) => review.state === "CHANGES_REQUESTED");
 
-			let lastTriggerTime = 0;
-			const triggerReasons: string[] = [];
+				if (lastChangeRequest) {
+					const reviewTime = new Date(
+						lastChangeRequest.submitted_at || "",
+					).getTime();
+					const lastCommitTime = await getLastCommitTime(
+						OWNER,
+						REPO,
+						pr.head.sha,
+					);
 
-			if (labelEvent?.created_at) {
-				const labelTime = new Date(labelEvent.created_at).getTime();
-				if (labelTime > lastTriggerTime) {
-					lastTriggerTime = labelTime;
+					if (reviewTime > lastCommitTime) {
+						shouldClose = true;
+						closeReason = `📝 Review 请求更改后，${DAYS_THRESHOLD} 天无新代码提交或活跃`;
+					} else {
+						console.log(
+							`    ✋ 用户已提交新代码 (Commit 于 Review 之后)，等待管理员审核，跳过。`,
+						);
+					}
 				}
-				triggerReasons.push(`🏷️ 标签 "${LABEL_NAME}"`);
 			}
 
-			if (changesRequestedReview?.submitted_at) {
-				const reviewTime = new Date(
-					changesRequestedReview.submitted_at,
-				).getTime();
-				if (reviewTime > lastTriggerTime) {
-					lastTriggerTime = reviewTime;
-				}
-				triggerReasons.push("📝 Review 请求更改");
-			}
+			if (shouldClose) {
+				const daysSinceUpdate = (
+					(now - new Date(pr.updated_at).getTime()) /
+					msPerDay
+				).toFixed(1);
+				console.log(`    🚫 满足关闭条件: ${closeReason}`);
+				console.log(`    ⏳ 最后活跃距今: ${daysSinceUpdate} 天`);
 
-			if (lastTriggerTime === 0) {
-				console.log(`    ⚪ 无待更新标签或变更请求，跳过`);
-				continue;
-			}
-
-			const daysSinceTrigger = (now - lastTriggerTime) / msPerDay;
-
-			console.log(`    🧐 触发原因: ${triggerReasons.join(" & ")}`);
-			console.log(`    ⏳ 触发状态距今: ${daysSinceTrigger.toFixed(1)} 天`);
-
-			if (daysSinceTrigger > DAYS_THRESHOLD) {
 				const branchName = pr.head.ref;
 				const isSameRepo = pr.head.repo?.full_name === `${OWNER}/${REPO}`;
 				const shouldDeleteBranch =
@@ -142,7 +135,7 @@ async function run() {
 						owner: OWNER,
 						repo: REPO,
 						issue_number: pr.number,
-						body: `你好，由于此 PR 需要更新，但超过 ${DAYS_THRESHOLD} 天未更新，我们已将其关闭。如需继续贡献歌词，请重新打开一个新的 PR。`,
+						body: `你好，由于此 PR 当前处于待修改状态，且超过 ${DAYS_THRESHOLD} 天没有任何更新，我们已将其关闭。如需继续贡献，请重新打开一个新的 PR。`,
 					});
 
 					await octokit.rest.pulls.update({
@@ -165,8 +158,8 @@ async function run() {
 						}
 					}
 				}
-			} else {
-				console.log(`    ⏭️ 触发时间未超过 ${DAYS_THRESHOLD} 天，跳过`);
+			} else if (!hasWaitingLabel) {
+				console.log(`    ✅ PR 既无待更新标签，也无阻塞的 Review，跳过。`);
 			}
 		} catch (error) {
 			console.error(`💥 处理 PR #${pr.number} 时出错`, error);
