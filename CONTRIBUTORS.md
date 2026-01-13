@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-13 13:09 (UTC+8)
+> 最后更新于 2026-01-13 13:14 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -29,9 +29,9 @@
 | 11 | <img src="https://avatars.githubusercontent.com/u/86943191?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[bywhite0](https://github.com/bywhite0) | 41 |
 | 12 | <img src="https://avatars.githubusercontent.com/u/72502111?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Havenmab](https://github.com/Havenmab) | 39 |
 | 13 | <img src="https://avatars.githubusercontent.com/u/102236122?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WongCaihong](https://github.com/WongCaihong) | 38 |
-| 14 | <img src="https://avatars.githubusercontent.com/u/132769718?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Y-CIAO](https://github.com/Y-CIAO) | 33 |
-| 15 | <img src="https://avatars.githubusercontent.com/u/142093212?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[iiiooi](https://github.com/iiiooi) | 33 |
-| 16 | <img src="https://avatars.githubusercontent.com/u/144699338?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[toaltf4](https://github.com/toaltf4) | 33 |
+| 14 | <img src="https://avatars.githubusercontent.com/u/144699338?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[toaltf4](https://github.com/toaltf4) | 34 |
+| 15 | <img src="https://avatars.githubusercontent.com/u/132769718?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Y-CIAO](https://github.com/Y-CIAO) | 33 |
+| 16 | <img src="https://avatars.githubusercontent.com/u/142093212?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[iiiooi](https://github.com/iiiooi) | 33 |
 | 17 | <img src="https://avatars.githubusercontent.com/u/59403448?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[csdeTR](https://github.com/csdeTR) | 32 |
 | 18 | <img src="https://avatars.githubusercontent.com/u/111688524?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[cybaka520](https://github.com/cybaka520) | 29 |
 | 19 | <img src="https://avatars.githubusercontent.com/u/165106362?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Sakkaku1111](https://github.com/Sakkaku1111) | 27 |
