@@ -388,7 +388,7 @@
 
   - 音译应当尽量使用空格分隔每个字的音译，尽量分隔每个**假名**的音译：
 
-    > **<ruby>思<rt>おも</rt></ruby>**う/**o mo** u
+    > <b><ruby>思<rt>おも</rt></ruby></b>う/**o mo** u
 
   - 日语中的「ん」的音译 "n/m" 之前可以不用空格分隔；
 
@@ -410,20 +410,21 @@
 
 - 音译中的每个注音之间应当尽量使用**纯文本节点形式**的空格进行分割：
 
-  > <kbd>圆</kbd><kbd>是</kbd><kbd>美</kbd><kbd>满</kbd>
+  > <kbd>圆</kbd> <kbd>是</kbd> <kbd>美</kbd> <kbd>满</kbd>
   >
-  > <kbd>jyun4·</kbd><kbd>si6·</kbd><kbd>mei5·</kbd><kbd>mun5</kbd>
+  > <kbd>jyun4·</kbd> <kbd>si6·</kbd> <kbd>mei5·</kbd> <kbd>mun5</kbd>
 
 - 标点的音译要么使用对应的半角符号，要么不填写：
 
-  > <kbd>「</kbd><kbd><ruby>未<rt>願</rt></ruby></kbd><kbd><ruby>来<rt>い</rt></ruby></kbd><kbd>」</kbd><kbd>「</kbd><kbd><ruby>希<rt>願</rt></ruby></kbd><kbd><ruby>望<rt>い</rt></ruby></kbd><kbd>」</kbd>
-  > <kbd>“</kbd><kbd>ne·ga·</kbd><kbd>i</kbd><kbd>”</kbd><kbd>“</kbd><kbd>ne·ga·</kbd><kbd>i</kbd><kbd>”</kbd>
+  > <kbd>「</kbd> <kbd><ruby>未<rt>願</rt></ruby></kbd> <kbd><ruby>来<rt>い</rt></ruby></kbd> <kbd>」</kbd> <kbd>「</kbd> <kbd><ruby>希<rt>願</rt></ruby></kbd> <kbd><ruby>望<rt>い</rt></ruby></kbd> <kbd>」</kbd>
+  >
+  > <kbd>“</kbd> <kbd>ne·ga·</kbd> <kbd>i</kbd> <kbd>”</kbd> <kbd>“</kbd> <kbd>ne·ga·</kbd> <kbd>i</kbd> <kbd>”</kbd>
 
 - 日语中音译连续但是被分开为多个音节（「ん」和促音）时，不需要使用空格分隔：
 
-  > <kbd><ruby>心<rt>こころ</rt></ruby></kbd><kbd>の</kbd><kbd><ruby>準<rt>じゅん</rt></ruby></kbd><kbd><ruby>備<rt>び</rt></ruby></kbd><kbd>な</kbd><kbd>ん</kbd><kbd>て</kbd><kbd><ruby>言<rt>い</rt></ruby></kbd><kbd>っ</kbd><kbd>て</kbd><kbd>る</kbd><kbd><ruby>暇<rt>ひま</rt></ruby></kbd><kbd>は</kbd><kbd>ない</kbd>
+  > <kbd><ruby>心<rt>こころ</rt></ruby></kbd> <kbd>の</kbd> <kbd><ruby>準<rt>じゅん</rt></ruby></kbd> <kbd><ruby>備<rt>び</rt></ruby></kbd> <kbd>な</kbd> <kbd>ん</kbd> <kbd>て</kbd> <kbd><ruby>言<rt>い</rt></ruby></kbd> <kbd>っ</kbd> <kbd>て</kbd> <kbd>る</kbd> <kbd><ruby>暇<rt>ひま</rt></ruby></kbd> <kbd>は</kbd> <kbd>ない</kbd>
   >
-  > <kbd>ko·ko·ro·</kbd><kbd>no·</kbd><kbd>jum·</kbd><kbd>bi·</kbd><b><mark><kbd>na</kbd><kbd>n·</kbd></mark></b><kbd>te·</kbd><kbd>i·</kbd><b><mark><kbd>t</kbd><kbd>te·</kbd></mark></b><kbd>ru·</kbd><kbd>hi·ma·</kbd><kbd>wa·</kbd><kbd>na·i</kbd>
+  > <kbd>ko·ko·ro·</kbd> <kbd>no·</kbd> <kbd>jum·</kbd> <kbd>bi·</kbd> <b><mark><kbd>na</kbd> <kbd>n·</kbd></mark></b> <kbd>te·</kbd> <kbd>i·</kbd> <b><mark><kbd>t</kbd> <kbd>te·</kbd></mark></b> <kbd>ru·</kbd> <kbd>hi·ma·</kbd> <kbd>wa·</kbd> <kbd>na·i</kbd>
 
 #### 3.3.2 在 TTML 文件中
 
