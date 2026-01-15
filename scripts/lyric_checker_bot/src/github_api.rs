@@ -20,6 +20,7 @@ use crate::git_utils;
 const SUBMISSION_LABEL: &str = "歌词提交/补正";
 const CHECKED_MARK: &str = "<!-- AMLL-DB-BOT-CHECKED -->";
 const FIRST_TIME_LABEL: &str = "首次投稿";
+const PENDING_UPDATE_LABEL: &str = "待更新";
 
 pub struct PrContext<'a> {
     pub issue: &'a Issue,
@@ -519,6 +520,23 @@ impl GitHubClient {
         }
 
         self.send_feedback_reaction(context.comment_id).await;
+
+        // 用户用 /update 更新歌词后，如果有 “待更新” 标签则移除它
+        if let Some(labels) = &pr.labels
+            && labels.iter().any(|l| l.name == PENDING_UPDATE_LABEL)
+        {
+            info!("在更新后找到 “{PENDING_UPDATE_LABEL}” 标签, 正在尝试移除");
+            if let Err(e) = self
+                .client
+                .issues(&self.owner, &self.repo)
+                .remove_label(context.pr_number, PENDING_UPDATE_LABEL)
+                .await
+            {
+                warn!("移除标签失败: {e:?}");
+            } else {
+                info!("已移除 “{PENDING_UPDATE_LABEL}” 标签");
+            }
+        }
 
         info!("成功更新 PR #{}", context.pr_number);
         Ok(())
