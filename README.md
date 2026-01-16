@@ -14,6 +14,12 @@
 
 ***
 
+> [!Warning]
+> 致使用歌词库的开发者
+> 本仓库将于近期迁移至 [amll-dev](https://github.com/amll-dev) 组织，届时仓库链接将更新为 https://github.com/amll-dev/amll-ttml-db ，请下游仓库注意更新。
+
+***
+
 > [!Important]
 >
 > A note for non-Chinese contributors:
