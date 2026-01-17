@@ -15,8 +15,17 @@
 ***
 
 > [!Warning]
-> 致使用歌词库的开发者
+> 致使用歌词库的开发者：  
 > 本仓库将于近期迁移至 [amll-dev](https://github.com/amll-dev) 组织，届时仓库链接将更新为 https://github.com/amll-dev/amll-ttml-db ，请下游仓库注意更新。
+
+***
+
+> [!TIP]
+>
+> ### 📣【公告】
+> 歌词库现已良好支持逐字音译，欢迎投稿！  
+> 更多信息请到 [公告帖](https://github.com/Steve-xmh/amll-ttml-db/discussions/6870) 查看  
+> 感谢各位投稿者对本项目的支持！
 
 ***
 
