@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-19 14:08 (UTC+8)
+> 最后更新于 2026-01-19 18:07 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -23,7 +23,7 @@
 | 5 | <img src="https://avatars.githubusercontent.com/u/108002475?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[apoint123](https://github.com/apoint123) | 167 |
 | 6 | <img src="https://avatars.githubusercontent.com/u/37899975?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WorldSansha](https://github.com/WorldSansha) | 152 |
 | 7 | <img src="https://avatars.githubusercontent.com/u/92374733?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Seayay](https://github.com/Seayay) | 127 |
-| 8 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 103 |
+| 8 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 104 |
 | 9 | <img src="https://avatars.githubusercontent.com/u/115442729?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[1625423178](https://github.com/1625423178) | 100 |
 | 10 | <img src="https://avatars.githubusercontent.com/u/117785554?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[gaofurui](https://github.com/gaofurui) | 52 |
 | 11 | <img src="https://avatars.githubusercontent.com/u/86943191?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[bywhite0](https://github.com/bywhite0) | 42 |
@@ -42,9 +42,9 @@
 | 24 | <img src="https://avatars.githubusercontent.com/u/154799151?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[user10124-RS](https://github.com/user10124-RS) | 19 |
 | 25 | <img src="https://avatars.githubusercontent.com/u/70494801?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Super12138](https://github.com/Super12138) | 19 |
 | 26 | <img src="https://avatars.githubusercontent.com/u/205412075?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[zhushao233](https://github.com/zhushao233) | 17 |
-| 27 | <img src="https://avatars.githubusercontent.com/u/86895196?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[HGUFlyingDog](https://github.com/HGUFlyingDog) | 17 |
-| 28 | <img src="https://avatars.githubusercontent.com/u/141757610?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[smzase](https://github.com/smzase) | 16 |
-| 29 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 16 |
+| 27 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 17 |
+| 28 | <img src="https://avatars.githubusercontent.com/u/86895196?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[HGUFlyingDog](https://github.com/HGUFlyingDog) | 17 |
+| 29 | <img src="https://avatars.githubusercontent.com/u/141757610?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[smzase](https://github.com/smzase) | 16 |
 | 30 | <img src="https://avatars.githubusercontent.com/u/34237075?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[SteamFinder](https://github.com/SteamFinder) | 15 |
 | 31 | <img src="https://avatars.githubusercontent.com/u/52089819?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Miaoyww](https://github.com/Miaoyww) | 13 |
 | 32 | <img src="https://avatars.githubusercontent.com/u/69256612?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Fanzai7838](https://github.com/Fanzai7838) | 12 |
