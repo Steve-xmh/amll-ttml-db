@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-21 01:29 (UTC+8)
+> 最后更新于 2026-01-21 01:37 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -130,8 +130,9 @@
 | 112 | <img src="https://avatars.githubusercontent.com/u/76270408?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[konoluoboda](https://github.com/konoluoboda) | 1 |
 | 113 | <img src="https://avatars.githubusercontent.com/u/82600685?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[duhuaxu](https://github.com/duhuaxu) | 1 |
 | 114 | <img src="https://avatars.githubusercontent.com/u/93859788?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[YuSiwu](https://github.com/YuSiwu) | 1 |
-| 115 | <img src="https://avatars.githubusercontent.com/u/96913885?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xinshao-air](https://github.com/Xinshao-air) | 1 |
-| 116 | <img src="https://avatars.githubusercontent.com/u/ASyunagi?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[174598250](https://github.com/174598250) | 1 |
-| 117 | <img src="https://avatars.githubusercontent.com/u/Des-Magmeta?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Magmeta](https://github.com/Magmeta) | 1 |
-| 118 | <img src="https://avatars.githubusercontent.com/u/Linho1219?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho](https://github.com/Linho) | 1 |
-| 119 | <img src="https://avatars.githubusercontent.com/u/bywhite0?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[86943191](https://github.com/86943191) | 1 |
+| 115 | <img src="https://avatars.githubusercontent.com/u/96868062?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Shomi-FJS](https://github.com/Shomi-FJS) | 1 |
+| 116 | <img src="https://avatars.githubusercontent.com/u/96913885?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xinshao-air](https://github.com/Xinshao-air) | 1 |
+| 117 | <img src="https://avatars.githubusercontent.com/u/ASyunagi?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[174598250](https://github.com/174598250) | 1 |
+| 118 | <img src="https://avatars.githubusercontent.com/u/Des-Magmeta?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Magmeta](https://github.com/Magmeta) | 1 |
+| 119 | <img src="https://avatars.githubusercontent.com/u/Linho1219?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho](https://github.com/Linho) | 1 |
+| 120 | <img src="https://avatars.githubusercontent.com/u/bywhite0?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[86943191](https://github.com/86943191) | 1 |
