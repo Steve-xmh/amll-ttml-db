@@ -107,7 +107,7 @@
 
 > [!CAUTION]
 >
-> 在 TTML 文件中，文件内容以 **html** 标准进行压缩，文档中所给出的样例皆为格式化之后的结果，并且可能带有注释，请在阅读时谨记。
+> 在 TTML 文件中，文件内容以**保留空格的** xml 标准进行压缩，文档中所给出的样例大部分为格式化之后的结果，并且可能带有注释，请在阅读时谨记。
 
 一个元数据在 TTML 文件按照以下格式存储：
 
@@ -408,7 +408,7 @@
 
 #### 3.3.1 在 TTML TOOL 中
 
-- 音译中的每个注音之间应当尽量使用**纯文本节点形式**的空格进行分割：
+- 音译中的每个注音之间应当尽量使用空格进行分割：
 
   > <kbd>圆</kbd> <kbd>是</kbd> <kbd>美</kbd> <kbd>满</kbd>
   >
@@ -420,13 +420,17 @@
   >
   > <kbd>“</kbd> <kbd>ne·ga·</kbd> <kbd>i</kbd> <kbd>”</kbd> <kbd>“</kbd> <kbd>ne·ga·</kbd> <kbd>i</kbd> <kbd>”</kbd>
 
-- 日语中音译连续但是被分开为多个音节（「ん」和促音）时，不需要使用空格分隔：
+- 日语中音译连续但是被分开为多个音节（「ん」和促音）时，之间不需要使用空格分隔：
 
   > <kbd><ruby>心<rt>こころ</rt></ruby></kbd> <kbd>の</kbd> <kbd><ruby>準<rt>じゅん</rt></ruby></kbd> <kbd><ruby>備<rt>び</rt></ruby></kbd> <kbd>な</kbd> <kbd>ん</kbd> <kbd>て</kbd> <kbd><ruby>言<rt>い</rt></ruby></kbd> <kbd>っ</kbd> <kbd>て</kbd> <kbd>る</kbd> <kbd><ruby>暇<rt>ひま</rt></ruby></kbd> <kbd>は</kbd> <kbd>ない</kbd>
   >
   > <kbd>ko·ko·ro·</kbd> <kbd>no·</kbd> <kbd>jum·</kbd> <kbd>bi·</kbd> <b><mark><kbd>na</kbd> <kbd>n·</kbd></mark></b> <kbd>te·</kbd> <kbd>i·</kbd> <b><mark><kbd>t</kbd> <kbd>te·</kbd></mark></b> <kbd>ru·</kbd> <kbd>hi·ma·</kbd> <kbd>wa·</kbd> <kbd>na·i</kbd>
 
 #### 3.3.2 在 TTML 文件中
+
+> [!CAUTION]
+>
+> 以下小节中的 TTML 代码来源于规范压缩格式，**仅进行了换行处理**。所有行首空格均为原始内容的一部分，不代表语法缩进。
 
 - 对于歌词文件、翻译、音译的语言标记，应当使用遵循 IETF 的 BCP-47 标准的正确语言类型标记，目前常用语言类型有以下几种：
 
@@ -440,29 +444,93 @@
   - `ko` - 韩语
   - `ko-Latn` - 韩语罗马音
 
-- 音译中的每个注音之间应当尽量使用空格进行分割，如果原文中此处没有独立的空格音节，则向前合并：
+- 音译中的每个注音之间应当尽量使用**纯文本节点形式**的空格进行分隔：
 
+  > 圓是美滿/jyun4<mark> </mark>si6<mark> </mark>mei5<mark> </mark>mun5
+  >
   > ```xml
-  > <p begin="16.220" end="21.620" itunes:key="L1" ttm:agent="v1"><span begin="16.220" end="16.440">圓</span><span begin="16.440" end="16.780">是</span><span begin="16.780" end="17.150">美</span><span begin="17.150" end="17.710">滿</span></p>
+  > <p begin="16.220" end="21.620" itunes:key="L1" ttm:agent="v1">
+  > <span begin="16.220" end="16.440">圓</span>
+  > <span begin="16.440" end="16.780">是</span>
+  > <span begin="16.780" end="17.150">美</span>
+  > <span begin="17.150" end="17.710">滿</span>
+  > </p>
   > ```
   >
-  > <pre lang="xml">&lt;text for=&quot;L1&quot;&gt;&lt;span begin=&quot;16.220&quot; end=&quot;16.440&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jyun4&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;16.440&quot; end=&quot;16.780&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;si6&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;16.780&quot; end=&quot;17.150&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mei5&lt;/span&gt;<mark> </mark>&lt;span begin=&quot;17.150&quot; end=&quot;17.710&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mun5&lt;/span&gt;&lt;/text&gt;</pre>
+  > <pre lang="xml">&lt;text for=&quot;L1&quot;&gt;
+  > &lt;span begin=&quot;16.220&quot; end=&quot;16.440&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jyun4&lt;/span&gt;
+  > <mark> </mark>&lt;span begin=&quot;16.440&quot; end=&quot;16.780&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;si6&lt;/span&gt;
+  > <mark> </mark>&lt;span begin=&quot;16.780&quot; end=&quot;17.150&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mei5&lt;/span&gt;
+  > <mark> </mark>&lt;span begin=&quot;17.150&quot; end=&quot;17.710&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;mun5&lt;/span&gt;
+  > &lt;/text&gt;</pre>
 
 - 标点的音译要么使用对应的半角符号，要么不填写；
 
-  > <pre>&lt;p begin=&quot;3:52.868&quot; end=&quot;3:56.138&quot; itunes:key=&quot;L52&quot; ttm:agent=&quot;v1&quot;&gt;&lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot;&gt;未&lt;/span&gt;&lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot;&gt;来&lt;/span&gt;&lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot;&gt;希&lt;/span&gt;&lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot;&gt;望&lt;/span&gt;&lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;&lt;/p&gt;</pre>
+  > 「<ruby>未来<rt>願い</rt></ruby>」「<ruby>希望<rt>願い</rt></ruby>」/==“==ne ga i==”“==ne ga i==”==
   >
-  > <pre>&lt;text for=&quot;L52&quot;&gt;&lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt; &lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;&lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;&lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt; &lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;&lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;&lt;/text&gt;</pre>
+  > <pre>&lt;p begin=&quot;3:52.868&quot; end=&quot;3:56.138&quot; itunes:key=&quot;L52&quot; ttm:agent=&quot;v1&quot;&gt;
+  > &lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot;&gt;未&lt;/span&gt;
+  > &lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot;&gt;来&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot;&gt;<b><mark>「</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot;&gt;希&lt;/span&gt;
+  > &lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot;&gt;望&lt;/span&gt;
+  > &lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot;&gt;<b><mark>」</mark></b>&lt;/span&gt;
+  > &lt;/p&gt;</pre>
+  >
+  > <pre>&lt;text for=&quot;L52&quot;&gt;
+  > &lt;span begin=&quot;3:52.863&quot; end=&quot;3:52.868&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:52.868&quot; end=&quot;3:53.298&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;3:53.358&quot; end=&quot;3:54.198&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.198&quot; end=&quot;3:54.203&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.728&quot; end=&quot;3:54.733&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>“</mark></b>&lt;/span&gt;
+  > &lt;span begin=&quot;3:54.728&quot; end=&quot;3:55.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ne&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;3:55.228&quot; end=&quot;3:56.138&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ga i&lt;/span&gt;
+  > &lt;span begin=&quot;3:56.138&quot; end=&quot;3:56.143&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;<b><mark>”</mark></b>&lt;/span&gt;
+  > &lt;/text&gt;</pre>
 
 - 日语中音译连续但是被分开为多个音节（「ん」和促音）时，不需要添加空格：
 
-  > <pre lang="xml">&lt;p begin=&quot;2:20.288&quot; end=&quot;2:23.488&quot; itunes:key=&quot;L27&quot; ttm:agent=&quot;v1&quot;&gt;&lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot;&gt;心&lt;/span&gt;&lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot;&gt;の&lt;/span&gt;&lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot;&gt;準&lt;/span&gt;&lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot;&gt;備&lt;/span&gt;&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot;&gt;な&lt;/span&gt;&lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot;&gt;ん&lt;/span&gt;&lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot;&gt;て&lt;/span&gt;&lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot;&gt;言&lt;/span&gt;&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot;&gt;っ&lt;/span&gt;&lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot;&gt;て&lt;/span&gt;&lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot;&gt;る&lt;/span&gt;&lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot;&gt;暇&lt;/span&gt;&lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot;&gt;は&lt;/span&gt;&lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot;&gt;ない&lt;/span&gt;&lt;/p&gt;</pre>
+  > 心の準備==なん==て言==って==る暇はない/ko ko ro no ==jum== bi nan te i ==tte== ru hi ma wa na i
   >
-  > <pre lang="xml">&lt;text for=&quot;L27&quot;&gt;&lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ko ko ro&lt;/span&gt; &lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;no&lt;/span&gt; &lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jum&lt;/span&gt; &lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;bi&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na&lt;/span&gt;&lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;n&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt; &lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;i&lt;/span&gt; <b><mark>&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;t&lt;/span&gt;&lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt;</mark></b> &lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ru&lt;/span&gt; &lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;hi ma&lt;/span&gt; &lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;wa&lt;/span&gt; &lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na i&lt;/span&gt;&lt;/text&gt;</pre>
+  > <pre lang="xml">&lt;p begin=&quot;2:20.288&quot; end=&quot;2:23.488&quot; itunes:key=&quot;L27&quot; ttm:agent=&quot;v1&quot;&gt;
+  > &lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot;&gt;心&lt;/span&gt;
+  > &lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot;&gt;の&lt;/span&gt;
+  > &lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot;&gt;準&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot;&gt;備&lt;/span&gt;
+  > <b><mark>&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot;&gt;な&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot;&gt;ん&lt;/span&gt;</mark></b>
+  > &lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot;&gt;て&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot;&gt;言&lt;/span&gt;
+  > <b><mark>&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot;&gt;っ&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot;&gt;て&lt;/span&gt;</mark></b>
+  > &lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot;&gt;る&lt;/span&gt;
+  > &lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot;&gt;暇&lt;/span&gt;
+  > &lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot;&gt;は&lt;/span&gt;
+  > &lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot;&gt;ない&lt;/span&gt;
+  > &lt;/p&gt;</pre>
+  >
+  > <pre lang="xml">&lt;text for=&quot;L27&quot;&gt;
+  > &lt;span begin=&quot;2:20.288&quot; end=&quot;2:20.678&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ko ko ro&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:20.678&quot; end=&quot;2:20.848&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;no&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:20.848&quot; end=&quot;2:21.078&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;jum&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:21.078&quot; end=&quot;2:21.148&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;bi&lt;/span&gt;
+  > <span> </span><b><mark>&lt;span begin=&quot;2:21.148&quot; end=&quot;2:21.308&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.308&quot; end=&quot;2:21.458&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;n&lt;/span&gt;
+  > </mark></b> &lt;span begin=&quot;2:21.458&quot; end=&quot;2:21.668&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:21.668&quot; end=&quot;2:21.818&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;i&lt;/span&gt;
+  > <span> </span><b><mark>&lt;span begin=&quot;2:21.818&quot; end=&quot;2:21.898&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;t&lt;/span&gt;
+  > &lt;span begin=&quot;2:21.898&quot; end=&quot;2:22.088&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;te&lt;/span&gt;</mark></b>
+  > <span> </span>&lt;span begin=&quot;2:22.088&quot; end=&quot;2:22.228&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;ru&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:22.228&quot; end=&quot;2:22.728&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;hi ma&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:22.728&quot; end=&quot;2:22.838&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;wa&lt;/span&gt;
+  > <span> </span>&lt;span begin=&quot;2:22.838&quot; end=&quot;2:23.488&quot; xmlns=&quot;http://www.w3.org/ns/ttml&quot;&gt;na i&lt;/span&gt;
+  > &lt;/text&gt;</pre>
 
 > [!TIP]
 >
-> 可以在 AMLL Player 中查看行音译部分的内容，依此检查逐字音译的空格设置是否有误：
+> 可以在 AMLL Player 中查看**行**音译部分的内容，依此检查逐字音译的空格设置是否有误：
 >
 > ![根据行音译内容检查逐字音译的空格](./img/image-20260113020619009.png)
 
@@ -529,7 +597,13 @@
 > 那么导出时为：
 >
 > ```xml
-> <span ttm:role="x-bg" begin="02:23.620" end="02:25.690"><span begin="02:23.620" end="02:24.100">(In</span> <span begin="02:24.100" end="02:24.380">your</span> <span begin="02:24.380" end="02:25.690">heart)</span></span>
+> <span ttm:role="x-bg" begin="02:23.620" end="02:25.690">
+> 	<span begin="02:23.620" end="02:24.100">(In</span>
+> 	<!-- 此处空格被格式化 -->
+> 	<span begin="02:24.100" end="02:24.380">your</span>
+> 	<!-- 此处空格被格式化 -->
+> 	<span begin="02:24.380" end="02:25.690">heart)</span>
+> </span>
 > ```
 >
 > 但如果在 TTML TOOL 中手动再添加一次括号：
@@ -539,7 +613,13 @@
 > 那么导出时就会变为：
 >
 > ```xml
-> <span ttm:role="x-bg" begin="02:23.620" end="02:25.690"><span begin="02:23.620" end="02:24.100">((In</span> <span begin="02:24.100" end="02:24.380">your</span> <span begin="02:24.380" end="02:25.690">heart))</span></span>
+> <span ttm:role="x-bg" begin="02:23.620" end="02:25.690">
+> 	<span begin="02:23.620" end="02:24.100">((In</span>
+> 	<!-- 此处空格被格式化 -->
+> 	<span begin="02:24.100" end="02:24.380">your</span>
+> 	<!-- 此处空格被格式化 -->
+> 	<span begin="02:24.380" end="02:25.690">heart))</span>
+> </span>
 > ```
 >
 > 成为一种不合规的形式，将无法通过审核。
@@ -626,7 +706,7 @@
 >
 > - 其它区：https://beta.music.apple.com/us/search
 >
-> Spotify 可以使用 Lyricify 4 的搜索工具进行换区搜索：
+> Spotify 可以使用 Lyricify 4 的搜索工具进行换区搜索（可能需要更换对应语言的歌曲名）：
 >
 > ![使用 Lyricify4 查找歌曲信息](./img/image-20250728160546661.png)
 
