@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-22 17:25 (UTC+8)
+> 最后更新于 2026-01-22 17:29 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -49,9 +49,9 @@
 | 31 | <img src="https://avatars.githubusercontent.com/u/52089819?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Miaoyww](https://github.com/Miaoyww) | 13 |
 | 32 | <img src="https://avatars.githubusercontent.com/u/69256612?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Fanzai7838](https://github.com/Fanzai7838) | 12 |
 | 33 | <img src="https://avatars.githubusercontent.com/u/181631327?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[studyxi](https://github.com/studyxi) | 11 |
-| 34 | <img src="https://avatars.githubusercontent.com/u/122847541?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[xiaowumin-mark](https://github.com/xiaowumin-mark) | 10 |
-| 35 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 10 |
-| 36 | <img src="https://avatars.githubusercontent.com/u/190055247?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />`#190055247` | 10 |
+| 34 | <img src="https://avatars.githubusercontent.com/u/190055247?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />`#190055247` | 11 |
+| 35 | <img src="https://avatars.githubusercontent.com/u/122847541?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[xiaowumin-mark](https://github.com/xiaowumin-mark) | 10 |
+| 36 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 10 |
 | 37 | <img src="https://avatars.githubusercontent.com/u/36076482?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[amatke31](https://github.com/amatke31) | 10 |
 | 38 | <img src="https://avatars.githubusercontent.com/u/76810494?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Big-Cake-jpg](https://github.com/Big-Cake-jpg) | 10 |
 | 39 | <img src="https://avatars.githubusercontent.com/u/99335871?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Tseshongfeeshur](https://github.com/Tseshongfeeshur) | 10 |
