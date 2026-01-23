@@ -1322,6 +1322,7 @@ dependencies = [
  "octocrab",
  "rand 0.9.2",
  "reqwest",
+ "rustls",
  "serde",
  "serde_json",
  "tokio",
