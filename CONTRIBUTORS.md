@@ -10,7 +10,7 @@
 > [!TIP]
 > 本排名由机器人根据已在库歌词统计元数据信息后自动生成，贡献最多排前，同贡献量排名不分先后。
 > 
-> 最后更新于 2026-01-27 14:46 (UTC+8)
+> 最后更新于 2026-01-27 15:23 (UTC+8)
 
 ![贡献者头像画廊](https://amll-ttml-db.stevexmh.net/contributors.png)
 
@@ -18,12 +18,12 @@
 | :---: | :--- | :---: |
 | 🥇 | <img src="https://avatars.githubusercontent.com/u/50747104?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xionghaizi001](https://github.com/Xionghaizi001) | 344 |
 | 🥈 | <img src="https://avatars.githubusercontent.com/u/50987405?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ITManCHINA](https://github.com/ITManCHINA) | 254 |
-| 🥉 | <img src="https://avatars.githubusercontent.com/u/68000793?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ranhengzhang](https://github.com/ranhengzhang) | 210 |
+| 🥉 | <img src="https://avatars.githubusercontent.com/u/68000793?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ranhengzhang](https://github.com/ranhengzhang) | 211 |
 | 4 | <img src="https://avatars.githubusercontent.com/u/174598250?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ASyunagi](https://github.com/ASyunagi) | 188 |
 | 5 | <img src="https://avatars.githubusercontent.com/u/108002475?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[apoint123](https://github.com/apoint123) | 171 |
 | 6 | <img src="https://avatars.githubusercontent.com/u/37899975?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WorldSansha](https://github.com/WorldSansha) | 152 |
 | 7 | <img src="https://avatars.githubusercontent.com/u/92374733?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Seayay](https://github.com/Seayay) | 127 |
-| 8 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 116 |
+| 8 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 117 |
 | 9 | <img src="https://avatars.githubusercontent.com/u/115442729?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[1625423178](https://github.com/1625423178) | 101 |
 | 10 | <img src="https://avatars.githubusercontent.com/u/102236122?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WongCaihong](https://github.com/WongCaihong) | 65 |
 | 11 | <img src="https://avatars.githubusercontent.com/u/117785554?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[gaofurui](https://github.com/gaofurui) | 52 |
@@ -34,7 +34,7 @@
 | 16 | <img src="https://avatars.githubusercontent.com/u/142093212?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[iiiooi](https://github.com/iiiooi) | 33 |
 | 17 | <img src="https://avatars.githubusercontent.com/u/59403448?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[csdeTR](https://github.com/csdeTR) | 32 |
 | 18 | <img src="https://avatars.githubusercontent.com/u/111688524?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[cybaka520](https://github.com/cybaka520) | 30 |
-| 19 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 29 |
+| 19 | <img src="https://avatars.githubusercontent.com/u/250306205?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid141252010](https://github.com/kid141252010) | 30 |
 | 20 | <img src="https://avatars.githubusercontent.com/u/165106362?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Sakkaku1111](https://github.com/Sakkaku1111) | 27 |
 | 21 | <img src="https://avatars.githubusercontent.com/u/65570536?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[haroyamada](https://github.com/haroyamada) | 24 |
 | 22 | <img src="https://avatars.githubusercontent.com/u/136059186?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MiaowCham](https://github.com/MiaowCham) | 22 |
