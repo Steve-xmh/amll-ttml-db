@@ -536,6 +536,32 @@
 
 ## 4. 排版
 
+> [!WARNING]
+>
+> 文本行的长度应符合通常的书面表达习惯。  
+> 不应过度将一行文本拆得特别短，文本长度至少应完整保留到语义上的“逗号”（半句）；如果长度允许，应整句保留。
+>
+> 但以下情况除外：
+> - 这一整句由不同的歌手轮流或交替演唱，你需要为每一位歌手创建单独的一行；
+> - 使用常见 PC 显示器（1080P）、缩放设置为 100% 、标准字体大小、最大化窗口（或全屏模式）下，这行歌词的长度仍然超过了排版系统的限制，导致出现了不合理的换行；
+>
+> 例如：
+> <table border="1" style="text-align: center;">
+>    <thead>
+>      <tr>
+>        <th>原文</th>
+>        <th>拆分后的文本</th>
+>        <th></th>
+>      </tr>
+>    </thead>
+>    <tbody>
+>      <tr style="vertical-align: middle;"><td>我要这山断不了来路 我要这水挡不住归途 我要天地都为我让步</td><td>我要这山断不了来路<br>我要这水挡不住归途<br>我要天地都为我让步</td><td>✅</td></tr>
+>      <tr style="vertical-align: middle;"><td>剑出鞘 恩怨了 谁笑</td><td>剑出鞘<br>恩怨了<br>谁笑</td><td>❌</td></tr>
+>      <tr style="vertical-align: middle;"><td><ruby>期待されないまま<rt>流歌×咲希&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</rt></ruby> <ruby>期待もしないまま<rt>流歌×穗波&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</rt></ruby></td>
+>           <td><ruby>期待されないまま<rt>流歌×咲希&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</rt></ruby><br><ruby>期待もしないまま<rt>流歌×穗波&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</rt></ruby></td><td>✅<br>但也可以不分行</td></tr>
+>    </tbody>
+> </table>
+
 - 尽可能按照单个文字或单个音节制作逐字/逐音节歌词；
 
 - 在机器人处理后的文件中，不允许出现空格包含在音节内**首尾**的情况；
