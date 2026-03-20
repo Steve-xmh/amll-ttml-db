@@ -48,8 +48,8 @@
 ***
 
 > [!Important]
->
-> A note for non-Chinese contributors:
+> <details>
+> <summary><h2>A note for non-Chinese contributors:</h2></summary>
 >
 > This database is mainly for Chinese speakers. However, if you're translating lyrics into other languages, please specify it using the "xml:lang" attribute. If Chinese (or other language) version already exists, just keep all.
 >
@@ -108,6 +108,7 @@
 > > ---
 > >
 > > *Although this format complies with the new standards of Apple Music, we strongly discourage using it because most programs utilizing amll-ttml-db cannot parse it. Furthermore, if you submit lyrics in this format via the Issue, the bot will automatically convert them to the first format.*
+> </details>
 
 ***
 
