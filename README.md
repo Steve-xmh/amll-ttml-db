@@ -60,7 +60,7 @@
 > <details>
 > <summary>More information</summary>  
 >
-> ### For demonstration purposes, the examples provided below are formatted. Please note that in an actual TTML file, the content is minified according to HTML standards. Keep this in mind when reading the examples and submitting files.
+> #### For demonstration purposes, the examples provided below are formatted. Please note that in an actual TTML file, the content is minified according to HTML standards. Keep this in mind when reading the examples and submitting files.
 >
 > ---
 >
