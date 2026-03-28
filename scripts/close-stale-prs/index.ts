@@ -4,14 +4,21 @@ const LABEL_NAME = "待更新";
 const DAYS_THRESHOLD = 7;
 
 const repoEnv = process.env.GITHUB_REPOSITORY || "";
-const OWNER = process.env.OWNER || repoEnv.split("/")[0] || "amll-dev";
-const REPO = process.env.REPO || repoEnv.split("/")[1] || "amll-ttml-db";
+const OWNER = process.env.OWNER || repoEnv.split("/")[0];
+const REPO = process.env.REPO || repoEnv.split("/")[1];
 const TOKEN = process.env.GITHUB_TOKEN;
 
 const IS_DRY_RUN = process.env.DRY_RUN === "true";
 
 if (!TOKEN) {
 	console.error("缺少环境变量 GITHUB_TOKEN");
+	process.exit(1);
+}
+
+if (!OWNER || !REPO) {
+	console.error(
+		"缺少仓库信息：请通过 OWNER/REPO 或 GITHUB_REPOSITORY 环境变量指定目标仓库",
+	);
 	process.exit(1);
 }
 
