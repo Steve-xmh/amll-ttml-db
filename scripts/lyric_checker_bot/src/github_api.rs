@@ -5,7 +5,6 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use lyrics_helper_core::{CanonicalMetadataKey, MetadataStore};
 use octocrab::{
     Octocrab,
     models::{
@@ -18,6 +17,7 @@ use octocrab::{
 use rand::distr::{Alphanumeric, SampleString};
 use tokio::fs;
 use tracing::{error, info, warn};
+use ttml_processor::model::{PlatformId, TTMLMetadata};
 
 use crate::git_utils;
 
@@ -29,21 +29,19 @@ const PENDING_UPDATE_LABEL: &str = "待更新";
 pub struct PrContext<'a> {
     pub issue: &'a Issue,
     pub original_ttml: &'a str,
-    pub compact_ttml: &'a str,
-    pub metadata_store: &'a MetadataStore,
+    pub generated_ttml: &'a str,
+    pub metadata: &'a TTMLMetadata,
     pub remarks: &'a str,
-    pub warnings: &'a [String],
     pub root_path: &'a Path,
     pub is_first_time: bool,
 }
 
 pub struct PrUpdateContext<'a> {
     pub pr_number: u64,
-    pub compact_ttml: &'a str,
-    pub warnings: &'a [String],
+    pub generated_ttml: &'a str,
     pub root_path: &'a Path,
     pub requester: &'a str,
-    pub metadata_store: &'a MetadataStore,
+    pub metadata: &'a TTMLMetadata,
     pub remarks: Option<String>,
     pub comment_id: u64,
 }
@@ -235,7 +233,7 @@ impl GitHubClient {
             fs::create_dir_all(&raw_lyrics_dir).await?;
         }
 
-        fs::write(&file_path, context.compact_ttml)
+        fs::write(&file_path, context.generated_ttml)
             .await
             .context(format!("写入文件 {} 失败", file_path.display()))?;
         info!("已将处理后的歌词写入到: {}", file_path.display());
@@ -247,11 +245,12 @@ impl GitHubClient {
         git_utils::push(&submit_branch).await?;
         git_utils::checkout_main_branch().await?;
 
-        // --- 2. GitHub API 操作 ---
-
         // 构建成功评论
-        let success_comment =
-            Self::build_issue_success_comment(context.original_ttml, context.warnings);
+        let success_text = format!(
+            "{CHECKED_MARK}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！"
+        );
+
+        let success_comment = Self::build_body(&success_text, Some(context.original_ttml), 65535);
 
         self.client
             .issues(&self.owner, &self.repo)
@@ -274,9 +273,8 @@ impl GitHubClient {
         let pr_body = Self::generate_body_content(
             context.issue.number,
             &context.issue.user.login,
-            context.metadata_store,
+            context.metadata,
             context.remarks,
-            context.warnings,
         );
         let pr_title = Self::generate_pr_title(context);
 
@@ -316,13 +314,9 @@ impl GitHubClient {
 
         let trimmed_title = issue_title.trim();
         if trimmed_title.is_empty() || trimmed_title == placeholder_title {
-            let metadata_store = context.metadata_store;
-            let artists = metadata_store
-                .get_multiple_values(&CanonicalMetadataKey::Artist)
-                .map(|v| v.join(", "));
-            let titles = metadata_store
-                .get_multiple_values(&CanonicalMetadataKey::Title)
-                .map(|v| v.join(", "));
+            let meta = context.metadata;
+            let artists = meta.artist.as_ref().map(|v| v.join(", "));
+            let titles = meta.title.as_ref().map(|v| v.join(", "));
 
             if let (Some(artist_str), Some(title_str)) = (artists, titles)
                 && !artist_str.is_empty()
@@ -338,17 +332,16 @@ impl GitHubClient {
     fn generate_body_content(
         issue_number: u64,
         user_login: &str,
-        metadata_store: &MetadataStore,
+        metadata: &TTMLMetadata,
         remarks: &str,
-        warnings: &[String],
     ) -> String {
         let mut body_parts = Vec::new();
 
         body_parts.push(format!("### 歌词议题\n#{issue_number}"));
         body_parts.push(format!("### 歌词作者\n@{user_login}"));
 
-        let mut add_metadata_section = |title: &str, key: &CanonicalMetadataKey| {
-            if let Some(values) = metadata_store.get_multiple_values(key)
+        let mut add_metadata_section = |title: &str, values: Option<&Vec<String>>| {
+            if let Some(values) = values
                 && !values.is_empty()
             {
                 body_parts.push(format!("### {title}"));
@@ -362,40 +355,26 @@ impl GitHubClient {
             }
         };
 
-        add_metadata_section("音乐名称", &CanonicalMetadataKey::Title);
-        add_metadata_section("音乐作者", &CanonicalMetadataKey::Artist);
-        add_metadata_section("音乐专辑名称", &CanonicalMetadataKey::Album);
+        add_metadata_section("音乐名称", metadata.title.as_ref());
+        add_metadata_section("音乐作者", metadata.artist.as_ref());
+        add_metadata_section("音乐专辑名称", metadata.album.as_ref());
 
-        let platform_keys_and_titles = vec![
-            (CanonicalMetadataKey::NcmMusicId, "歌曲关联网易云音乐 ID"),
-            (CanonicalMetadataKey::QqMusicId, "歌曲关联 QQ 音乐 ID"),
-            (CanonicalMetadataKey::SpotifyId, "歌曲关联 Spotify ID"),
-            (
-                CanonicalMetadataKey::AppleMusicId,
-                "歌曲关联 Apple Music ID",
-            ),
-        ];
-
-        for (key, title) in platform_keys_and_titles {
-            add_metadata_section(title, &key);
+        if let Some(platform_ids) = &metadata.platform_ids {
+            for (platform, ids) in platform_ids {
+                let platform_name = match platform {
+                    PlatformId::NcmMusicId => "歌曲关联网易云音乐 ID",
+                    PlatformId::QqMusicId => "歌曲关联 QQ 音乐 ID",
+                    PlatformId::SpotifyId => "歌曲关联 Spotify ID",
+                    PlatformId::AppleMusicId => "歌曲关联 Apple Music ID",
+                };
+                add_metadata_section(platform_name, Some(ids));
+            }
         }
 
         let trimmed_remarks = remarks.trim();
         if !trimmed_remarks.is_empty() && trimmed_remarks != "_No response_" {
             body_parts.push("### 备注".to_string());
             body_parts.push(remarks.to_string());
-        }
-
-        if !warnings.is_empty() {
-            let warnings_list = warnings
-                .iter()
-                .map(|w| format!("> - {w}"))
-                .collect::<Vec<_>>()
-                .join("\n");
-
-            let warnings_section =
-                format!("> [!WARNING]\n > 解析歌词文件时发现问题，详情如下:\n{warnings_list}");
-            body_parts.push(warnings_section);
         }
 
         body_parts.join("\n\n")
@@ -617,7 +596,7 @@ impl GitHubClient {
 
         info!("将更新文件: {}", file_path.display());
 
-        fs::write(file_path, context.compact_ttml)
+        fs::write(file_path, context.generated_ttml)
             .await
             .context(format!("写入文件 {} 失败", file_path.display()))?;
 
@@ -669,13 +648,8 @@ impl GitHubClient {
             Clone::clone,
         );
 
-        let new_body = Self::generate_body_content(
-            issue_number,
-            original_author,
-            context.metadata_store,
-            &remarks,
-            context.warnings,
-        );
+        let new_body =
+            Self::generate_body_content(issue_number, original_author, context.metadata, &remarks);
 
         self.client
             .pulls(&self.owner, &self.repo)
@@ -805,25 +779,5 @@ impl GitHubClient {
         } else {
             body
         }
-    }
-
-    // 构建在 Issue 中发表的成功评论
-    fn build_issue_success_comment(original_lyric: &str, warnings: &[String]) -> String {
-        let mut base_text = format!(
-            "{CHECKED_MARK}\n\n歌词提交议题检查完毕！\n已自动创建歌词提交合并请求！\n请耐心等待管理员审核歌词吧！"
-        );
-
-        if !warnings.is_empty() {
-            let warnings_list = warnings
-                .iter()
-                .map(|w| format!("> - {w}"))
-                .collect::<Vec<_>>()
-                .join("\n");
-            let warnings_section =
-                format!("\n\n> [!WARNING]\n> 解析歌词文件时发现以下问题:\n{warnings_list}");
-            base_text.push_str(&warnings_section);
-        }
-
-        Self::build_body(&base_text, Some(original_lyric), 65535)
     }
 }

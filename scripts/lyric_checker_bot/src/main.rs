@@ -7,22 +7,20 @@ use std::io::BufRead;
 use std::io::BufReader;
 
 use anyhow::{Context, Result};
-use lyrics_helper_core::{
-    DefaultLanguageOptions, MetadataStore, TtmlGenerationOptions, TtmlParsingOptions,
-};
 use reqwest::Client;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 use tracing::{error, info, warn};
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use ttml_processor::GeneratorConfig;
+use ttml_processor::model::TTMLResult;
 use ttml_processor::{generate_ttml, parse_ttml};
 
 use crate::github_api::{PrContext, PrUpdateContext};
 
 struct TtmlProcessingOutput {
-    compact_ttml: String,
-    metadata_store: MetadataStore,
-    warnings: Vec<String>,
+    generated_ttml: String,
+    result: TTMLResult,
 }
 
 #[allow(dead_code)]
@@ -76,62 +74,30 @@ fn check_is_contributor(root_path: &Path, user_id: u64) -> bool {
 }
 
 fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, String> {
-    info!("开始解析 TTML 文件...");
-    let parsing_options = TtmlParsingOptions {
-        force_timing_mode: None,
-        default_languages: DefaultLanguageOptions::default(),
-    };
-    let mut parsed_data = match parse_ttml(original_ttml, &parsing_options) {
-        Ok(data) => {
-            if !data.warnings.is_empty() {
-                for warning in &data.warnings {
-                    warn!("解析警告: {warning}");
-                }
-            }
-            info!("文件解析成功。");
-            data
-        }
+    info!("开始解析 TTML 文件");
+    let result = match parse_ttml(original_ttml) {
+        Ok(data) => data,
         Err(e) => return Err(format!("解析 TTML 文件失败: `{e:?}`")),
     };
+    info!("歌词解析完成");
 
-    parsed_data.lines.sort_by_key(|line| line.start_ms);
-
-    let warnings = parsed_data.warnings.clone();
-    if !warnings.is_empty() {
-        warn!("发现 {} 条解析警告", warnings.len());
-    }
-
-    info!("正在处理元数据...");
-    let metadata_store = MetadataStore::from(&parsed_data);
-
-    info!("元数据处理完毕。准备用于验证的内容: {metadata_store:?}");
     info!("正在验证歌词数据和元数据...");
-    if let Err(errors) =
-        validator::validate_lyrics_and_metadata(&parsed_data.lines, &metadata_store)
-    {
+    if let Err(errors) = validator::validate_lyrics_and_metadata(&result) {
         return Err(format!("文件验证失败:\n- {}", errors.join("\n- ")));
     }
-    info!("文件验证通过。");
-
-    let agent_store = &parsed_data.agents;
+    info!("文件验证通过");
 
     info!("正在生成 TTML 文件...");
-    let compact_gen_opts = TtmlGenerationOptions {
+    let compact_gen_opts = GeneratorConfig {
         format: false,
         ..Default::default()
     };
-    let compact_ttml = generate_ttml(
-        &parsed_data.lines,
-        &metadata_store,
-        agent_store,
-        &compact_gen_opts,
-    )
-    .map_err(|e| format!("生成 TTML 失败: {e:?}"))?;
+    let generated_ttml =
+        generate_ttml(&result, &compact_gen_opts).map_err(|e| format!("生成 TTML 失败: {e:?}"))?;
 
     Ok(TtmlProcessingOutput {
-        compact_ttml,
-        metadata_store,
-        warnings,
+        generated_ttml,
+        result,
     })
 }
 
@@ -287,11 +253,10 @@ async fn handle_command(
             Ok(processed_data) => {
                 let update_context = PrUpdateContext {
                     pr_number,
-                    compact_ttml: &processed_data.compact_ttml,
-                    warnings: &processed_data.warnings,
+                    generated_ttml: &processed_data.generated_ttml,
                     root_path,
                     requester: commenter,
-                    metadata_store: &processed_data.metadata_store,
+                    metadata: &processed_data.result.metadata,
                     remarks: new_remarks,
                     comment_id,
                 };
@@ -423,10 +388,9 @@ async fn process_issue(
             let pr_context = PrContext {
                 issue,
                 original_ttml: &original_ttml_content,
-                compact_ttml: &processed_data.compact_ttml,
-                metadata_store: &processed_data.metadata_store,
+                generated_ttml: &processed_data.generated_ttml,
+                metadata: &processed_data.result.metadata,
                 remarks: &remarks,
-                warnings: &processed_data.warnings,
                 root_path,
                 is_first_time,
             };
