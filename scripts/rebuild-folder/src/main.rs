@@ -13,11 +13,16 @@ use anyhow::{Context, Result};
 use chrono::prelude::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
-use ttml_processor::parse_ttml;
+use ttml_processor::{
+    model::{PlatformId, TTMLResult},
+    parse_ttml,
+};
 use zip::write::SimpleFileOptions;
 
+mod generator;
+
 struct ParsedLyric {
-    lines: Vec<amll_lyric::LyricLine<'static>>,
+    ttml_result: TTMLResult,
     metadata: Vec<(String, Vec<String>)>,
 }
 
@@ -221,152 +226,99 @@ fn load_raw_lyrics(raw_dir: &Path) -> Result<Vec<std::fs::DirEntry>> {
 fn process_lyric_content(file_content: &str) -> Result<ParsedLyric> {
     let ttml_result = parse_ttml(file_content)?;
 
-    let mut lines = Vec::new();
-
-    for new_line in ttml_result.lines {
-        // agent_id 为 None 或 v1，视为非对唱，其他情况视为对唱
-        let is_duet = !matches!(new_line.agent_id.as_deref(), Some("v1") | None);
-
-        let process_words = |words: Option<&Vec<ttml_processor::model::Syllable>>,
-                             fallback_text: &str,
-                             start_time: u32,
-                             end_time: u32|
-         -> Vec<amll_lyric::LyricWord<'static>> {
-            let mut amll_words = Vec::new();
-
-            match words {
-                Some(syls) if !syls.is_empty() => {
-                    for syl in syls {
-                        amll_words.push(amll_lyric::LyricWord {
-                            start_time: u64::from(syl.start_time),
-                            end_time: u64::from(syl.end_time),
-                            word: Cow::Owned(syl.text.clone()),
-                        });
-
-                        // AMLL 的历史遗留问题，用时间戳均为0的音节表示空格
-                        if syl.ends_with_space.unwrap_or(false) {
-                            amll_words.push(amll_lyric::LyricWord {
-                                start_time: 0,
-                                end_time: 0,
-                                word: " ".into(),
-                            });
-                        }
-                    }
-                }
-                _ => {
-                    if !fallback_text.is_empty() {
-                        amll_words.push(amll_lyric::LyricWord {
-                            start_time: u64::from(start_time),
-                            end_time: u64::from(end_time),
-                            word: Cow::Owned(fallback_text.to_string()),
-                        });
-                    }
-                }
-            }
-
-            amll_words
-        };
-
-        lines.push(amll_lyric::LyricLine {
-            words: process_words(
-                new_line.words.as_ref(),
-                &new_line.text,
-                new_line.start_time,
-                new_line.end_time,
-            ),
-            translated_lyric: Cow::Owned(String::new()),
-            roman_lyric: Cow::Owned(String::new()),
-            is_bg: false,
-            is_duet,
-            start_time: u64::from(new_line.start_time),
-            end_time: u64::from(new_line.end_time),
-        });
-
-        if let Some(bg) = &new_line.background_vocal {
-            lines.push(amll_lyric::LyricLine {
-                words: process_words(bg.words.as_ref(), &bg.text, bg.start_time, bg.end_time),
-                translated_lyric: Cow::Owned(String::new()),
-                roman_lyric: Cow::Owned(String::new()),
-                is_bg: true,
-                is_duet,
-                start_time: u64::from(bg.start_time),
-                end_time: u64::from(bg.end_time),
-            });
-        }
-    }
-
     let mut metadata = Vec::new();
-    let meta = ttml_result.metadata;
+    let meta = &ttml_result.metadata;
 
-    if let Some(v) = meta.author_ids {
-        metadata.push(("ttmlAuthorGithub".to_string(), v));
+    if let Some(v) = &meta.author_ids {
+        metadata.push(("ttmlAuthorGithub".to_string(), v.clone()));
     }
-    if let Some(v) = meta.author_names {
-        metadata.push(("ttmlAuthorGithubLogin".to_string(), v));
+    if let Some(v) = &meta.author_names {
+        metadata.push(("ttmlAuthorGithubLogin".to_string(), v.clone()));
     }
-    if let Some(platforms) = meta.platform_ids {
+    if let Some(platforms) = &meta.platform_ids {
         for (p_id, ids) in platforms {
             let key = match p_id {
-                ttml_processor::model::PlatformId::NcmMusicId => "ncmMusicId",
-                ttml_processor::model::PlatformId::QqMusicId => "qqMusicId",
-                ttml_processor::model::PlatformId::SpotifyId => "spotifyId",
-                ttml_processor::model::PlatformId::AppleMusicId => "appleMusicId",
+                PlatformId::NcmMusicId => "ncmMusicId",
+                PlatformId::QqMusicId => "qqMusicId",
+                PlatformId::SpotifyId => "spotifyId",
+                PlatformId::AppleMusicId => "appleMusicId",
             };
-            metadata.push((key.to_string(), ids));
+            metadata.push((key.to_string(), ids.clone()));
         }
     }
-    if let Some(raw) = meta.raw_properties {
+    if let Some(raw) = &meta.raw_properties {
         for (k, v) in raw {
-            metadata.push((k, v));
+            metadata.push((k.clone(), v.clone()));
         }
     }
 
-    if let Some(v) = meta.title {
-        metadata.push(("musicName".to_string(), v));
+    if let Some(v) = &meta.title {
+        metadata.push(("musicName".to_string(), v.clone()));
     }
-    if let Some(v) = meta.artist {
-        metadata.push(("artists".to_string(), v));
+    if let Some(v) = &meta.artist {
+        metadata.push(("artists".to_string(), v.clone()));
     }
-    if let Some(v) = meta.album {
-        metadata.push(("album".to_string(), v));
+    if let Some(v) = &meta.album {
+        metadata.push(("album".to_string(), v.clone()));
     }
-    if let Some(v) = meta.isrc {
-        metadata.push(("isrc".to_string(), v));
+    if let Some(v) = &meta.isrc {
+        metadata.push(("isrc".to_string(), v.clone()));
     }
 
     metadata.sort_by(|a, b| a.0.cmp(&b.0));
 
-    Ok(ParsedLyric { lines, metadata })
+    Ok(ParsedLyric {
+        ttml_result,
+        metadata,
+    })
 }
 
 fn save_lyric_files_to_disk(
-    lines: &[amll_lyric::LyricLine],
+    ttml_result: &TTMLResult,
     raw_lyric_path: &Path,
     dest_dir: &Path,
     id_name: &str,
 ) -> Result<()> {
     let base_path = dest_dir.join(id_name);
+
     std::fs::copy(raw_lyric_path, base_path.with_extension("ttml"))?;
+
+    let lrc_gen = generator::LrcTypeGenerator::new(generator::LrcTypeGeneratorOptions {
+        mode: generator::LrcMode::Plain,
+        ..Default::default()
+    });
     std::fs::write(
         base_path.with_extension("lrc"),
-        amll_lyric::lrc::stringify_lrc(lines),
+        lrc_gen.generate(ttml_result),
     )?;
-    std::fs::write(
-        base_path.with_extension("yrc"),
-        amll_lyric::yrc::stringify_yrc(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("lys"),
-        amll_lyric::lys::stringify_lys(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("qrc"),
-        amll_lyric::qrc::stringify_qrc(lines),
-    )?;
+
+    let eslrc_gen = generator::LrcTypeGenerator::new(generator::LrcTypeGeneratorOptions {
+        mode: generator::LrcMode::Enhanced,
+        ..Default::default()
+    });
     std::fs::write(
         base_path.with_extension("eslrc"),
-        amll_lyric::eslrc::stringify_eslrc(lines),
+        eslrc_gen.generate(ttml_result),
     )?;
+
+    let yrc_gen = generator::YrcGenerator::new();
+    std::fs::write(
+        base_path.with_extension("yrc"),
+        yrc_gen.generate(ttml_result),
+    )?;
+
+    let lys_gen = generator::LysGenerator::new();
+    std::fs::write(
+        base_path.with_extension("lys"),
+        lys_gen.generate(ttml_result),
+    )?;
+
+    let qrc_gen = generator::QrcGenerator::new();
+    std::fs::write(
+        base_path.with_extension("qrc"),
+        qrc_gen.generate(ttml_result),
+    )?;
+
     Ok(())
 }
 
@@ -539,8 +491,6 @@ fn main() -> Result<()> {
             .progress_chars("##-"),
     );
 
-    // 为了去重不同版本的歌词，需要加载所有解析后的数据进内存中，也方便并行写入文件
-    // 编写此部分代码时歌词库只有 2242 份文件，内存占用约 100MB，并且在可见的未来应该不会大到无法承受
     let all_parsed_entries: Vec<Result<ParsedEntry>> = raw_lyrics
         .par_iter()
         .map(|entry| {
@@ -677,7 +627,10 @@ fn main() -> Result<()> {
             Platform::Am => &layout.am_dir,
         };
 
-        if let Err(e) = save_lyric_files_to_disk(&entry.data.lines, &entry.path, target_dir, id) {
+        // 直接传递解析树传递给生成器
+        if let Err(e) =
+            save_lyric_files_to_disk(&entry.data.ttml_result, &entry.path, target_dir, id)
+        {
             eprintln!("写入文件失败 {platform:?} ID {id}: {e:?}");
         }
     });
