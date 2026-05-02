@@ -776,8 +776,7 @@ fn main() -> Result<()> {
         } else {
             println!("工作树已变更，正在提交更改");
             add_file_to_git("../..")?;
-            let time = Utc::now();
-            commit(&format!("于 {time:?} 重新构建更新"))?;
+            commit("重新构建歌词文件夹")?;
             push("main")?;
 
             println!("文件夹重建完毕！耗时: {:?}", t.elapsed());
