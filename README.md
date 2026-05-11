@@ -136,8 +136,9 @@
 - 提供翻译和音译（如果有）。
   > 对于不使用 AMLL TTML Tool 的歌词制作者或歌词编辑器开发者，你可以在需要添加音译或翻译的行的 `p` 元素中加入 `<span ttm:role="x-translation" xml:lang="...">...</span>` 作为翻译文本或者 `<span ttm:role="x-roman">...</span>` 作为音译文本。
 
-> [!NOTE]
-> 您可以使用来自 Apple Music 的 TTML 歌词文件，但一般情况下这类歌词很难做到完全精准，请您尽量避免不作修正直接提交，以防被审核员因 **单词偏移值过大** 而驳回。
+> [!CAUTION]
+>
+> 请不要直接提交来自 Apple Music 的 TTML 歌词文件，因为这些文件的分词和时间轴并不完全准确合理，只有**由版权方提供的**正文文本内容可以作为参考（来自 Musixmatch 的不行）。
 
 ### 使用 AMLL TTML Tool 制作逐词歌词
 
@@ -180,7 +181,7 @@
  > - 在 Issue 中，您可以在 备注 处填写歌曲文件下载链接；
  > - 在 Pull Request 中，您可以在 Body 中的 `备注` / Comment 处填写歌曲文件下载链接；
  > - 在 AMLL TTML 歌词站 创作中心 中，您可以点击 <kbd>内容管理</kbd>，找到并点击进入您想要上传歌曲文件的歌词，再点击 <kbd>上传音频</kbd> 即可上传歌曲文件。
- 
+
 ## 4. 等待审核
 
 为了提高歌词库的歌词统一性和综合质量，您的歌词将由 AMLL TTML 歌词审核团进行人工审核，以确保您的歌词符合 [歌词审核细则](https://github.com/amll-dev/amll-ttml-db/wiki/%E4%B8%8A%E4%BC%A0%E6%AD%8C%E8%AF%8D) 的要求。
@@ -198,15 +199,30 @@
 
 如果您认为您的歌词不存在审核员修改意见中的问题，请尝试再次提交并附上原因，以便审核员理解你的意图，或是请求其他审核员审核。
 > [!TIP]
-> *以下所有操作，您无需输入括号* `{}`。
-> 
+> *以下所有操作，您无需输入括号 `{}`，并且只需要发送命令的内容*。
+>
+> > **Example**
+> >
+> > <table border="1">
+> >   <tbody>
+> >     <tr>
+> >       <td>✅</td>
+> >       <td><blockquote><pre>/update link 更改第 X 行翻译文本</pre></blockquote></td>
+> >     </tr>
+> >     <tr>
+> >       <td>❌</td>
+> >       <td><blockquote><pre>我已按要求修改歌词内容<br/>/update link 更改第 X 行翻译文本</pre></blockquote></td>
+> >     </tr>
+> >   </tbody>
+> > </table>
+>
 > 若您的歌词 Pull Request 处于 **未审核**（无 `审核中` 标签）或 **审核未通过**（审核留言歌词驳回原因，且标记 `待更新` 标签）状态，您可在该 PR 内 Comment（即评论） `/update {TTML 歌词文件下载直链}` 以更新歌词文件，此行为视为重新提交审核；
 > > 若您需要增加备注，请评论 `/update {TTML 歌词文件下载直链} {备注}`。
-> 
+>
 > 在 Pull Request 内 Comment（即评论） `/label {标签}` 以添加 [合适的标签](https://github.com/amll-dev/amll-ttml-db/labels)；
-> 
+>
 > > 机器人的操作可能有将近1-2分钟的延迟，机器人在准备操作时将对此评论竖大拇指示意。
-> 
+>
 > 您可以评论 `/close {原因}` 来自助关闭本次歌词提交，原因选填。 
 
 ***
@@ -241,7 +257,7 @@ SPlayer 是 跨平台的音乐播放器，功能多样丰富。[前往了解](ht
 - 对于 **本地/在线** TTML歌词 皆有良好支持。
 
 > 感谢 [@imsyy](https://github.com/imsyy)、[@kazukokawagawa](https://github.com/kazukokawagawa)、[@MoYingJi](https://github.com/MoYingJi)、[@apoint123](https://github.com/apoint123) 等广大贡献者开发的SPlayer！
- 
+
 ##  Apple Music-like Lyrics for BetterNCM [停止维护]
 
 Apple Music-like Lyrics for BetterNCM 已内置本仓库歌词源，无需手动配置，仅需将歌词源 **AMLL TTML 逐词歌词数据库（多源聚合）** 置顶即可使用。
