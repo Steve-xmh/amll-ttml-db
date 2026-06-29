@@ -1,7 +1,7 @@
 use std::{
     borrow::Cow,
     cmp::Ordering,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::File,
     io::{BufWriter, Write},
     path::{Path, PathBuf},
@@ -17,7 +17,6 @@ use ttml_processor::parse_ttml;
 use zip::write::SimpleFileOptions;
 
 struct ParsedLyric {
-    lines: Vec<amll_lyric::LyricLine<'static>>,
     metadata: Vec<(String, Vec<String>)>,
 }
 
@@ -53,34 +52,22 @@ impl ProjectLayout {
     }
 
     fn init_directories(&self, gen_folder: bool) -> Result<()> {
-        let mut dirs_to_clean = Vec::new();
+        let mut dirs_to_ensure = Vec::new();
 
         if gen_folder {
-            dirs_to_clean.push(&self.ncm_dir);
-            dirs_to_clean.push(&self.spotify_dir);
-            dirs_to_clean.push(&self.qq_dir);
-            dirs_to_clean.push(&self.am_dir);
+            dirs_to_ensure.push(&self.ncm_dir);
+            dirs_to_ensure.push(&self.spotify_dir);
+            dirs_to_ensure.push(&self.qq_dir);
+            dirs_to_ensure.push(&self.am_dir);
         }
-        dirs_to_clean.push(&self.metadata_dir);
+        dirs_to_ensure.push(&self.metadata_dir);
 
-        println!("正在重建 {} 个目录...", dirs_to_clean.len());
-
-        dirs_to_clean.par_iter().try_for_each(|dir| -> Result<()> {
-            let start = Instant::now();
-            let dir_name = dir.file_name().unwrap_or_default().to_string_lossy();
-
-            if dir.exists() {
-                std::fs::remove_dir_all(dir)
-                    .with_context(|| format!("无法删除旧目录: {:?}", dir.display()))?;
+        for dir in dirs_to_ensure {
+            if !dir.exists() {
+                std::fs::create_dir_all(dir)
+                    .with_context(|| format!("无法创建目录: {:?}", dir.display()))?;
             }
-            std::fs::create_dir_all(dir)
-                .with_context(|| format!("无法创建新目录: {:?}", dir.display()))?;
-
-            let duration = start.elapsed();
-            println!("目录 {dir_name} 重建完毕 耗时 {duration:.2?}");
-
-            Ok(())
-        })?;
+        }
 
         Ok(())
     }
@@ -220,81 +207,6 @@ fn load_raw_lyrics(raw_dir: &Path) -> Result<Vec<std::fs::DirEntry>> {
 
 fn process_lyric_content(file_content: &str) -> Result<ParsedLyric> {
     let ttml_result = parse_ttml(file_content)?;
-
-    let mut lines = Vec::new();
-
-    for new_line in ttml_result.lines {
-        // agent_id 为 None 或 v1，视为非对唱，其他情况视为对唱
-        let is_duet = !matches!(new_line.agent_id.as_deref(), Some("v1") | None);
-
-        let process_words = |words: Option<&Vec<ttml_processor::model::Syllable>>,
-                             fallback_text: &str,
-                             start_time: u32,
-                             end_time: u32|
-         -> Vec<amll_lyric::LyricWord<'static>> {
-            let mut amll_words = Vec::new();
-
-            match words {
-                Some(syls) if !syls.is_empty() => {
-                    for syl in syls {
-                        amll_words.push(amll_lyric::LyricWord {
-                            start_time: u64::from(syl.start_time),
-                            end_time: u64::from(syl.end_time),
-                            word: Cow::Owned(syl.text.clone()),
-                        });
-
-                        // AMLL 的历史遗留问题，用时间戳均为0的音节表示空格
-                        if syl.ends_with_space.unwrap_or(false) {
-                            amll_words.push(amll_lyric::LyricWord {
-                                start_time: 0,
-                                end_time: 0,
-                                word: " ".into(),
-                            });
-                        }
-                    }
-                }
-                _ => {
-                    if !fallback_text.is_empty() {
-                        amll_words.push(amll_lyric::LyricWord {
-                            start_time: u64::from(start_time),
-                            end_time: u64::from(end_time),
-                            word: Cow::Owned(fallback_text.to_string()),
-                        });
-                    }
-                }
-            }
-
-            amll_words
-        };
-
-        lines.push(amll_lyric::LyricLine {
-            words: process_words(
-                new_line.words.as_ref(),
-                &new_line.text,
-                new_line.start_time,
-                new_line.end_time,
-            ),
-            translated_lyric: Cow::Owned(String::new()),
-            roman_lyric: Cow::Owned(String::new()),
-            is_bg: false,
-            is_duet,
-            start_time: u64::from(new_line.start_time),
-            end_time: u64::from(new_line.end_time),
-        });
-
-        if let Some(bg) = &new_line.background_vocal {
-            lines.push(amll_lyric::LyricLine {
-                words: process_words(bg.words.as_ref(), &bg.text, bg.start_time, bg.end_time),
-                translated_lyric: Cow::Owned(String::new()),
-                roman_lyric: Cow::Owned(String::new()),
-                is_bg: true,
-                is_duet,
-                start_time: u64::from(bg.start_time),
-                end_time: u64::from(bg.end_time),
-            });
-        }
-    }
-
     let mut metadata = Vec::new();
     let meta = ttml_result.metadata;
 
@@ -336,37 +248,12 @@ fn process_lyric_content(file_content: &str) -> Result<ParsedLyric> {
 
     metadata.sort_by(|a, b| a.0.cmp(&b.0));
 
-    Ok(ParsedLyric { lines, metadata })
+    Ok(ParsedLyric { metadata })
 }
 
-fn save_lyric_files_to_disk(
-    lines: &[amll_lyric::LyricLine],
-    raw_lyric_path: &Path,
-    dest_dir: &Path,
-    id_name: &str,
-) -> Result<()> {
-    let base_path = dest_dir.join(id_name);
-    std::fs::copy(raw_lyric_path, base_path.with_extension("ttml"))?;
-    std::fs::write(
-        base_path.with_extension("lrc"),
-        amll_lyric::lrc::stringify_lrc(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("yrc"),
-        amll_lyric::yrc::stringify_yrc(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("lys"),
-        amll_lyric::lys::stringify_lys(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("qrc"),
-        amll_lyric::qrc::stringify_qrc(lines),
-    )?;
-    std::fs::write(
-        base_path.with_extension("eslrc"),
-        amll_lyric::eslrc::stringify_eslrc(lines),
-    )?;
+fn copy_ttml_file(raw_lyric_path: &Path, dest_dir: &Path, id_name: &str) -> Result<()> {
+    let dest_path = dest_dir.join(id_name).with_extension("ttml");
+    std::fs::copy(raw_lyric_path, dest_path)?;
     Ok(())
 }
 
@@ -383,8 +270,12 @@ fn generate_contributor_report(
     );
 
     // contributors.jsonl
-    let mut contributor_indecies =
-        std::fs::File::create(layout.metadata_dir.join("contributors.jsonl"))?;
+    let mut contributor_indecies = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(layout.metadata_dir.join("contributors.jsonl"))?;
+
     for (_, c) in &contribution_list {
         serde_json::to_writer(
             &mut contributor_indecies,
@@ -398,7 +289,11 @@ fn generate_contributor_report(
     }
 
     // CONTRIBUTORS.md
-    let mut md_file = std::fs::File::create(layout.root.join("CONTRIBUTORS.md"))?;
+    let mut md_file = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(layout.root.join("CONTRIBUTORS.md"))?;
 
     writeln!(md_file, "<!--")?;
     writeln!(md_file, "  此文件由机器人自动生成。")?;
@@ -563,13 +458,14 @@ fn main() -> Result<()> {
         })
         .collect();
 
-    pb.finish_with_message("解析完成");
+    pb.finish_with_message("元数据解析完成");
 
     let mut tasks: HashMap<(Platform, String), &ParsedEntry> = HashMap::new();
     let mut contribution_map = HashMap::new();
 
     let raw_indecies_file = std::fs::OpenOptions::new()
-        .append(true)
+        .write(true)
+        .truncate(true)
         .create(true)
         .open(layout.metadata_dir.join("raw-lyrics-index.jsonl"))?;
     let mut raw_indecies_writer = BufWriter::new(raw_indecies_file);
@@ -645,17 +541,70 @@ fn main() -> Result<()> {
     }
     raw_indecies_writer.flush()?;
 
-    println!("正在生成 {} 个歌词文件", tasks.len());
-    let write_pb = ProgressBar::new(tasks.len() as u64);
+    let mut pending_copies: HashSet<(Platform, String)> = tasks.keys().cloned().collect();
+
+    if gen_folder {
+        let start_clean = Instant::now();
+        let mut expected_files: HashMap<Platform, HashSet<String>> = HashMap::new();
+
+        for (p, id) in tasks.keys() {
+            expected_files
+                .entry(*p)
+                .or_default()
+                .insert(format!("{id}.ttml"));
+        }
+
+        let mut clean_dir = |dir: &Path, p: Platform| -> Result<()> {
+            if !dir.exists() {
+                return Ok(());
+            }
+            let expected = expected_files.get(&p);
+
+            for entry_res in std::fs::read_dir(dir)? {
+                let entry = entry_res?;
+                let file_name = entry.file_name().to_string_lossy().into_owned();
+
+                if !Path::new(&file_name)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("ttml"))
+                {
+                    continue;
+                }
+
+                let id = file_name.trim_end_matches(".ttml").to_string();
+                let is_expected = expected.is_some_and(|set| set.contains(&file_name));
+
+                if is_expected {
+                    pending_copies.remove(&(p, id));
+                } else {
+                    std::fs::remove_file(entry.path())?;
+                }
+            }
+            Ok(())
+        };
+
+        clean_dir(&layout.ncm_dir, Platform::Ncm)?;
+        clean_dir(&layout.spotify_dir, Platform::Spotify)?;
+        clean_dir(&layout.qq_dir, Platform::Qq)?;
+        clean_dir(&layout.am_dir, Platform::Am)?;
+
+        println!("Diff 清理检查完毕，耗时 {:.2?}", start_clean.elapsed());
+    }
+
+    println!("正在复制 {} 个 TTML 歌词文件", tasks.len());
+    let write_pb = ProgressBar::new(pending_copies.len().max(1) as u64);
     write_pb.set_style(
         ProgressStyle::default_bar()
             .template("[{elapsed_precise}] {bar:40.green/white} {pos}/{len} {msg}")?
             .progress_chars("##-"),
     );
 
-    let mut task_list: Vec<_> = tasks.into_iter().collect();
+    let mut copy_tasks: Vec<_> = pending_copies
+        .into_iter()
+        .filter_map(|key| tasks.get(&key).map(|entry| (key, *entry)))
+        .collect();
 
-    task_list.sort_by(|((p1, id1), entry1), ((p2, id2), entry2)| {
+    copy_tasks.sort_by(|((p1, id1), entry1), ((p2, id2), entry2)| {
         let info1 = RawLyricInfo::from_str(&entry1.file_name);
         let info2 = RawLyricInfo::from_str(&entry2.file_name);
 
@@ -667,9 +616,7 @@ fn main() -> Result<()> {
         }
     });
 
-    task_list.par_iter().for_each(|((platform, id), entry)| {
-        write_pb.inc(1);
-
+    copy_tasks.par_iter().for_each(|((platform, id), entry)| {
         let target_dir = match platform {
             Platform::Ncm => &layout.ncm_dir,
             Platform::Spotify => &layout.spotify_dir,
@@ -677,16 +624,18 @@ fn main() -> Result<()> {
             Platform::Am => &layout.am_dir,
         };
 
-        if let Err(e) = save_lyric_files_to_disk(&entry.data.lines, &entry.path, target_dir, id) {
+        if let Err(e) = copy_ttml_file(&entry.path, target_dir, id) {
             eprintln!("写入文件失败 {platform:?} ID {id}: {e:?}");
         }
+        write_pb.inc(1);
     });
 
-    write_pb.finish_with_message("所有文件生成完毕");
+    write_pb.finish_with_message("所有增量 TTML 文件分发完毕");
 
     let create_index_writer = |dir: &PathBuf| -> Result<BufWriter<std::fs::File>> {
         let file = std::fs::OpenOptions::new()
-            .append(true)
+            .write(true)
+            .truncate(true)
             .create(true)
             .open(dir.join("index.jsonl"))?;
         Ok(BufWriter::new(file))
@@ -730,6 +679,19 @@ fn main() -> Result<()> {
         }
         Ok(())
     };
+
+    let mut task_list: Vec<_> = tasks.into_iter().collect();
+    task_list.sort_by(|((p1, id1), entry1), ((p2, id2), entry2)| {
+        let info1 = RawLyricInfo::from_str(&entry1.file_name);
+        let info2 = RawLyricInfo::from_str(&entry2.file_name);
+
+        match (info1, info2) {
+            (Ok(i1), Ok(i2)) => i1.cmp(&i2).then(p1.cmp(p2)).then(id1.cmp(id2)),
+            (Ok(_), Err(_)) => Ordering::Less,
+            (Err(_), Ok(_)) => Ordering::Greater,
+            (Err(_), Err(_)) => Ordering::Equal,
+        }
+    });
 
     for ((platform, id), entry) in task_list {
         match platform {
