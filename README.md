@@ -41,15 +41,6 @@
 
 ***
 
-> [!TIP]
->
-> ## 📣【公告】
-> 我们正在招募长期维护开发者！  
-> 更多信息请到 [公告帖](https://github.com/amll-dev/amll-ttml-db/discussions/8127) 查看  
-> 感谢各位投稿者对本项目的支持！
-
-***
-
 > [!Warning]
 > 致使用歌词库的开发者：  
 > 本仓库已迁移至 [amll-dev](https://github.com/amll-dev) 组织，仓库链接已更新为 https://github.com/amll-dev/amll-ttml-db ，请下游仓库注意更新。
