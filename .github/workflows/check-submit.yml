@@ -19,6 +19,7 @@ permissions:
 jobs:
   check-submit:
     if: |
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issues' &&
        contains(github.event.issue.title, '歌词') &&
        (contains(github.event.issue.title, '补正') || contains(github.event.issue.title, '修正') || contains(github.event.issue.title, '提交'))
