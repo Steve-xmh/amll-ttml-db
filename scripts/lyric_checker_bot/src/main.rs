@@ -1,5 +1,6 @@
 mod git_utils;
 mod github_api;
+mod snippet_helper;
 mod validator;
 
 use std::fs;
@@ -73,19 +74,24 @@ fn check_is_contributor(root_path: &Path, user_id: u64) -> bool {
     false
 }
 
-fn process_ttml_string(original_ttml: &str) -> Result<TtmlProcessingOutput, String> {
+fn process_ttml_string(
+    original_ttml: &str,
+    file_name: &str,
+) -> Result<TtmlProcessingOutput, String> {
     info!("开始解析 TTML 文件");
     let result = match parse_ttml(original_ttml) {
         Ok(data) => data,
-        Err(e) => return Err(format!("解析 TTML 文件失败: `{e:?}`")),
+        Err(e) => {
+            let snippet_text =
+                crate::snippet_helper::render_parse_error(&e, original_ttml, file_name);
+            return Err(format!("解析 TTML 文件失败:\n```text\n{snippet_text}\n```"));
+        }
     };
-    info!("歌词解析完成");
 
     info!("正在验证歌词数据和元数据...");
     if let Err(errors) = validator::validate_lyrics_and_metadata(&result) {
         return Err(format!("文件验证失败:\n- {}", errors.join("\n- ")));
     }
-    info!("文件验证通过");
 
     info!("正在生成 TTML 文件...");
     let compact_gen_opts = GeneratorConfig {
@@ -249,7 +255,9 @@ async fn handle_command(
             }
         };
 
-        match process_ttml_string(&original_ttml_content) {
+        let file_name = url.rsplit('/').next().unwrap_or("updated.ttml");
+
+        match process_ttml_string(&original_ttml_content, file_name) {
             Ok(processed_data) => {
                 let update_context = PrUpdateContext {
                     pr_number,
@@ -378,7 +386,9 @@ async fn process_issue(
         }
     };
 
-    match process_ttml_string(&original_ttml_content) {
+    let file_name = ttml_url.rsplit('/').next().unwrap_or("uploaded.ttml");
+
+    match process_ttml_string(&original_ttml_content, file_name) {
         Ok(processed_data) => {
             info!("Issue #{} 验证通过，已生成 TTML。", issue.number);
 

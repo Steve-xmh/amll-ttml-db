@@ -748,36 +748,32 @@ impl GitHubClient {
     }
 
     fn build_body(base_text: &str, original_lyric: Option<&str>, max_len: usize) -> String {
-        const PLACEHOLDER_TEXT: &str = "```xml\n<!-- 因数据过大请自行查看变更 -->\n```";
+        const PLACEHOLDER_TEXT: &str = "<details>\n<summary>原始歌词数据</summary>\n\n```xml\n<!-- 因数据过大请自行查看变更 -->\n```\n</details>";
         let separator = "\n\n";
 
-        let original_section_title = "**原始歌词数据:**";
+        let mut final_body = base_text.to_string();
 
-        // 尝试包含所有内容
-        let body = base_text.to_string();
-        let original_section = original_lyric
-            .map(|s| format!("{separator}{original_section_title}{separator}\n```xml\n{s}\n```"));
-
-        let mut final_body = body.clone();
-        if let Some(ref section) = original_section {
-            final_body.push_str(section);
+        if let Some(s) = original_lyric {
+            let original_section = format!(
+                "{separator}<details>\n<summary>原始歌词数据</summary>\n\n```xml\n{s}\n```\n</details>"
+            );
+            final_body.push_str(&original_section);
         }
 
         if final_body.len() <= max_len {
             return final_body;
         }
 
+        let mut final_body_fallback = base_text.to_string();
         if original_lyric.is_some() {
-            let placeholder_original =
-                format!("{separator}{original_section_title}{separator}{PLACEHOLDER_TEXT}");
-
-            final_body.push_str(&placeholder_original);
+            final_body_fallback.push_str(separator);
+            final_body_fallback.push_str(PLACEHOLDER_TEXT);
         }
 
-        if final_body.len() <= max_len {
-            final_body
+        if final_body_fallback.len() <= max_len {
+            final_body_fallback
         } else {
-            body
+            base_text.to_string()
         }
     }
 }
