@@ -15,7 +15,7 @@
 | 排名 | 贡献者 | 贡献次数 |
 | :---: | :--- | :---: |
 | 🥇 | <img src="https://avatars.githubusercontent.com/u/50747104?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xionghaizi001](https://github.com/Xionghaizi001) | 371 |
-| 🥈 | <img src="https://avatars.githubusercontent.com/u/174598250?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ASyunagi](https://github.com/ASyunagi) | 268 |
+| 🥈 | <img src="https://avatars.githubusercontent.com/u/174598250?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ASyunagi](https://github.com/ASyunagi) | 269 |
 | 🥉 | <img src="https://avatars.githubusercontent.com/u/50987405?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ITManCHINA](https://github.com/ITManCHINA) | 265 |
 | 4 | <img src="https://avatars.githubusercontent.com/u/68000793?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[ranhengzhang](https://github.com/ranhengzhang) | 249 |
 | 5 | <img src="https://avatars.githubusercontent.com/u/207428447?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[kid1412520](https://github.com/kid1412520) | 200 |
@@ -56,8 +56,8 @@
 | 40 | <img src="https://avatars.githubusercontent.com/u/69256612?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Fanzai7838](https://github.com/Fanzai7838) | 13 |
 | 41 | <img src="https://avatars.githubusercontent.com/u/171883270?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[lansogame](https://github.com/lansogame) | 12 |
 | 42 | <img src="https://avatars.githubusercontent.com/u/173352259?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Xionghaizi001](https://github.com/Xionghaizi001) | 12 |
-| 43 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 10 |
-| 44 | <img src="https://avatars.githubusercontent.com/u/235518886?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[chan-air](https://github.com/chan-air) | 10 |
+| 43 | <img src="https://avatars.githubusercontent.com/u/235518886?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[chan-air](https://github.com/chan-air) | 11 |
+| 44 | <img src="https://avatars.githubusercontent.com/u/177028641?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[WMH2024](https://github.com/WMH2024) | 10 |
 | 45 | <img src="https://avatars.githubusercontent.com/u/36076482?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[amatke31](https://github.com/amatke31) | 10 |
 | 46 | <img src="https://avatars.githubusercontent.com/u/76810494?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Big-Cake-jpg](https://github.com/Big-Cake-jpg) | 10 |
 | 47 | <img src="https://avatars.githubusercontent.com/u/99335871?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Tseshongfeeshur](https://github.com/Tseshongfeeshur) | 10 |
