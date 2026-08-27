@@ -62,10 +62,10 @@
 | 46 | <img src="https://avatars.githubusercontent.com/u/76810494?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Big-Cake-jpg](https://github.com/Big-Cake-jpg) | 10 |
 | 47 | <img src="https://avatars.githubusercontent.com/u/99335871?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Tseshongfeeshur](https://github.com/Tseshongfeeshur) | 10 |
 | 48 | <img src="https://avatars.githubusercontent.com/u/12137562?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Mrs4s](https://github.com/Mrs4s) | 9 |
-| 49 | <img src="https://avatars.githubusercontent.com/u/32015980?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho1219](https://github.com/Linho1219) | 9 |
-| 50 | <img src="https://avatars.githubusercontent.com/u/39523898?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Steve-xmh](https://github.com/Steve-xmh) | 9 |
-| 51 | <img src="https://avatars.githubusercontent.com/u/141495158?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[dongyvu](https://github.com/dongyvu) | 8 |
-| 52 | <img src="https://avatars.githubusercontent.com/u/176977142?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Nick](https://github.com/Nick) | 8 |
+| 49 | <img src="https://avatars.githubusercontent.com/u/176977142?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Nick](https://github.com/Nick) | 9 |
+| 50 | <img src="https://avatars.githubusercontent.com/u/32015980?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Linho1219](https://github.com/Linho1219) | 9 |
+| 51 | <img src="https://avatars.githubusercontent.com/u/39523898?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[Steve-xmh](https://github.com/Steve-xmh) | 9 |
+| 52 | <img src="https://avatars.githubusercontent.com/u/141495158?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[dongyvu](https://github.com/dongyvu) | 8 |
 | 53 | <img src="https://avatars.githubusercontent.com/u/227764671?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />`#227764671` | 8 |
 | 54 | <img src="https://avatars.githubusercontent.com/u/240017569?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[AngelLarynx-CN](https://github.com/AngelLarynx-CN) | 8 |
 | 55 | <img src="https://avatars.githubusercontent.com/u/56493273?v=4" width="20" height="20" style="vertical-align:sub; margin-right:5px" />[MianSoft](https://github.com/MianSoft) | 8 |
