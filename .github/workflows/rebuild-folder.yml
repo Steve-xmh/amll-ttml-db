@@ -48,3 +48,9 @@ jobs:
           curl -X POST https://amlldb.bikonoo.com/api/synchronous-lyrics \
           -H 'Content-Type: application/json' \
           -d '{"from":"github-actions"}'
+          
+      - name: 通知amllhub-beta同步
+        run: |
+          curl -X POST https://api.beta.amllhub.bikonoo.com/api/v1/sync \
+          -H 'Content-Type: application/json' \
+          -d '{"from":"github-actions"}'
