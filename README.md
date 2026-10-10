@@ -290,6 +290,13 @@ c552e13a-19a4-4ff1-9b37-f4cdeb3de9dd|GDBA%E9%95%9C%E5%83%8F%E7%AB%99||ttml|https
 
 UniLyric 不仅是一个全能的歌词转换器，同时可以作为 AMLL Player 的歌词发送端。其工作原理则是通过监听 [SMTC](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/integrate-with-systemmediatransportcontrols) 获取系统当前播放曲目的曲名、歌手名以及播放进度（如果 SMTC 发送方有设置的话），因此只要你的播放器支持 SMTC 就可以使用。并且 UniLyric 集成了包含 AMLL TTML DB 在内的多方歌词源并且能够自动搜索，可以说是目前最好用的词库搜索方和 AMLL Player 歌词发送端。 [前往了解](https://github.com/apoint123/Unilyric)
 
+## Lyrimuse
+
+Lyrimuse 是 macOS 上的桌面歌词软件，内置本仓库作为歌词源之一，跟随 Apple Music、Spotify、QQ 音乐、网易云音乐等播放器自动搜索歌词，按曲目 ID、ISRC 或歌名歌手在本仓库中匹配，以逐词效果显示在桌面悬浮歌词、菜单栏、刘海灵动岛、触控栏或完整歌词窗口中。[前往了解](https://github.com/Yudaotor/lyrimuse)
+
+- 对唱歌词会按 TTML 中标注的演唱者分开显示，和声单独一行显示在主句下面。
+- 免费开源（GPL-3.0），支持 macOS 14 及以上。
+
 ## 接入到其他项目
 
 > [!TIP]
