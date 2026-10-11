@@ -220,11 +220,11 @@
 
 ## AMLL Player
 
-AMLL Player 是 Apple Music-like Lyrics 的本地客户端，可播放本地音乐或连接 WebSocket 服务端，在歌曲编辑界面可从 AMLL TTML DB 搜索/导入歌词。[前往下载](https://github.com/amll-dev/applemusic-like-lyrics/actions/workflows/build-player.yaml)
+AMLL Player 是 Apple Music-like Lyrics 的本地客户端，可播放本地音乐或连接 WebSocket 服务端，在歌曲编辑界面可从 AMLL TTML DB 搜索/导入歌词。[前往下载](https://github.com/amll-dev/amll-player/actions/workflows/build-player.yaml)
 
-## AMLL Page 
+## AMLL Page [停止维护]
 
-AMLL Page 是 AMLL Player 的在线网页版本，可播放本地音乐和连接 WebSocket 服务端，除插件功能外，与 Player 基本一致。[前往了解](https://github.com/apoint123/amll-page)
+AMLL Page 是 AMLL Player 的在线网页版本，可播放本地音乐和连接 WebSocket 服务端，除插件功能外，与 Player 基本一致。[前往了解](https://github.com/amll-dev/amll-page)
 
 > 感谢 [@apoint123](https://github.com/apoint123) 开发的网页版 AMLL！
 
@@ -237,15 +237,15 @@ AMLL DroidMate 是 Android 端外置歌词显示器，使用 AMLL 渲染歌词�
 
 > 感谢 [@Zeehan2005](https://github.com/Zeehan2005) 开发的AMLL DroidMate！
 
-## SPlayer
+## SPlayer Next
 
-SPlayer 是 跨平台的音乐播放器，功能多样丰富。[前往了解](https://github.com/imsyy/SPlayer)
+SPlayer Next 是 跨平台的音乐播放器，功能多样丰富。[前往了解](https://github.com/SPlayer-Dev/SPlayer-Next)
 
 - 支持 **流媒体 / 本地音乐** 播放。
 - 集成 AMLL 歌词渲染，可享受与 AMLL 一致的丝滑动效。
 - 对于 **本地/在线** TTML歌词 皆有良好支持。
 
-> 感谢 [@imsyy](https://github.com/imsyy)、[@kazukokawagawa](https://github.com/kazukokawagawa)、[@MoYingJi](https://github.com/MoYingJi)、[@apoint123](https://github.com/apoint123) 等广大贡献者开发的SPlayer！
+> 感谢 [@imsyy](https://github.com/imsyy)、[@MoYingJi](https://github.com/MoYingJi)、[@kyv001](https://github.com/kyv001) 等广大贡献者开发的SPlayer！
 
 ##  Apple Music-like Lyrics for BetterNCM [停止维护]
 
